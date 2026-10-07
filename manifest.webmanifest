@@ -1,0 +1,14 @@
+{
+  "name": "Classroom Hub",
+  "short_name": "ClassHub",
+  "description": "Seat plan, points, attendance, name picker and group maker. Works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f7f6",
+  "theme_color": "#1f6f5c",
+  "icons": [
+    { "src": "icon.svg", "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
