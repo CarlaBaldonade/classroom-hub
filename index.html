@@ -297,6 +297,109 @@ html .front.bot{margin:8px 0 0}
 label.lb{display:block;margin:10px 0 4px;font-weight:600;font-size:.9rem}
 #sfCls{width:100%}
 #schForm input[type=time]{width:auto;min-width:130px}
+
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+#toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+.bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(calc(100% - 20px),780px);z-index:30;display:flex;gap:2px;background:#fff;border:2px solid var(--line);border-radius:28px;padding:6px;box-shadow:0 10px 26px -10px rgba(var(--glow),.55)}
+.bn{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:none;border-radius:22px;padding:6px 2px;cursor:pointer;color:var(--mut);font-weight:700;-webkit-tap-highlight-color:transparent}
+.bn .bi2{font-size:1.3rem;line-height:1.1}
+.bn .bl{font-size:.64rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bn.on{background:var(--pri);color:#fff;box-shadow:0 5px 12px -5px rgba(var(--glow),.8)}
+body.fsmode .bnav{display:none}
+.ov.sheet{align-items:flex-end;padding:0}
+.ov.sheet .mbox{max-width:600px;border-radius:26px 26px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mtile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid var(--line);background:#fff;border-radius:16px;padding:10px 12px;cursor:pointer}
+.mtile.on{border-color:var(--pri);background:var(--pri2)}
+.mtile .mi{font-size:1.5rem}.mtile small{color:var(--mut);font-size:.75rem;line-height:1.25}
+@media print{.bnav{display:none!important}}
+
+.pgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:10px 0}
+.ph{text-align:center;font-size:.72rem;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.ph.wk{opacity:.7}
+.pc{position:relative;min-height:56px;border:2px solid var(--line);border-radius:12px;background:#fff;padding:3px 3px 2px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;cursor:pointer;text-align:left;overflow:hidden}
+.pc.out{border:0;background:none;cursor:default}
+.pc.wk{background:#f5f6f6}
+.pc.susp{background:#fde4e4;border-color:#efb0b0}
+.pc.today{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri3)}
+.pc.sel{background:var(--pri2)}
+.pc .pn{font-weight:800;font-size:.85rem}
+.pc.today .pn{background:var(--pri);color:#fff;border-radius:999px;min-width:22px;text-align:center;padding:0 5px}
+.pdots{display:flex;gap:2px;flex-wrap:wrap}
+.pdots i,.plegend i{display:inline-block;width:7px;height:7px;border-radius:50%}
+.ptx{display:none;flex-direction:column;gap:1px;width:100%}
+.ptx em{font-style:normal;font-size:.62rem;line-height:1.2;border-left:3px solid;padding-left:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(0,0,0,.04);border-radius:3px}
+.ptx em.more{border-color:var(--mut);color:var(--mut)}
+@media (min-width:640px){.pc{min-height:84px}.ptx{display:flex}.pdots{display:none}}
+.plegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;color:var(--mut);margin:4px 0 8px}
+.plegend span{display:inline-flex;align-items:center;gap:5px}
+.pi{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left-width:6px;border-radius:12px;padding:8px 10px;margin:8px 0;background:#fff}
+.pi.k-susp{border-left-color:#c94545;background:#fff1f1}.pi.k-meet{border-left-color:#7b4fc4}.pi.k-remind{border-left-color:#b86e00}.pi.k-todo{border-left-color:#2e9e6b}.pi.k-event{border-left-color:#2f6fd0}
+.pi.done .pbd b{text-decoration:line-through;opacity:.6}
+.pbd{flex:1;min-width:0;display:flex;flex-direction:column;word-break:break-word}
+.pico{font-size:1.2rem}
+.pck{width:26px;height:26px;border-radius:8px;border:2px solid var(--pri3);background:#fff;color:#fff;font-weight:900;cursor:pointer;flex:0 0 auto}
+.pck.on{background:var(--grn);border-color:var(--grn)}
+.over .pi{background:#fff1f1}.over .pbd .muted:first-of-type{color:#c94545;font-weight:700}
+.pkc-susp.on{background:#c94545;border-color:#c94545}.pkc-meet.on{background:#7b4fc4;border-color:#7b4fc4}.pkc-remind.on{background:#b86e00;border-color:#b86e00}.pkc-todo.on{background:#2e9e6b;border-color:#2e9e6b}.pkc-event.on{background:#2f6fd0;border-color:#2f6fd0}
+.pban{margin:6px 0}
+.pb{border-radius:12px;padding:8px 12px;margin:6px 0;background:var(--soft);border-left:6px solid var(--pri)}
+.pb.k-susp{background:#fde4e4;border-left-color:#c94545}.pb.k-meet{border-left-color:#7b4fc4}.pb.k-remind{border-left-color:#b86e00}.pb.k-todo{border-left-color:#2e9e6b}.pb.k-event{border-left-color:#2f6fd0}
+#planForm input[type=date],#planForm input[type=time]{width:auto;min-width:130px}
+
+input[type=time]{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;min-height:44px}
+html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
+.wgw{overflow-x:auto;margin:8px -4px 0;padding:0 4px}
+.wg{display:grid;gap:3px;min-width:560px}
+.wh{text-align:center;font-weight:800;font-size:.8rem;color:var(--mut);padding:4px 0;border-radius:10px}
+.wh.today{background:var(--pri);color:#fff}
+.wt{position:relative;font-size:.66rem;color:var(--mut)}
+.wt span{position:absolute;right:4px;transform:translateY(-50%);white-space:nowrap}
+.wd{position:relative;border-radius:10px;background-color:#eceeef;background-image:linear-gradient(to bottom,transparent 59px,#dde0e2 59px 60px);background-size:100% 60px;overflow:hidden}
+.wd.today{background-color:#e4e7e9}
+.wb{position:absolute;overflow:hidden;border:0;border-left:4px solid hsl(var(--h) 55% 42%);background:hsl(var(--h) 85% 91%);color:#26303a;border-radius:8px;padding:3px 5px;text-align:left;font-size:.68rem;line-height:1.2;cursor:pointer;display:flex;flex-direction:column;gap:1px;box-shadow:0 2px 6px -3px rgba(0,0,0,.35)}
+.wb b{font-weight:800;word-break:break-word}
+.wb span{opacity:.8}
+.wnow{position:absolute;left:0;right:0;height:2px;background:#e11d48;z-index:2}
+.wnow::before{content:"";position:absolute;left:-1px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e11d48}
+
+#printArea{display:none}
+.rep,.sp,.pp{color:#111;font-family:var(--sans)}
+.rep h1,.sp h1,.pp h1{font-family:var(--serif);font-weight:400;font-size:20pt;margin:0 0 6px}
+.rmeta{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:10pt;color:#333;border-bottom:2px solid #333;padding-bottom:6px;margin-bottom:10px}
+.rsum{font-size:10pt;margin:6px 0 10px}
+.rt{width:100%;border-collapse:collapse;font-size:10pt}
+.rt th,.ppt th{position:static}
+.rt th{background:#eee;text-align:left;border:1px solid #999;padding:5px 7px}
+.rt td{border:1px solid #999;padding:5px 7px;vertical-align:top;white-space:normal;text-align:left;break-inside:avoid}
+.rt td.rn{white-space:pre-wrap;word-break:break-word}
+.rg{color:#666;font-size:8.5pt}
+.rsig{display:flex;gap:24px;margin-top:34px;font-size:10pt}
+.rsig div{flex:1}
+.rsig span{display:block;border-bottom:1px solid #333;height:22px;margin-top:2px}
+.spt{width:100%;border-collapse:separate;border-spacing:6px;table-layout:fixed;margin:10px 0}
+.spc{text-align:center!important;border:1.5px solid #444;border-radius:8px;height:19mm;text-align:center;vertical-align:middle;font-weight:700;padding:3px;position:relative;word-break:break-word;line-height:1.15}
+.spc.e{border:1.5px dashed #bbb}
+.spc .sn{position:absolute;top:2px;left:5px;font-size:.55em;font-weight:400;color:#777}
+.spa{width:8mm;border:0}
+.spr td{height:6mm;border:0}
+.spf{text-align:center;letter-spacing:.2em;font-weight:800;font-size:.85em;background:#eee;border:1.5px solid #888;border-radius:8px;padding:5px;margin:4px 0}
+.ppt{width:100%;border-collapse:collapse;table-layout:fixed}
+.ppt th{background:#eee;border:1px solid #888;padding:4px;font-size:10pt}
+.ppt td{border:1px solid #888;height:26mm;vertical-align:top;padding:3px 4px;font-size:8.5pt;text-align:left;white-space:normal;overflow:hidden}
+.ppt td.s{background:#f8d7d7}.ppt td.w{background:#f1f1f1}.ppt td.o{background:#fafafa}
+.ppt td b{display:block;font-size:10pt}
+.pit{line-height:1.2;margin-top:1px;word-break:break-word}
+@media print{
+  body.printing>*:not(#printArea){display:none!important}
+  body.printing #printArea{display:block}
+  body.printing{background:#fff!important;padding:0!important}
+  .rep th,.rt th,.ppt th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ppt td,.spf{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.gcard.tgt{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri3)}
+.gh.gt{width:auto;padding:0 10px;font-size:.78rem}
 @media print{.hello{display:none!important}}
 </style>
 </head>
@@ -309,9 +412,9 @@ label.lb{display:block;margin:10px 0 4px;font-weight:600;font-size:.9rem}
     <button class="ib" data-act="openTheme" title="Theme colors" aria-label="Theme colors">🎨</button>
     <button class="ib" data-act="newClass" title="New class" aria-label="New class">＋</button>
   </div>
-  <nav id="tabs" class="tabs"></nav>
 </div>
 <main id="view"></main>
+<nav id="bnav" class="bnav" aria-label="Main"></nav>
 <div id="fs" hidden></div>
 <div id="modal"></div>
 <div id="toast"></div>
@@ -349,7 +452,7 @@ cocoa:{e:"\ud83d\udc3b",pe:"\ud83c\udf6a",sp:["🍪", "✨", "🤎"],msgs:["Bear
 candy:{e:"\ud83c\udf6c",pe:"\ud83c\udf6d",sp:["🍭", "✨", "💗"],msgs:["Sweet job, teacher! 🍬", "Sprinkles of encouragement~", "You’re one smart cookie 🍭", "Candy-coated confidence!", "A sugary-sweet day ahead ✨"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="18,34 4,23 4,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><polygon points="46,34 60,23 60,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><circle cx="32" cy="34" r="17" fill="#ee86c4"/><circle cx="32" cy="34" r="15.2" fill="#ffb3d9"/><path d="M20 24Q32 18 44 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><circle cx="26.5" cy="33" r="2.4" fill="#6b2a55"/><circle cx="37.5" cy="33" r="2.4" fill="#6b2a55"/><ellipse cx="21.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><ellipse cx="42.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><path d="M29 38.5q3 3 6 0" fill="none" stroke="#6b2a55" stroke-width="1.8" stroke-linecap="round"/><path d="M52 8Q52 13 57 13Q52 13 52 18Q52 13 47 13Q52 13 52 8Z" fill="#ffd966"/></svg>'},
 berry:{e:"\ud83c\udf47",pe:"\ud83c\udf47",sp:["🍇", "✨", "💜"],msgs:["Berry good work! 🍇", "Juicy ideas are coming~", "Pop! Another great lesson ✨", "Plum perfect, teacher!", "You’re one in a berry-million 💜"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="38" r="23" fill="#5b5fc7"/><circle cx="32" cy="38" r="21" fill="#7a7fe0"/><ellipse cx="21" cy="27" rx="6" ry="3.4" transform="rotate(-35 21 27)" fill="#fff" opacity=".35"/><polygon points="32,15 35,21 41,19 38,25 32,23 26,25 23,19 29,21" fill="#4a4eab"/><circle cx="32" cy="21" r="1.6" fill="#a9acf0"/><circle cx="24" cy="39" r="2.8" fill="#1f2050"/><circle cx="40" cy="39" r="2.8" fill="#1f2050"/><circle cx="25" cy="38" r="1" fill="#fff"/><circle cx="41" cy="38" r="1" fill="#fff"/><ellipse cx="18.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><ellipse cx="45.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><path d="M29 45q3 3.2 6 0" fill="none" stroke="#1f2050" stroke-width="1.8" stroke-linecap="round"/></svg>'},
 };
-const TIPS={notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
+const TIPS={plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
 const TK=()=>{const k=S.classes.find(x=>x.id===S.activeId)||S.classes[0];return (k&&k.theme&&THEMES[k.theme])?k.theme:S.settings.theme};
 const FB=()=>S.settings.front!=='t';
 const NK={obs:['👀','Observation'],concern:['⚠️','Concern'],good:['🌟','Positive'],follow:['📌','Follow-up']};
@@ -371,6 +474,15 @@ function nextSched(){
   const now=it.find(i=>i.start<=n&&n<i.end);if(now)return 'Now: '+sName(now)+' until '+fmtT(now.end);
   const nx=it.find(i=>i.start>n);return nx?'Next: '+sName(nx)+' at '+fmtT(nx.start):'';
 }
+const PK={susp:['🚫','No classes','#c94545'],meet:['👥','Meeting','#7b4fc4'],remind:['⏰','Reminder','#b86e00'],todo:['✅','To-do','#2e9e6b'],event:['🎉','Event','#2f6fd0']};
+const isD=s=>/^\d{4}-\d\d-\d\d$/.test(s||'');
+function normPlan(i){
+  if(!i||!i.id||!isD(i.d)||!PK[i.k])return null;
+  return{id:String(i.id),k:i.k,d:i.d,e:(isD(i.e)&&i.e>i.d)?i.e:'',t:isT(i.t)?i.t:'',title:String(i.title||'').slice(0,100),note:String(i.note||'').slice(0,300),done:!!i.done};
+}
+const pd=k=>{const a=k.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
+const gmod=()=>S.schedule.mod+'|'+S.planner.mod;
+const itemsOnDate=k=>S.planner.items.filter(i=>i.d<=k&&k<=(i.e||i.d)).sort((a,b)=>((a.k==='susp'?0:1)-(b.k==='susp'?0:1))||((a.t||'99')<(b.t||'99')?-1:(a.t||'99')>(b.t||'99')?1:0));
 const isCute=()=>!!CUTE[TK()];
 const PE=()=>isCute()?CUTE[TK()].pe:'⭐';
 let lastSpk=0;
@@ -437,6 +549,8 @@ if(!['t','b'].includes(S.settings.front))S.settings.front='b';
 if(!SEATS.some(x=>x[0]===S.settings.seat))S.settings.seat='theme';
 if(!S.schedule||typeof S.schedule!=='object'||!Array.isArray(S.schedule.items))S.schedule={mod:0,items:[]};
 S.schedule.mod=+S.schedule.mod||0;S.schedule.items=S.schedule.items.map(normSched).filter(Boolean);
+if(!S.planner||typeof S.planner!=='object'||!Array.isArray(S.planner.items))S.planner={mod:0,items:[]};
+S.planner.mod=+S.planner.mod||0;S.planner.items=S.planner.items.map(normPlan).filter(Boolean);
 S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
 if(!S.deleted||typeof S.deleted!=='object'||Array.isArray(S.deleted))S.deleted={};
 S.classes=S.classes.map(normClass);
@@ -531,7 +645,7 @@ async function upload(fid,payload){
   const r=await gfetch(UPLOAD+'/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:mp});
   return (await r.json()).id;
 }
-const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted,schedule:S.schedule});
+const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted,schedule:S.schedule,planner:S.planner});
 function isPristine(k){return !k.students.length&&!k.log.length&&!Object.keys(k.attendance).length&&!Object.keys(k.dayTags).length&&!k.groups.length&&k.name==='My Class'}
 /* union of both sides; for the same class the newer edit wins; deletions are remembered so they spread */
 function mergeRemote(rem,first){
@@ -555,6 +669,7 @@ function mergeRemote(rem,first){
   const cut=Date.now()-180*864e5;
   for(const id in del)if(del[id]<cut)delete del[id];
   S.classes=out;S.deleted=del;
+  if(rem.planner&&Array.isArray(rem.planner.items)&&(+rem.planner.mod||0)>S.planner.mod)S.planner={mod:+rem.planner.mod,items:rem.planner.items.map(normPlan).filter(Boolean)};
   if(rem.schedule&&Array.isArray(rem.schedule.items)&&(+rem.schedule.mod||0)>S.schedule.mod)S.schedule={mod:+rem.schedule.mod,items:rem.schedule.items.map(normSched).filter(Boolean)};
   if(!S.classes.length)S.classes.push(newClass('My Class'));
   if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
@@ -588,7 +703,7 @@ async function syncNow(interactive,link){
       if(!rem||typeof rem!=='object'||!Array.isArray(rem.classes))throw new Error('badfile');
     }
     let myUid=S.sync.uid,first=!myUid;
-    const before=sig(S.classes,{})+'|'+S.schedule.mod;
+    const before=sig(S.classes,{})+'|'+gmod();
     if(rem){
       const ru=String(rem.uid||'');
       if(myUid&&ru&&ru!==myUid){
@@ -606,11 +721,11 @@ async function syncNow(interactive,link){
       myUid=myUid||newUid();
     }
     S.sync.uid=myUid;
-    const need=!rem||sig(rem.classes,rem.deleted)!==sig(S.classes,S.deleted)||(+(rem.schedule&&rem.schedule.mod)||0)!==S.schedule.mod||String(rem.uid||'')!==myUid;
+    const need=!rem||sig(rem.classes,rem.deleted)!==sig(S.classes,S.deleted)||(+(rem.schedule&&rem.schedule.mod)||0)!==S.schedule.mod||(+(rem.planner&&rem.planner.mod)||0)!==S.planner.mod||String(rem.uid||'')!==myUid;
     if(need){S.sync.dirty=false;await upload(fid0,syncPayload())}
     S.sync.on=true;S.sync.last=Date.now();S.sync.err='';
     persist();setSync('ok');
-    if(merged&&sig(S.classes,{})+'|'+S.schedule.mod!==before)afterRemoteChange();
+    if(merged&&sig(S.classes,{})+'|'+gmod()!==before)afterRemoteChange();
   }catch(e){
     if(merged){S.sync.dirty=true;persist();afterRemoteChange()}
     const m=e&&e.message;
@@ -628,7 +743,7 @@ function unlink(clear){
   const t=tok;tok=null;tokExp=0;
   if(clear&&t&&gisReady()){try{google.accounts.oauth2.revoke(t,()=>{})}catch(e){}}
   S.sync.on=false;S.sync.dirty=false;S.sync.err='';S.sync.last=0;
-  if(clear){S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
+  if(clear){S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.planner={mod:0,items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
   stamp();persist();setSync('');render();
 }
 function syncModalHtml(){
@@ -774,7 +889,7 @@ function gMove(c,id,to){
 }
 
 /* ---------- views ---------- */
-const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['summary','📊','Summary'],['sched','📅','Schedule'],['data','💾','Backup']];
+const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['summary','📊','Summary'],['sched','📅','Schedule'],['plan','🗓️','Planner'],['data','💾','Backup']];
 
 function seatGrid(c,mode){
   const m=smap(c),att=c.attendance[ui.date]||{};
@@ -838,7 +953,7 @@ V.seats=c=>{
   const rowChips=Array.from({length:Math.max(0,c.rows-1)},(_,r)=>'<button class="chip s'+(c.aisleRows.indexOf(r)>=0?' on':'')+'" data-act="aisleR" data-k="'+r+'" title="Aisle between row '+(r+1)+' and '+(r+2)+'">'+(r+1)+' / '+(r+2)+'</button>').join('');
   return '<section class="card"><h2>Seating arrangement</h2>'
   +'<div class="row wrap"><label>Rows <input id="rowsIn" type="number" min="1" max="40" value="'+c.rows+'" data-chg="dim"></label><label>Columns <input id="colsIn" type="number" min="1" max="12" value="'+c.cols+'" data-chg="dim"></label></div>'
-  +'<div class="row wrap"><button class="btn pri" data-act="shuffleSeats">🔀 Random seating</button><button class="btn" data-act="alphaSeats">A–Z order</button><button class="btn" data-act="fsEnter"'+(c.students.length?'':' disabled')+'>🖥 Landscape view</button></div>'
+  +'<div class="row wrap"><button class="btn pri" data-act="shuffleSeats">🔀 Random seating</button><button class="btn" data-act="alphaSeats">A–Z order</button><button class="btn" data-act="fsEnter"'+(c.students.length?'':' disabled')+'>🖥 Landscape view</button><button class="btn" data-act="printSeats"'+(c.students.length?'':' disabled')+'>🖨 Print seat plan</button></div>'
   +'<h3>Seat colors</h3><div class="chips">'+colorChips+'</div>'
   +'<h3>Aisles</h3><p class="muted">Tap a gap to add or remove a walkway. Tap again to remove it.</p>'
   +(c.cols>1?'<div class="muted">Between columns</div><div class="chips">'+colChips+'</div>':'')
@@ -906,18 +1021,19 @@ V.groups=c=>{
   +'<div class="row wrap"><span>Number of groups</span><div class="stepper"><button class="btn sm" data-act="gcount" data-v="-1">−</button><b>'+c.groupCount+'</b><button class="btn sm" data-act="gcount" data-v="1">＋</button></div></div>'
   +'<label class="chk"><input type="checkbox" data-chg="popt" data-k="gSkip"'+(ui.gSkip?' checked':'')+'> Leave out students marked absent/excused today</label>'
   +'<button class="btn pri big" data-act="makeGroups"'+(c.students.length?'':' disabled')+'>🔀 Make '+c.groupCount+' random groups</button>'
-  +(c.groups.length?'<div class="row"><button class="btn danger" data-act="resetGroups">🗑 Reset all groups</button></div>':'')
-  +'<p class="muted">'+(ui.gsel?'<b>'+esc(selName)+'</b> selected. Tap another student to swap, or tap “Move here” on a group.':'To swap: tap a student, then tap another student. To move: tap a student, then “Move here”. On a computer you can also drag a name onto another name (swap) or onto a group box (move).')+'</p></section>';
-  if(c.groups.length){
+  +'<div class="row wrap"><button class="btn'+(ui.gman?' pri':'')+'" data-act="gmanual"'+(c.students.length?'':' disabled')+'>'+(ui.gman?'✅ Done choosing':'✋ Choose groups myself')+'</button>'+(ui.gman?'<button class="btn" data-act="gadd">＋ Add group</button>':'')+(c.groups.length?'<button class="btn danger" data-act="resetGroups">🗑 Reset all groups</button>':'')+'</div>'
+  +'<p class="muted">'+(ui.gman?'Choosing groups yourself: tap <b>Add here</b> on a group, then tap students under “Not in a group” to put them in it. Tap a student inside a group to take them out again. Use ＋ Add group for more groups.':ui.gsel?'<b>'+esc(selName)+'</b> selected. Tap another student to swap, or tap “Move here” on a group.':'To swap: tap a student, then tap another student. To move: tap a student, then “Move here”. On a computer you can also drag a name onto another name (swap) or onto a group box (move).')+'</p></section>';
+  if(c.groups.length||ui.gman){
     h+='<div class="ggrid">';
     c.groups.forEach((g,gi)=>{
-      h+='<div class="gcard" data-drop="grp" data-g="'+gi+'"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||'Group '+(gi+1))+' <span class="cnt">('+g.length+')</span></b>'
+      h+='<div class="gcard'+(ui.gman&&ui.gtarget===gi?' tgt':'')+'" data-drop="grp" data-g="'+gi+'"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||'Group '+(gi+1))+' <span class="cnt">('+g.length+')</span></b>'
       +'<button class="gh" data-act="grename" data-g="'+gi+'" title="Rename group">✎</button>'
+      +(ui.gman?'<button class="gh gt" data-act="gtarget" data-g="'+gi+'">'+(ui.gtarget===gi?'✔ Adding here':'Add here')+'</button><button class="gh" data-act="gdel" data-g="'+gi+'" title="Remove this group">✕</button>':'')
       +'<button class="gh" data-act="gscore" data-g="'+gi+'" data-v="-1">−</button><span class="gs">⭐ '+(c.groupScores[gi]||0)+'</span><button class="gh" data-act="gscore" data-g="'+gi+'" data-v="1">＋</button></div>'
       +'<div class="gbody">'+g.map((id,n)=>mem(gi,id,n+1)).join('')+(g.length?'':'<span class="muted">Empty</span>')
       +(ui.gsel&&ui.gsel.g!==gi?'<button class="btn sm" data-act="gmove" data-g="'+gi+'">⬇ Move '+esc(selName)+' here</button>':'')+'</div></div>';
     });
-    if(un.length)h+='<div class="gcard" data-drop="grp" data-g="-1"><div class="ghead" style="background:#6b7a77"><b>Not in a group <span class="cnt">('+un.length+')</span></b></div><div class="gbody">'+un.map((id,n)=>mem(-1,id,n+1)).join('')+(ui.gsel&&ui.gsel.g>=0?'<button class="btn sm" data-act="gmove" data-g="-1">⬇ Move '+esc(selName)+' here</button>':'')+'</div></div>';
+    if(un.length||ui.gman)h+='<div class="gcard" data-drop="grp" data-g="-1"><div class="ghead" style="background:#6b7a77"><b>Not in a group <span class="cnt">('+un.length+')</span></b></div><div class="gbody">'+un.map((id,n)=>mem(-1,id,n+1)).join('')+(un.length?'':'<span class="muted">Everyone has a group 🎉</span>')+(ui.gsel&&ui.gsel.g>=0?'<button class="btn sm" data-act="gmove" data-g="-1">⬇ Move '+esc(selName)+' here</button>':'')+'</div></div>';
     h+='</div>';
   }
   return h;
@@ -925,6 +1041,48 @@ V.groups=c=>{
 
 
 /* ---------- anecdotal notes ---------- */
+
+/* ---------- printing ---------- */
+function printHtml(html,land){
+  let pa=document.getElementById('printArea');if(!pa){pa=document.createElement('div');pa.id='printArea';document.body.appendChild(pa)}
+  pa.innerHTML=html;
+  let st=document.getElementById('pgsty');if(!st){st=document.createElement('style');st.id='pgsty';document.head.appendChild(st)}
+  st.textContent='@page{size:'+(land?'landscape':'portrait')+';margin:12mm}';
+  document.body.classList.add('printing');
+  const done=()=>{document.body.classList.remove('printing');pa.innerHTML='';window.removeEventListener('afterprint',done)};
+  window.addEventListener('afterprint',done);
+  setTimeout(()=>window.print(),80);
+}
+const pdate=()=>new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+function reportHtml(c,f,t,list,sign){
+  const m=smap(c),cn={};list.forEach(n=>cn[n.k]=(cn[n.k]||0)+1);
+  return '<div class="rep"><h1>Anecdotal Records Report</h1><div class="rmeta"><span><b>Class:</b> '+esc(c.name)+'</span><span><b>Period:</b> '+prettyDate(f)+' – '+prettyDate(t)+'</span><span><b>Printed:</b> '+pdate()+'</span></div>'
+   +'<p class="rsum"><b>'+list.length+' note'+(list.length===1?'':'s')+'</b> · '+Object.keys(NK).filter(k=>cn[k]).map(k=>NK[k][1]+': '+cn[k]).join(' · ')+'</p>'
+   +'<table class="rt"><thead><tr><th style="width:17%">Date</th><th style="width:15%">Category</th><th style="width:22%">Student(s)</th><th>Note</th></tr></thead><tbody>'
+   +list.map(n=>'<tr><td>'+prettyDate(n.d)+'<br><span class="rg">'+new Date(n.t||0).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})+'</span></td><td>'+NK[n.k][0]+' '+NK[n.k][1]+'</td><td>'+((n.s||[]).filter(id=>m[id]).map(id=>esc(m[id].name)).join(', ')||'—')+'</td><td class="rn">'+esc(n.x)+'</td></tr>').join('')
+   +'</tbody></table>'+(sign?'<div class="rsig"><div>Prepared by:<span></span></div><div>Date:<span></span></div><div>Noted by:<span></span></div></div>':'')+'</div>';
+}
+function seatPrintHtml(c){
+  const m=smap(c),ac=new Set(c.aisleCols),ar=new Set(c.aisleRows),fb=FB(),nA=c.aisleCols.filter(k=>k<c.cols-1).length;
+  const fz=c.cols<=6?15:c.cols<=8?12:10;let body='';
+  for(let q=0;q<c.rows;q++){
+    const r=fb?c.rows-1-q:q;let tr='<tr>';
+    for(let k=0;k<c.cols;k++){const id=c.seats[r*c.cols+k],has=id&&m[id];tr+='<td class="spc'+(has?'':' e')+'">'+(has?'<span class="sn">'+(r*c.cols+k+1)+'</span>'+esc(m[id].name):'')+'</td>';if(ac.has(k)&&k<c.cols-1)tr+='<td class="spa"></td>'}
+    body+=tr+'</tr>';
+    if(fb?(ar.has(r-1)&&r>0):(ar.has(r)&&r<c.rows-1))body+='<tr class="spr"><td colspan="'+(c.cols+nA)+'"></td></tr>';
+  }
+  const front=fb?'<div class="spf">▲ FRONT OF ROOM ▲</div>':'<div class="spf">▼ FRONT OF ROOM ▼</div>';
+  return '<div class="sp" style="font-size:'+fz+'pt"><h1>Seating Plan</h1><div class="rmeta"><span><b>Class:</b> '+esc(c.name)+'</span><span><b>Students:</b> '+c.students.length+'</span><span><b>Printed:</b> '+pdate()+'</span></div>'+(fb?'':front)+'<table class="spt">'+body+'</table>'+(fb?front:'')+'</div>';
+}
+function planPrintHtml(){
+  const a=ui.pm.split('-').map(Number),y=a[0],mo=a[1],off=(new Date(y,mo-1,1).getDay()+6)%7,nd=new Date(y,mo,0).getDate(),rows=Math.ceil((off+nd)/7);
+  let b='';
+  for(let r=0;r<rows;r++){b+='<tr>';for(let k=0;k<7;k++){const dn=r*7+k-off+1;
+    if(dn<1||dn>nd){b+='<td class="o"></td>';continue}
+    const key=y+'-'+String(mo).padStart(2,'0')+'-'+String(dn).padStart(2,'0'),its=itemsOnDate(key);
+    b+='<td class="'+(its.some(i=>i.k==='susp')?'s':k>=5?'w':'')+'"><b>'+dn+'</b>'+its.map(i=>'<div class="pit">'+PK[i.k][0]+' '+esc(i.title||PK[i.k][1])+(i.t?' '+fmtT(i.t):'')+(i.done?' ✓':'')+'</div>').join('')+'</td>'}b+='</tr>'}
+  return '<div class="pp"><h1>'+MONTHS[mo-1]+' '+y+' — Planner</h1><div class="rmeta"><span><b>Printed:</b> '+pdate()+'</span><span>🚫 No classes shaded · ✅ To-do · ⏰ Reminder · 👥 Meeting · 🎉 Event</span></div><table class="ppt"><thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody>'+b+'</tbody></table></div>';
+}
 const csvq=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
 function noteCard(c,n,m){
   const who=(n.s||[]).filter(id=>m[id]).map(id=>'<span class="pill">'+esc(m[id].name)+'</span>').join('');
@@ -957,11 +1115,38 @@ V.notes=c=>{
   let last='';
   shown.forEach(n=>{if(n.d!==last){last=n.d;h+='<div class="dh">'+prettyDate(n.d)+' <button class="link noprint" data-act="goDay" data-d="'+n.d+'">open day</button></div>'}h+=noteCard(c,n,m)});
   if(list.length>shown.length)h+='<div class="row noprint"><button class="btn" data-act="nmore">Show more</button></div>';
-  h+='<div class="row wrap noprint"><button class="btn" data-act="noteCsv"'+(all.length?'':' disabled')+'>⬇ Download notes (CSV)</button><button class="btn" data-act="printPage">🖨 Print / Save PDF</button></div></section>';
+  h+='<div class="row wrap noprint"><button class="btn" data-act="noteCsv"'+(all.length?'':' disabled')+'>⬇ Download notes (CSV)</button><button class="btn" data-act="reportOpen"'+(all.length?'':' disabled')+'>🖨 Print report…</button></div></section>';
   return h;
 };
 
 /* ---------- teacher schedule ---------- */
+
+/* ---------- weekly calendar grid ---------- */
+const toM=t=>+t.slice(0,2)*60+ +t.slice(3);
+const hueOf=i=>{const k=S.classes.findIndex(x=>x.id===i.cid);if(k>=0)return (k*57+200)%360;let x=0;const s=sName(i);for(let n=0;n<s.length;n++)x=(x*31+s.charCodeAt(n))>>>0;return x%360};
+function weekGrid(){
+  const items=S.schedule.items,td=jsDay(),PPM=1;
+  const hasWk=items.some(i=>i.days.some(d=>d>=6)),showWk=hasWk||ui.swk,nd=showWk?7:5;
+  let minM=7*60,maxM=17*60;items.forEach(i=>{minM=Math.min(minM,toM(i.start));maxM=Math.max(maxM,toM(i.end))});
+  minM=Math.floor(minM/60)*60;maxM=Math.ceil(maxM/60)*60;
+  const H=(maxM-minM)*PPM,nowM=toM(nowT());
+  let g='<div class="wgw"><div class="wg" style="grid-template-columns:44px repeat('+nd+',minmax(84px,1fr))"><div class="wh"></div>'
+   +DAYS.slice(0,nd).map(d=>'<div class="wh'+(d[0]===td?' today':'')+'">'+d[1]+'</div>').join('');
+  g+='<div class="wt" style="height:'+H+'px">'+Array.from({length:(maxM-minM)/60},(_,n)=>'<span style="top:'+(n*60*PPM)+'px">'+fmtT(String(minM/60+n).padStart(2,'0')+':00').replace(':00','')+'</span>').join('')+'</div>';
+  for(let d=1;d<=nd;d++){
+    const its=itemsOn(d).map(i=>({i:i,s:toM(i.start),e:toM(i.end)}));
+    let cl=[],cEnd=0;const out=[];
+    const flush=()=>{const le=[];cl.forEach(x=>{let l=le.findIndex(e=>e<=x.s);if(l<0){l=le.length;le.push(0)}le[l]=x.e;x.l=l});cl.forEach(x=>{x.n=le.length;out.push(x)});cl=[]};
+    its.forEach(x=>{if(cl.length&&x.s>=cEnd){flush();cEnd=0}cl.push(x);cEnd=Math.max(cEnd,x.e)});if(cl.length)flush();
+    g+='<div class="wd'+(d===td?' today':'')+'" style="height:'+H+'px">'
+     +out.map(x=>{const hgt=(x.e-x.s)*PPM;return '<button class="wb" data-act="schEdit" data-id="'+x.i.id+'" style="top:'+((x.s-minM)*PPM)+'px;height:'+hgt+'px;left:calc('+(x.l/x.n*100)+'% + 2px);width:calc('+(100/x.n)+'% - 4px);--h:'+hueOf(x.i)+'"><b>'+esc(sName(x.i))+'</b><span>'+fmtT(x.i.start).replace(' ','')+'–'+fmtT(x.i.end).replace(' ','')+'</span>'+(hgt>=62&&x.i.room?'<span>'+esc(x.i.room)+'</span>':'')+'</button>'}).join('')
+     +(d===td&&nowM>=minM&&nowM<=maxM?'<div class="wnow" style="top:'+((nowM-minM)*PPM)+'px"></div>':'')+'</div>';
+  }
+  g+='</div></div>';
+  return '<section class="card"><h2>Weekly schedule</h2><p class="muted">Tap a class block to edit it. Gray areas are free time.</p>'+(items.length?g:'<p class="muted">No classes yet. Add your first one below.</p>')
+   +(hasWk?'':'<div class="row noprint"><button class="chip s'+(ui.swk?' on':'')+'" data-act="swk">'+(ui.swk?'Hide':'Show')+' Sat &amp; Sun</button></div>')
+   +(items.length?'<div class="row noprint"><button class="link" data-act="schClear">Clear entire schedule</button></div>':'')+'</section>';
+}
 const blankSf=()=>({id:'',title:'',cid:'',days:[],start:'',end:'',room:'',note:''});
 function schedRow(i,todayMode){
   const n=nowT(),isNow=todayMode&&i.start<=n&&n<i.end,isDone=todayMode&&n>=i.end;
@@ -976,13 +1161,13 @@ function schedRow(i,todayMode){
 function schedTodayInner(){
   const d=jsDay(),it=itemsOn(d);
   return '<div class="rowsp"><h2>📅 Today</h2><span class="muted">'+new Date().toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})+'</span></div>'
+   +planBanner()
    +(it.length?it.map(i=>schedRow(i,true)).join(''):'<p class="muted">'+(S.schedule.items.length?'Nothing scheduled today. Enjoy your free day! 🎉':'No schedule yet. Add your weekly classes below.')+'</p>');
 }
 V.sched=c=>{
   const sf=ui.sf||(ui.sf=blankSf()),td=jsDay();
   let h='<section class="card" id="schToday">'+schedTodayInner()+'</section>';
-  h+='<section class="card"><h2>Weekly schedule</h2>'+DAYS.map(d=>{const it=itemsOn(d[0]);return '<div class="dh'+(d[0]===td?' today':'')+'">'+d[2]+(d[0]===td?' · today':'')+' <span class="muted">('+it.length+')</span></div>'+(it.length?it.map(i=>schedRow(i,false)).join(''):'<p class="muted">Free</p>')}).join('')
-   +(S.schedule.items.length?'<div class="row noprint"><button class="link" data-act="schClear">Clear entire schedule</button></div>':'')+'</section>';
+  h+=weekGrid();
   h+='<section class="card noprint" id="schForm"><h2>'+(sf.id?'Edit entry':'Add to schedule')+'</h2>'
    +'<label class="lb" for="sfTitle">Subject / section</label><input id="sfTitle" type="text" maxlength="80" placeholder="e.g. Science 7 – Rizal" data-sf="title" value="'+esc(sf.title)+'" autocomplete="off">'
    +'<label class="lb" for="sfCls">Link to a class (optional, adds an Open button)</label><select id="sfCls" data-chg="sf" data-k="cid" data-sf="cid"><option value="">— none —</option>'+S.classes.map(k=>'<option value="'+k.id+'"'+(sf.cid===k.id?' selected':'')+'>'+esc(k.name)+'</option>').join('')+'</select>'
@@ -990,12 +1175,63 @@ V.sched=c=>{
    +'<div class="row wrap"><div><label class="lb" for="sfStart">Start</label><input id="sfStart" type="time" data-sf="start" value="'+esc(sf.start)+'"></div><div><label class="lb" for="sfEnd">End</label><input id="sfEnd" type="time" data-sf="end" value="'+esc(sf.end)+'"></div></div>'
    +'<label class="lb" for="sfRoom">Room (optional)</label><input id="sfRoom" type="text" maxlength="60" data-sf="room" value="'+esc(sf.room)+'" autocomplete="off">'
    +'<label class="lb" for="sfNote">Note (optional)</label><input id="sfNote" type="text" maxlength="300" data-sf="note" value="'+esc(sf.note)+'" autocomplete="off">'
-   +'<div class="row wrap"><button class="btn pri" data-act="schSave">'+(sf.id?'Update entry':'Add entry')+'</button>'+(sf.id?'<button class="btn" data-act="schCancel">Cancel edit</button>':'')+'</div>'
+   +'<div class="row wrap"><button class="btn pri" data-act="schSave">'+(sf.id?'Update entry':'Add entry')+'</button>'+(sf.id?'<button class="btn" data-act="schCancel">Cancel edit</button><button class="btn danger" data-act="schDel" data-id="'+sf.id+'">Delete</button>':'')+'</div>'
    +'<p class="muted">Pick several days at once for classes that repeat. Your schedule is saved with Google Drive sync like your classes.</p></section>';
   return h;
 };
 setInterval(()=>{const el=document.getElementById('schToday');if(el&&ui.tab==='sched'&&!ui.modal&&document.visibilityState==='visible')el.innerHTML=schedTodayInner()},30000);
 
+
+/* ---------- planner (to-do, reminders, suspensions) ---------- */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const blankPf=d=>({id:'',k:'todo',title:'',d:d||today(),e:'',t:'',note:''});
+const rel=k=>{const t=today();if(k===t)return 'Today';const a=Math.round((pd(k)-pd(t))/864e5);if(a===1)return 'Tomorrow';if(a===-1)return 'Yesterday';return prettyDate(k)};
+function planBanner(){
+  const its=itemsOnDate(today());if(!its.length)return '';
+  return '<div class="pban">'+its.map(i=>'<div class="pb k-'+i.k+'"><b>'+PK[i.k][0]+' '+(i.k==='susp'?'No classes':PK[i.k][1])+(i.title?': '+esc(i.title):'')+'</b>'+(i.t?'<span class="muted"> · '+fmtT(i.t)+'</span>':'')+(i.note?'<div class="muted">'+esc(i.note)+'</div>':'')+'</div>').join('')+'</div>';
+}
+function planRow(i,withDate){
+  const chk=i.k==='todo'||i.k==='remind';
+  return '<div class="pi k-'+i.k+(i.done?' done':'')+'">'+(chk?'<button class="pck'+(i.done?' on':'')+'" data-act="planDone" data-id="'+i.id+'" aria-label="Mark done">'+(i.done?'✓':'')+'</button>':'<span class="pico">'+PK[i.k][0]+'</span>')
+   +'<div class="pbd"><b>'+(chk?PK[i.k][0]+' ':'')+esc(i.title||PK[i.k][1])+'</b><span class="muted">'+[withDate?rel(i.d)+(i.e?' – '+prettyDate(i.e):''):(i.e?'until '+prettyDate(i.e):''),i.t?fmtT(i.t):'',PK[i.k][1]].filter(Boolean).join(' · ')+'</span>'+(i.note?'<span class="muted">'+esc(i.note)+'</span>':'')+'</div>'
+   +'<div class="sbtns noprint"><button class="btn sm" data-act="planEdit" data-id="'+i.id+'" aria-label="Edit">✎</button><button class="btn sm danger" data-act="planDel" data-id="'+i.id+'" aria-label="Delete">✕</button></div></div>';
+}
+V.plan=c=>{
+  if(!ui.pm)ui.pm=today().slice(0,7);if(!ui.pd)ui.pd=today();
+  const pf=ui.pf||(ui.pf=blankPf(ui.pd)),a=ui.pm.split('-').map(Number),y=a[0],mo=a[1];
+  const off=(new Date(y,mo-1,1).getDay()+6)%7,nd=new Date(y,mo,0).getDate(),rows=Math.ceil((off+nd)/7),td=today();
+  const pad2=n=>String(n).padStart(2,'0');
+  let cells='',cnt={susp:new Set(),meet:0,event:0,todo:[0,0],remind:[0,0]};
+  for(let n=0;n<rows*7;n++){
+    const dn=n-off+1;
+    if(dn<1||dn>nd){cells+='<div class="pc out"></div>';continue}
+    const key=y+'-'+pad2(mo)+'-'+pad2(dn),its=itemsOnDate(key),wk=n%7>=5;
+    its.forEach(i=>{if(i.k==='susp')cnt.susp.add(key)});
+    cells+='<button class="pc'+(key===td?' today':'')+(key===ui.pd?' sel':'')+(its.some(i=>i.k==='susp')?' susp':'')+(wk?' wk':'')+'" data-act="planDay" data-d="'+key+'"><span class="pn">'+dn+'</span>'
+      +'<span class="pdots">'+its.slice(0,5).map(i=>'<i style="background:'+PK[i.k][2]+'"></i>').join('')+'</span>'
+      +'<span class="ptx">'+its.slice(0,2).map(i=>'<em style="border-color:'+PK[i.k][2]+'">'+esc(i.title||PK[i.k][1])+'</em>').join('')+(its.length>2?'<em class="more">+'+(its.length-2)+'</em>':'')+'</span></button>';
+  }
+  S.planner.items.forEach(i=>{if(i.d.slice(0,7)===ui.pm){if(i.k==='meet')cnt.meet++;else if(i.k==='event')cnt.event++;else if(i.k==='todo'||i.k==='remind'){cnt[i.k][1]++;if(i.done)cnt[i.k][0]++}}});
+  let h='<section class="card"><div class="rowsp"><button class="btn sm" data-act="planPrev" aria-label="Previous month">◀</button><h2 style="margin:0">'+MONTHS[mo-1]+' '+y+'</h2><button class="btn sm" data-act="planNext" aria-label="Next month">▶</button></div>'
+   +'<div class="row wrap noprint"><button class="btn sm" data-act="planToday">This month</button><button class="btn sm" data-act="planPrint">🖨 Print month</button></div>'
+   +'<div class="pgrid"><div class="ph">Mon</div><div class="ph">Tue</div><div class="ph">Wed</div><div class="ph">Thu</div><div class="ph">Fri</div><div class="ph wk">Sat</div><div class="ph wk">Sun</div>'+cells+'</div>'
+   +'<div class="plegend">'+Object.keys(PK).map(k=>'<span><i style="background:'+PK[k][2]+'"></i>'+PK[k][1]+'</span>').join('')+'</div>'
+   +'<div class="stats"><div class="stat A"><b>'+cnt.susp.size+'</b>No-class day'+(cnt.susp.size===1?'':'s')+'</div><div class="stat"><b>'+cnt.meet+'</b>Meeting'+(cnt.meet===1?'':'s')+'</div><div class="stat"><b>'+cnt.event+'</b>Event'+(cnt.event===1?'':'s')+'</div><div class="stat P"><b>'+cnt.todo[0]+'/'+cnt.todo[1]+'</b>To-dos done</div><div class="stat L"><b>'+cnt.remind[0]+'/'+cnt.remind[1]+'</b>Reminders done</div></div></section>';
+  const day=itemsOnDate(ui.pd);
+  h+='<section class="card"><h2>'+prettyDate(ui.pd)+'</h2>'+(day.length?day.map(i=>planRow(i,false)).join(''):'<p class="muted">Nothing planned for this day yet.</p>')+'</section>';
+  h+='<section class="card noprint" id="planForm"><h2>'+(pf.id?'Edit item':'Add to planner')+'</h2>'
+   +'<div class="chips">'+Object.keys(PK).map(k=>'<button class="chip pkc-'+k+(pf.k===k?' on':'')+'" data-act="pfKind" data-v="'+k+'">'+PK[k][0]+' '+PK[k][1]+'</button>').join('')+'</div>'
+   +'<label class="lb" for="pfTitle">What is it?</label><input id="pfTitle" type="text" maxlength="100" data-pf="title" placeholder="'+(pf.k==='susp'?'e.g. Typhoon – classes suspended':pf.k==='meet'?'e.g. Faculty meeting':pf.k==='todo'?'e.g. Check Q1 quizzes':'e.g. Submit grades')+'" value="'+esc(pf.title)+'" autocomplete="off">'
+   +'<div class="row wrap"><div><label class="lb" for="pfD">Date</label><input id="pfD" type="date" data-pf="d" value="'+pf.d+'"></div><div><label class="lb" for="pfE">Until (optional)</label><input id="pfE" type="date" data-pf="e" value="'+(pf.e||'')+'"></div><div><label class="lb" for="pfT">Time (optional)</label><input id="pfT" type="time" data-pf="t" value="'+(pf.t||'')+'"></div></div>'
+   +'<label class="lb" for="pfN">Note (optional)</label><input id="pfN" type="text" maxlength="300" data-pf="note" value="'+esc(pf.note)+'" autocomplete="off">'
+   +'<div class="row wrap"><button class="btn pri" data-act="planSave">'+(pf.id?'Update':'Add')+'</button>'+(pf.id?'<button class="btn" data-act="planCancel">Cancel edit</button>':'')+'</div>'
+   +'<p class="muted">Use “Until” for several days, like a multi-day suspension. Days with no classes turn red on the calendar and show on your Schedule’s Today card.</p></section>';
+  const t0=pd(td);t0.setDate(t0.getDate()-30);const lo=dkey(t0),t1=pd(td);t1.setDate(t1.getDate()+14);const hi=dkey(t1);
+  const up=S.planner.items.filter(i=>(i.k==='todo'||i.k==='remind')?(!i.done&&i.d>=lo):(i.d>=td&&i.d<=hi)).sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:(x.t||'')<(y.t||'')?-1:1).slice(0,25);
+  h+='<section class="card"><h2>Upcoming &amp; to-do</h2>'+(up.length?up.map(i=>'<div class="'+(i.d<td&&(i.k==='todo'||i.k==='remind')?'over':'')+'">'+planRow(i,true)+'</div>').join(''):'<p class="muted">All clear. No pending to-dos or upcoming items. 🎉</p>')
+   +'<p class="muted">Shows unfinished to-dos and reminders (overdue ones in red) plus meetings, events and suspensions in the next 2 weeks.</p></section>';
+  return h;
+};
 function missingSection(c){
   const tasks=allTasks(c);
   let h='<section class="card"><h2>📌 Missing tasks</h2>';
@@ -1074,10 +1310,21 @@ V.data=c=>{
   +'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
 };
 
+
+const MDESC={students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
+const tabInfo=id=>TABS.find(t=>t[0]===id);
+const isWide=()=>window.innerWidth>=720;
+const navIds=()=>isWide()?['students','seats','points','attend','picker','groups','sched']:['seats','points','attend','sched'];
+function renderNav(){
+  const nb=$('#bnav');if(!nb)return;
+  const ids=navIds(),moreOn=!ids.includes(ui.tab)||ui.modal==='more';
+  nb.innerHTML=ids.map(id=>{const t=tabInfo(id);return '<button class="bn'+(ui.tab===id&&ui.modal!=='more'?' on':'')+'" data-act="tab" data-v="'+id+'"><span class="bi2">'+(id==='points'?PE():t[1])+'</span><span class="bl">'+t[2]+'</span></button>'}).join('')
+   +'<button class="bn'+(moreOn?' on':'')+'" data-act="openMore"><span class="bi2">⋯</span><span class="bl">More</span></button>';
+}
 function render(){
   const c=cur();applyTheme();
   $('#clsSel').innerHTML=S.classes.map(k=>'<option value="'+k.id+'"'+(k.id===c.id?' selected':'')+'>'+esc(k.name)+'</option>').join('');
-  $('#tabs').innerHTML=TABS.map(t=>'<button class="tab'+(ui.tab===t[0]?' on':'')+'" data-act="tab" data-v="'+t[0]+'">'+(t[0]==='points'?PE():t[1])+' '+t[2]+'</button>').join('');
+  renderNav();
   $('#view').innerHTML=hello()+V[ui.tab](c);
   if(ui.focus){const f=$(ui.focus);if(f)f.focus();ui.focus=null}
 }
@@ -1096,6 +1343,20 @@ function renderModal(){
       +'<div class="sec">Front of the room</div><div class="fsz">'+[['b','At the bottom'],['t','At the top']].map(x=>'<button class="chip'+(S.settings.front===x[0]?' on':'')+'" data-act="setFront" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'
       +'<p class="muted">Seat colors are on the Seats tab. Text size and front of room are saved on this device. Class themes sync with your classes.</p>'
       +'<div class="row"><button class="btn pri" data-act="closeModal">Done</button></div>';
+  }else if(ui.modal==='report'){
+    const cc=cur(),rp=ui.rp||{f:today().slice(0,8)+'01',t:today()};
+    b='<h2>🖨 Print notes report</h2><p class="muted">'+esc(cc.name)+'</p>'
+      +'<label class="lb" for="rpFrom">From</label><input id="rpFrom" type="date" value="'+rp.f+'">'
+      +'<label class="lb" for="rpTo">To</label><input id="rpTo" type="date" value="'+rp.t+'">'
+      +'<label class="lb" for="rpCat">Category</label><select id="rpCat"><option value="">All categories</option>'+Object.keys(NK).map(k=>'<option value="'+k+'">'+NK[k][0]+' '+NK[k][1]+'</option>').join('')+'</select>'
+      +'<label class="lb" for="rpStu">Student</label><select id="rpStu"><option value="">All students</option>'+cc.students.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')+'</select>'
+      +'<label class="chk"><input type="checkbox" id="rpSign" checked> Add signature lines</label>'
+      +'<div class="row wrap"><button class="btn pri" data-act="rpGo">Print / Save as PDF</button><button class="btn" data-act="closeModal">Cancel</button></div>'
+      +'<p class="muted">In the print window, choose “Save as PDF” to keep a copy.</p>';
+  }else if(ui.modal==='more'){
+    const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
+    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['notes','summary'])+sec('Planning',['plan'])+sec('Data',['data'])
+      +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
     b=syncModalHtml();
   }else if(ui.modal==='newclass'){
@@ -1107,7 +1368,7 @@ function renderModal(){
       +'<p class="muted">Points and attendance always start fresh. Untick the box above for a new seating plan.</p>'
       +'<div class="row wrap"><button class="btn pri" data-act="ncCreate">Create class</button><button class="btn" data-act="closeModal">Cancel</button></div>';
   }
-  el.className='ov';el.innerHTML='<div class="mbox" role="dialog" aria-modal="true">'+b+'</div>';
+  el.className='ov'+(ui.modal==='more'?' sheet':'');el.innerHTML='<div class="mbox" role="dialog" aria-modal="true">'+b+'</div>';
 }
 
 /* ---------- landscape (full-screen) seat view ---------- */
@@ -1179,7 +1440,9 @@ const act={
     S.activeId=k.id;ui.tab=k.students.length?'seats':'students';ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.modal=null;
     save();renderModal();render();toast(msg);
   },
-  closeModal(){ui.modal=null;renderModal()},
+  closeModal(){ui.modal=null;renderModal();renderNav()},
+  openMore(){ui.modal='more';renderModal();renderNav()},
+  moreGo(c,t){ui.modal=null;renderModal();act.tab(c,t)},
   fsEnter(){enterFS('view')},
   fsEnterPts(){enterFS('points')},
   fsSeat(c,t){const i=+t.dataset.i,id=c.seats[i];if(!id||!smap(c)[id])return;addPoints(c,id,ui.pv,'seat');ui.fsPop=i;renderFS()},
@@ -1290,7 +1553,7 @@ const act={
   resetRound(c){c.round++;c.picked=[];ui.lastPick=null;save();render();toast('Round '+c.round+' started'+(ui.prio?'. Students not called last round go first':''))},
   clearHistory(c){if(!confirm('Forget who has been called and start over at round 1? (Points and the "times picked" counts are kept.)'))return;c.round=1;c.lastRound={};c.picked=[];ui.lastPick=null;save();render()},
   gcount(c,t){c.groupCount=clamp(c.groupCount+(+t.dataset.v),2,10);save();render()},
-  resetGroups(c){if(!c.groups.length)return;if(!confirm('Remove all groups in "'+c.name+'"? This also clears the group names and group scores.'))return;c.groups=[];c.groupNames=[];c.groupScores=[];ui.gsel=null;save();render();toast('All groups cleared')},
+  resetGroups(c){if(!c.groups.length)return;if(!confirm('Remove all groups in "'+c.name+'"? This also clears the group names and group scores.'))return;c.groups=[];c.groupNames=[];c.groupScores=[];ui.gsel=null;ui.gman=false;ui.gtarget=null;save();render();toast('All groups cleared')},
   nk(c,t){ui.nk=t.dataset.v;render()},
   nwho(){ui.nopen=!ui.nopen;render()},
   nstu(c,t){const s=new Set(ui.nsel||[]),id=t.dataset.id;if(s.has(id))s.delete(id);else s.add(id);ui.nsel=[...s];render()},
@@ -1309,6 +1572,16 @@ const act={
   nmore(){ui.nlim=(ui.nlim||30)+30;render()},
   goDay(c,t){ui.date=t.dataset.d;render();window.scrollTo(0,0)},
   printPage(){window.print()},
+  reportOpen(){ui.modal='report';renderModal();renderNav()},
+  rpGo(c){
+    const f=$('#rpFrom').value,t=$('#rpTo').value,cat=$('#rpCat').value,st=$('#rpStu').value,sg=$('#rpSign').checked;
+    if(!isD(f)||!isD(t)||f>t){toast('Check the dates');return}
+    const list=(c.notes||[]).filter(n=>n.d>=f&&n.d<=t&&(!cat||n.k===cat)&&(!st||(n.s||[]).includes(st))).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.t-b.t);
+    if(!list.length){toast('No notes match those choices');return}
+    ui.rp={f:f,t:t};ui.modal=null;renderModal();renderNav();printHtml(reportHtml(c,f,t,list,sg),false)
+  },
+  printSeats(c){if(!c.students.length)return;printHtml(seatPrintHtml(c),true)},
+  planPrint(){printHtml(planPrintHtml(),true)},
   noteCsv(c){
     const m=smap(c),rows=[['Date','Time','Category','Students','Note']];
     (c.notes||[]).slice().sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.t-b.t).forEach(n=>rows.push([n.d,new Date(n.t||0).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),NK[n.k][1],(n.s||[]).filter(id=>m[id]).map(id=>m[id].name).join('; '),n.x]));
@@ -1328,9 +1601,28 @@ const act={
   },
   schEdit(c,t){const it=S.schedule.items.find(x=>x.id===t.dataset.id);if(!it)return;ui.sf=Object.assign(blankSf(),it,{days:it.days.slice()});render();const f=document.getElementById('schForm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'})},
   schCancel(){ui.sf=blankSf();render()},
+  swk(){ui.swk=!ui.swk;render()},
   schDel(c,t){const it=S.schedule.items.find(x=>x.id===t.dataset.id);if(!it||!confirm('Remove "'+sName(it)+'" from your schedule?'))return;S.schedule.items=S.schedule.items.filter(x=>x.id!==it.id);S.schedule.mod=Date.now();if(ui.sf&&ui.sf.id===it.id)ui.sf=blankSf();save();render()},
   schClear(){if(!confirm('Remove ALL entries from your schedule?'))return;S.schedule.items=[];S.schedule.mod=Date.now();ui.sf=blankSf();save();render();toast('Schedule cleared')},
   schedGo(c,t){const id=t.dataset.cid;if(!S.classes.some(k=>k.id===id))return;S.activeId=id;ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.tab='attend';ui.date=today();save();render();window.scrollTo(0,0)},
+  planDay(c,t){ui.pd=t.dataset.d;if(ui.pf&&!ui.pf.id)ui.pf.d=ui.pd;render()},
+  planPrev(){const a=ui.pm.split('-').map(Number),d=new Date(a[0],a[1]-2,1);ui.pm=dkey(d).slice(0,7);render()},
+  planNext(){const a=ui.pm.split('-').map(Number),d=new Date(a[0],a[1],1);ui.pm=dkey(d).slice(0,7);render()},
+  planToday(){ui.pm=today().slice(0,7);ui.pd=today();if(ui.pf&&!ui.pf.id)ui.pf.d=ui.pd;render()},
+  pfKind(c,t){if(!ui.pf)ui.pf=blankPf(ui.pd);ui.pf.k=t.dataset.v;render()},
+  planSave(){
+    const pf=ui.pf||(ui.pf=blankPf(ui.pd));
+    if(!pf.title.trim()){toast('Write what it is first');return}
+    if(!isD(pf.d)){toast('Pick a date');return}
+    const it=normPlan({id:pf.id||uid(),k:pf.k,d:pf.d,e:pf.e,t:pf.t,title:pf.title.trim(),note:pf.note.trim(),done:pf.id?((S.planner.items.find(x=>x.id===pf.id)||{}).done):false});
+    const was=!!pf.id,i=S.planner.items.findIndex(x=>x.id===it.id);
+    if(i>=0)S.planner.items[i]=it;else S.planner.items.push(it);
+    S.planner.mod=Date.now();ui.pd=it.d;ui.pm=it.d.slice(0,7);ui.pf=blankPf(it.d);save();render();toast(was?'Updated':'Added to your planner')
+  },
+  planEdit(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it)return;ui.pf=Object.assign(blankPf(it.d),it);ui.pd=it.d;ui.pm=it.d.slice(0,7);render();const f=document.getElementById('planForm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'})},
+  planCancel(){ui.pf=blankPf(ui.pd);render()},
+  planDel(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it||!confirm('Delete "'+(it.title||PK[it.k][1])+'"?'))return;S.planner.items=S.planner.items.filter(x=>x.id!==it.id);S.planner.mod=Date.now();if(ui.pf&&ui.pf.id===it.id)ui.pf=blankPf(ui.pd);save();render()},
+  planDone(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it)return;it.done=!it.done;S.planner.mod=Date.now();save();render()},
   makeGroups(c){
     if(c.groups.length&&!confirm('Make new groups? This replaces the current groups, including any swaps and group scores.'))return;
     const att=c.attendance[today()]||{};
@@ -1340,8 +1632,31 @@ const act={
     ids.forEach((id,i)=>g[i%n].push(id));
     c.groups=g;c.groupNames=g.map((x,i)=>'Group '+(i+1));c.groupScores=g.map(()=>0);ui.gsel=null;save();render();
   },
+  gmanual(c){
+    ui.gman=!ui.gman;ui.gsel=null;
+    if(ui.gman){
+      if(!c.groups.length){for(let i=0;i<c.groupCount;i++){c.groups.push([]);c.groupNames[i]='Group '+(i+1);c.groupScores[i]=0}save()}
+      ui.gtarget=0;
+    }
+    render();
+  },
+  gtarget(c,t){ui.gtarget=+t.dataset.g;render()},
+  gadd(c){if(c.groups.length>=12){toast('That is the maximum of 12 groups');return}c.groups.push([]);const i=c.groups.length-1;c.groupNames[i]='Group '+(i+1);c.groupScores[i]=0;ui.gtarget=i;save();render()},
+  gdel(c,t){
+    const g=+t.dataset.g;if(!c.groups[g])return;
+    if(c.groups[g].length&&!confirm('Remove "'+(c.groupNames[g]||'Group '+(g+1))+'"? Its students go back to "Not in a group".'))return;
+    c.groups.splice(g,1);c.groupNames.splice(g,1);c.groupScores.splice(g,1);
+    if(ui.gtarget>=c.groups.length)ui.gtarget=c.groups.length-1;save();render();
+  },
   gm(c,t){
     const g=+t.dataset.g,id=t.dataset.id;
+    if(ui.gman){
+      if(g<0){
+        if(ui.gtarget==null||!c.groups[ui.gtarget]){toast('Tap “Add here” on a group first');return}
+        gMove(c,id,ui.gtarget);
+      }else gMove(c,id,-1);
+      ui.gsel=null;render();return;
+    }
     if(!ui.gsel){ui.gsel={g,id}}
     else if(ui.gsel.id===id){ui.gsel=null}
     else{
@@ -1356,12 +1671,12 @@ const act={
   grename(c,t){const g=+t.dataset.g;const n=prompt('Group name?',c.groupNames[g]||'Group '+(g+1));if(n&&n.trim()){c.groupNames[g]=n.trim().slice(0,40);save();render()}},
   csv(c){download('classroom-summary-'+slug(c.name)+'-'+today()+'.csv',summaryCSV(c),'text/csv;charset=utf-8')},
   print(){window.print()},
-  exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,classes:S.classes},null,1),'application/json');render()},
+  exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,planner:S.planner,classes:S.classes},null,1),'application/json');render()},
   exportClass(c){S.lastBackup=Date.now();save();download('classroom-hub-'+slug(c.name)+'-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:c.id,classes:[c]},null,1),'application/json');render()},
   impMode(c,t){ui.importMode=t.dataset.v},
   resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);save();render();toast('Points reset')},
   clearAtt(c){if(!confirm('Clear ALL attendance records for "'+c.name+'"?'))return;c.attendance={};save();render();toast('Attendance cleared')},
-  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
+  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
 };
 
 function importNames(c,names){
@@ -1373,7 +1688,7 @@ function importNames(c,names){
 }
 
 const chg={
-  cls(c,t){S.activeId=t.value;ui.nedit=null;ui.ndraft=undefined;ui.nsel=[];ui.nst='';ui.nf='all';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()},
+  cls(c,t){S.activeId=t.value;ui.gman=false;ui.gtarget=null;ui.nedit=null;ui.ndraft=undefined;ui.nsel=[];ui.nst='';ui.nf='all';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()},
   dim(c){
     const r=clamp(parseInt($('#rowsIn').value,10)||c.rows,1,40),k=clamp(parseInt($('#colsIn').value,10)||c.cols,1,12);
     resizeGrid(c,r,k);save();render();
@@ -1419,6 +1734,7 @@ const chg={
         if(!S.classes.length)S.classes.push(newClass('My Class'));
         if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
         if(o.schedule&&Array.isArray(o.schedule.items)&&(ui.importMode==='replace'||!S.schedule.items.length))S.schedule={mod:Date.now(),items:o.schedule.items.map(normSched).filter(Boolean)};
+        if(o.planner&&Array.isArray(o.planner.items)&&(ui.importMode==='replace'||!S.planner.items.length))S.planner={mod:Date.now(),items:o.planner.items.map(normPlan).filter(Boolean)};
         ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.tab='students';save();render();toast('Imported '+cls.length+' class'+(cls.length===1?'':'es'));
       }catch(e){alert('That file is not a valid Classroom Hub backup.')}
     };
@@ -1435,7 +1751,7 @@ document.addEventListener('change',e=>{
   const t=e.target.closest('[data-chg]');if(!t)return;
   const f=chg[t.dataset.chg];if(f)f(cur(),t,e);
 });
-document.addEventListener('input',e=>{const el=e.target;if(el.id==='tagLabel')ui.tagLabel=el.value;else if(el.id==='noteText')ui.ndraft=el.value;else if(el.dataset&&el.dataset.sf&&ui.sf)ui.sf[el.dataset.sf]=el.value});
+document.addEventListener('input',e=>{const el=e.target;if(el.id==='tagLabel')ui.tagLabel=el.value;else if(el.id==='noteText')ui.ndraft=el.value;else if(el.dataset&&el.dataset.sf&&ui.sf)ui.sf[el.dataset.sf]=el.value;else if(el.dataset&&el.dataset.pf&&ui.pf)ui.pf[el.dataset.pf]=el.value});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&ui.fs){exitFS();return}
   if(e.key==='Escape'&&ui.modal){act.closeModal();return}
@@ -1475,7 +1791,7 @@ document.addEventListener('drop',e=>{
 const fsChanged=()=>{if(document.fullscreenElement||document.webkitFullscreenElement)ui.fsEntered=true;else if(ui.fs&&ui.fsEntered)exitFS()};
 document.addEventListener('fullscreenchange',fsChanged);
 document.addEventListener('webkitfullscreenchange',fsChanged);
-window.addEventListener('resize',()=>{if(ui.fs)renderFS()});
+window.addEventListener('resize',()=>{if(ui.fs)renderFS();renderNav()});
 window.addEventListener('orientationchange',()=>{if(ui.fs)setTimeout(renderFS,200)});
 
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!S.sync.on||!canSync())return;if(!navigator.onLine)setSync('offline');else if(tokOk())syncNow(false);else setSync('needs')});
