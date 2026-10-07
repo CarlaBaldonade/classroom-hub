@@ -953,7 +953,7 @@ V.seats=c=>{
   const rowChips=Array.from({length:Math.max(0,c.rows-1)},(_,r)=>'<button class="chip s'+(c.aisleRows.indexOf(r)>=0?' on':'')+'" data-act="aisleR" data-k="'+r+'" title="Aisle between row '+(r+1)+' and '+(r+2)+'">'+(r+1)+' / '+(r+2)+'</button>').join('');
   return '<section class="card"><h2>Seating arrangement</h2>'
   +'<div class="row wrap"><label>Rows <input id="rowsIn" type="number" min="1" max="40" value="'+c.rows+'" data-chg="dim"></label><label>Columns <input id="colsIn" type="number" min="1" max="12" value="'+c.cols+'" data-chg="dim"></label></div>'
-  +'<div class="row wrap"><button class="btn pri" data-act="shuffleSeats">🔀 Random seating</button><button class="btn" data-act="alphaSeats">A–Z order</button><button class="btn" data-act="fsEnter"'+(c.students.length?'':' disabled')+'>🖥 Landscape view</button><button class="btn" data-act="printSeats"'+(c.students.length?'':' disabled')+'>🖨 Print seat plan</button></div>'
+  +'<div class="row wrap"><button class="btn pri" data-act="shuffleSeats">🔀 Random seating</button><button class="btn" data-act="alphaSeats">A–Z order</button><button class="btn" data-act="fsEnter"'+(c.students.length?'':' disabled')+'>🖥 Landscape view &amp; arrange</button><button class="btn" data-act="printSeats"'+(c.students.length?'':' disabled')+'>🖨 Print seat plan</button></div>'
   +'<h3>Seat colors</h3><div class="chips">'+colorChips+'</div>'
   +'<h3>Aisles</h3><p class="muted">Tap a gap to add or remove a walkway. Tap again to remove it.</p>'
   +(c.cols>1?'<div class="muted">Between columns</div><div class="chips">'+colChips+'</div>':'')
@@ -1389,7 +1389,8 @@ function renderFS(){
   for(let q=0;q<c.rows;q++){const r=FB()?c.rows-1-q:q;
     for(let k=0;k<c.cols;k++){
       const id=c.seats[r*c.cols+k];
-      if(!id||!m[id])cells+='<div class="seat empty ni"></div>';
+      if(ui.fsMode==='swap'){const ix=r*c.cols+k,has=id&&m[id];cells+='<button type="button" class="seat'+(has?'':' empty')+(ui.sel===ix?' sel':'')+'" data-act="fsSwap" data-i="'+ix+'">'+(has?'<span class="nm">'+esc(m[id].name)+'</span>':'<span class="idx">'+(ix+1)+'</span>')+'</button>'}
+      else if(!id||!m[id])cells+='<div class="seat empty ni"></div>';
       else{
         const pts=c.points[id]||0,rw=S.settings.seat==='rows'?' rw'+(r%4):'';
         const inner='<span class="nm">'+esc(m[id].name)+'</span><span class="sc'+(pts<0?' neg':(pts===0?' z':''))+'">⭐ '+pts+'</span>';
@@ -1402,11 +1403,13 @@ function renderFS(){
   }
   el.hidden=false;el.className='fs'+(ui.fsRot?' rot':'');el.style.setProperty('--fsz',fz.toFixed(1)+'px');
   document.body.style.overflow='hidden';
+  const sw=ui.fsMode==='swap',selId=sw&&ui.sel!=null?c.seats[ui.sel]:null,swapHint=sw?(selId&&m[selId]?'<b>'+esc(m[selId].name)+'</b> selected · tap a seat to swap':'Tap a student, then tap another seat to swap'):'';
+  const swBtns=sw?'<button class="fs-btn" data-act="fsUndoSwap"'+((ui.swapHist||[]).length?'':' disabled')+'>↩ Undo</button><button class="fs-btn" data-act="fsAlpha">A–Z</button><button class="fs-btn" data-act="fsShuffle">🔀 Random</button>':'';
   const pm=ui.fsMode==='points',pvs=[1,2,3,5,-1],lg=c.log[c.log.length-1];
   const chips=pm?pvs.map(v=>'<button class="fs-chip'+(ui.pv===v?' on':'')+'" data-act="setpv" data-v="'+v+'">'+fmtV(v)+'</button>').join('')
     +'<button class="fs-chip'+(pvs.indexOf(ui.pv)<0?' on':'')+'" data-act="custompv" aria-label="Custom amount">'+(pvs.indexOf(ui.pv)<0?fmtV(ui.pv):'✎')+'</button>':'';
   const lastTxt=pm&&lg&&m[lg.sid]?' · '+fmtV(lg.v)+' → '+esc(m[lg.sid].name):'';
-  el.innerHTML='<div class="fs-bar">'+chips+'<div class="fs-front'+(FB()?' tl':'')+'">'+(FB()?'':(pm?'▼ FRONT ▼':'▼ FRONT OF ROOM ▼'))+(lastTxt?'<b>'+lastTxt+'</b>':'')+'</div>'
+  el.innerHTML='<div class="fs-bar">'+chips+swBtns+'<div class="fs-front'+(FB()?' tl':'')+'">'+(FB()?'':(pm?'▼ FRONT ▼':'▼ FRONT OF ROOM ▼'))+(lastTxt?'<b>'+lastTxt+'</b>':'')+swapHint+'</div>'
     +(pm?'<button class="fs-btn" data-act="undo"'+(lg?'':' disabled')+' aria-label="Undo last">↩</button>':'')
     +(por?'<button class="fs-btn" data-act="fsRot">'+(ui.fsRot?'↺ Upright':'⟲ Rotate')+'</button>':'')
     +'<button class="fs-btn" data-act="fsExit">✕ Exit</button></div>'
@@ -1414,15 +1417,15 @@ function renderFS(){
 }
 function enterFS(mode){
   const c=cur();if(!c.students.length){toast('Add students first');return}
-  ui.fs=true;ui.fsRot=false;ui.fsMode=mode==='points'?'points':'view';ui.fsPop=null;renderFS();
+  ui.fs=true;ui.fsRot=false;ui.fsMode=mode==='points'?'points':mode==='swap'?'swap':'view';ui.sel=null;ui.swapHist=[];ui.fsPop=null;renderFS();
   let p;const de=document.documentElement;
-  try{p=de.requestFullscreen?de.requestFullscreen():(de.webkitRequestFullscreen?de.webkitRequestFullscreen():null)}catch(e){p=null}
+  p=null; /* no browser full-screen request: it shows an uncloseable system banner on Android; the overlay already fills the screen */
   Promise.resolve(p).then(()=>{const so=window.screen&&window.screen.orientation;if(so&&so.lock)return so.lock('landscape')}).catch(()=>{})
     .then(()=>setTimeout(()=>{if(ui.fs&&isPortrait()){ui.fsRot=true;renderFS()}},400));
 }
 function exitFS(){
   if(!ui.fs)return;
-  ui.fs=false;ui.fsRot=false;ui.fsEntered=false;renderFS();
+  ui.fs=false;ui.fsRot=false;ui.fsEntered=false;ui.sel=null;ui.swapHist=[];renderFS();render();
   try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen();else if(document.webkitFullscreenElement&&document.webkitExitFullscreen)document.webkitExitFullscreen()}catch(e){}
   try{const so=window.screen&&window.screen.orientation;if(so&&so.unlock)so.unlock()}catch(e){}
 }
@@ -1443,7 +1446,11 @@ const act={
   closeModal(){ui.modal=null;renderModal();renderNav()},
   openMore(){ui.modal='more';renderModal();renderNav()},
   moreGo(c,t){ui.modal=null;renderModal();act.tab(c,t)},
-  fsEnter(){enterFS('view')},
+  fsEnter(){enterFS('swap')},
+  fsSwap(c,t){const i=+t.dataset.i;if(ui.sel==null){if(c.seats[i])ui.sel=i}else if(ui.sel===i)ui.sel=null;else{swapSeats(c,ui.sel,i);(ui.swapHist=ui.swapHist||[]).push([ui.sel,i]);ui.sel=null}renderFS()},
+  fsUndoSwap(c){const hh=ui.swapHist||[],l=hh.pop();if(!l)return;swapSeats(c,l[0],l[1]);ui.sel=null;renderFS()},
+  fsAlpha(c){if(!confirm('Arrange all students A–Z?'))return;alphaSeats(c);ui.swapHist=[];renderFS()},
+  fsShuffle(c){if(!confirm('Shuffle all seats randomly?'))return;shuffleSeats(c);ui.swapHist=[];renderFS()},
   fsEnterPts(){enterFS('points')},
   fsSeat(c,t){const i=+t.dataset.i,id=c.seats[i];if(!id||!smap(c)[id])return;addPoints(c,id,ui.pv,'seat');ui.fsPop=i;renderFS()},
   fsExit(){exitFS()},
