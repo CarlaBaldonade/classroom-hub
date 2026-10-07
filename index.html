@@ -265,6 +265,9 @@ html[data-cute] .tab.on{box-shadow:0 3px 8px -3px rgba(var(--glow),.6)}
 .fsz .chip{flex:1;text-align:center}
 @media (max-width:520px){.seat{font-size:.72rem}.grid.dense .seat{font-size:.62rem}}
 @media (prefers-reduced-motion:reduce){.mas,.mas.jump,.spk{animation:none}}
+html .front.bot{margin:8px 0 0}
+.fs-front.tl{background:none;text-align:left;letter-spacing:0}
+.fs-front.fs-bot{flex:0 0 auto;text-align:center;letter-spacing:.15em;background:var(--soft)}
 @media print{.hello{display:none!important}}
 </style>
 </head>
@@ -312,6 +315,7 @@ sky:{e:"\ud83d\udc26",pe:"\ud83d\udc99",sp:["☁️", "✨", "💙"],msgs:["Sunn
 peach:{e:"\ud83c\udf51",pe:"\ud83c\udf51",sp:["🍑", "✨", "🧡"],msgs:["Peachy day ahead~ 🍑", "You’re a real gem, teacher!", "Sweet work today 🧡", "Juicy ideas incoming ✨", "Just peachy! Keep going~"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 58C12 58 6 42 12 30C17 21 26 20 32 24C38 20 47 21 52 30C58 42 52 58 32 58Z" fill="#f4a681"/><path d="M32 56C14 56 9 42 14 31C18 24 26 23 32 27C38 23 46 24 50 31C55 42 50 56 32 56Z" fill="#ffd9c2"/><path d="M32 25Q29 38 32 55" fill="none" stroke="#f4a681" stroke-width="1.4" opacity=".7"/><path d="M32 24v-7" stroke="#8a5a3c" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="40" cy="15" rx="9" ry="4.2" transform="rotate(-22 40 15)" fill="#7cc795"/><circle cx="24" cy="42" r="2.4" fill="#6b3f2a"/><circle cx="40" cy="42" r="2.4" fill="#6b3f2a"/><ellipse cx="18.5" cy="48" rx="4" ry="2.5" fill="#fb9fa6"/><ellipse cx="45.5" cy="48" rx="4" ry="2.5" fill="#fb9fa6"/><path d="M29 47.5q3 3.4 6 0" fill="none" stroke="#6b3f2a" stroke-width="1.8" stroke-linecap="round"/></svg>'},
 };
 const TIPS={students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
+const FB=()=>S.settings.front!=='t';
 const isCute=()=>!!CUTE[S.settings.theme];
 const PE=()=>isCute()?CUTE[S.settings.theme].pe:'⭐';
 let lastSpk=0;
@@ -369,9 +373,10 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!
 function save(){stamp();if(S.sync&&S.sync.on)S.sync.dirty=true;persist();scheduleSync()}
 let S=load();
 if(!S)S={classes:[newClass('My Class')]};
-S.settings=Object.assign({theme:'green',seat:'theme',fs:'m'},S.settings||{});
+S.settings=Object.assign({theme:'green',seat:'theme',fs:'m',front:'b'},S.settings||{});
 if(!THEMES[S.settings.theme])S.settings.theme='green';
 if(!['s','m','l'].includes(S.settings.fs))S.settings.fs='m';
+if(!['t','b'].includes(S.settings.front))S.settings.front='b';
 if(!SEATS.some(x=>x[0]===S.settings.seat))S.settings.seat='theme';
 S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
 if(!S.deleted||typeof S.deleted!=='object'||Array.isArray(S.deleted))S.deleted={};
@@ -717,8 +722,8 @@ function seatGrid(c,mode){
   const nAc=c.aisleCols.filter(k=>k<c.cols-1).length;
   const tpl=Array.from({length:c.cols},(_,k)=>'minmax(0,1fr)'+(ac.has(k)&&k<c.cols-1?' 14px':'')).join(' ');
   const minW=c.cols*38+nAc*14+(c.cols+nAc-1)*6;
-  let h='<div class="gridwrap"><div class="front">▼ FRONT OF ROOM ▼</div><div class="grid'+(c.cols>=9?' dense':'')+'" data-seat="'+S.settings.seat+'" style="grid-template-columns:'+tpl+';min-width:'+minW+'px">';
-  for(let r=0;r<c.rows;r++){
+  let h='<div class="gridwrap">'+(FB()?'':'<div class="front">▼ FRONT OF ROOM ▼</div>')+'<div class="grid'+(c.cols>=9?' dense':'')+'" data-seat="'+S.settings.seat+'" style="grid-template-columns:'+tpl+';min-width:'+minW+'px">';
+  for(let q=0;q<c.rows;q++){const r=FB()?c.rows-1-q:q;
     for(let k=0;k<c.cols;k++){
       const i=r*c.cols+k,id=c.seats[i],has=id&&m[id];
       const swap=mode==='swap';
@@ -743,9 +748,9 @@ function seatGrid(c,mode){
       }
       if(ac.has(k)&&k<c.cols-1)h+='<div class="aisle-v" aria-hidden="true"></div>';
     }
-    if(ar.has(r)&&r<c.rows-1)h+='<div class="aisle-h" aria-hidden="true"></div>';
+    if(FB()?(ar.has(r-1)&&r>0):(ar.has(r)&&r<c.rows-1))h+='<div class="aisle-h" aria-hidden="true"></div>';
   }
-  return h+'</div></div>';
+  return h+'</div>'+(FB()?'<div class="front bot">▲ FRONT OF ROOM ▲</div>':'')+'</div>';
 }
 function tagBadges(c,date){return (c.dayTags[date]||[]).map(t=>'<span class="tg tg-'+t.type+'">'+esc(taskName(t))+'</span>').join('')}
 
@@ -952,7 +957,8 @@ function renderModal(){
     b='<h2>🎨 App theme</h2><div class="sec">Cute themes</div><div class="themes">'+cuteK.map(tb).join('')+'</div>'
       +'<div class="sec">Classic colors</div><div class="themes">'+classicK.map(tb).join('')+'</div>'
       +'<div class="sec">Text size</div><div class="fsz">'+[['s','Small'],['m','Medium'],['l','Large']].map(x=>'<button class="chip'+(S.settings.fs===x[0]?' on':'')+'" data-act="setFs" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'
-      +'<p class="muted">Seat colors are on the Seats tab. Theme and text size are saved on this device.</p>'
+      +'<div class="sec">Front of the room</div><div class="fsz">'+[['b','At the bottom'],['t','At the top']].map(x=>'<button class="chip'+(S.settings.front===x[0]?' on':'')+'" data-act="setFront" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'
+      +'<p class="muted">Seat colors are on the Seats tab. Theme, text size and front of room are saved on this device.</p>'
       +'<div class="row"><button class="btn pri" data-act="closeModal">Done</button></div>';
   }else if(ui.modal==='sync'){
     b=syncModalHtml();
@@ -978,12 +984,12 @@ function renderFS(){
   const por=isPortrait();if(!por)ui.fsRot=false;
   const nAc=c.aisleCols.filter(k=>k<c.cols-1).length,nAr=c.aisleRows.filter(r=>r<c.rows-1).length;
   const tc=Array.from({length:c.cols},(_,k)=>'minmax(0,1fr)'+(ac.has(k)&&k<c.cols-1?' 16px':'')).join(' ');
-  const tr=Array.from({length:c.rows},(_,r)=>'minmax(0,1fr)'+(ar.has(r)&&r<c.rows-1?' 12px':'')).join(' ');
+  const tr=Array.from({length:c.rows},(_,q)=>{const r=FB()?c.rows-1-q:q;return 'minmax(0,1fr)'+((FB()?(ar.has(r-1)&&r>0):(ar.has(r)&&r<c.rows-1))?' 12px':'')}).join(' ');
   const W=ui.fsRot?window.innerHeight:window.innerWidth,H=ui.fsRot?window.innerWidth:window.innerHeight;
-  const cw=(W-16-6*(c.cols+nAc-1)-16*nAc)/c.cols,chh=(H-16-44-6*(c.rows+nAr-1)-12*nAr)/c.rows;
+  const cw=(W-16-6*(c.cols+nAc-1)-16*nAc)/c.cols,chh=(H-16-44-(FB()?38:0)-6*(c.rows+nAr-1)-12*nAr)/c.rows;
   const fz=Math.max(9,Math.min(28,cw/7.2,chh/4.6));
   let cells='';
-  for(let r=0;r<c.rows;r++){
+  for(let q=0;q<c.rows;q++){const r=FB()?c.rows-1-q:q;
     for(let k=0;k<c.cols;k++){
       const id=c.seats[r*c.cols+k];
       if(!id||!m[id])cells+='<div class="seat empty ni"></div>';
@@ -995,7 +1001,7 @@ function renderFS(){
       }
       if(ac.has(k)&&k<c.cols-1)cells+='<div class="aisle-v" aria-hidden="true"></div>';
     }
-    if(ar.has(r)&&r<c.rows-1)cells+='<div class="aisle-h" aria-hidden="true"></div>';
+    if(FB()?(ar.has(r-1)&&r>0):(ar.has(r)&&r<c.rows-1))cells+='<div class="aisle-h" aria-hidden="true"></div>';
   }
   el.hidden=false;el.className='fs'+(ui.fsRot?' rot':'');el.style.setProperty('--fsz',fz.toFixed(1)+'px');
   document.body.style.overflow='hidden';
@@ -1003,11 +1009,11 @@ function renderFS(){
   const chips=pm?pvs.map(v=>'<button class="fs-chip'+(ui.pv===v?' on':'')+'" data-act="setpv" data-v="'+v+'">'+fmtV(v)+'</button>').join('')
     +'<button class="fs-chip'+(pvs.indexOf(ui.pv)<0?' on':'')+'" data-act="custompv" aria-label="Custom amount">'+(pvs.indexOf(ui.pv)<0?fmtV(ui.pv):'✎')+'</button>':'';
   const lastTxt=pm&&lg&&m[lg.sid]?' · '+fmtV(lg.v)+' → '+esc(m[lg.sid].name):'';
-  el.innerHTML='<div class="fs-bar">'+chips+'<div class="fs-front">'+(pm?'▼ FRONT ▼':'▼ FRONT OF ROOM ▼')+(lastTxt?'<b>'+lastTxt+'</b>':'')+'</div>'
+  el.innerHTML='<div class="fs-bar">'+chips+'<div class="fs-front'+(FB()?' tl':'')+'">'+(FB()?'':(pm?'▼ FRONT ▼':'▼ FRONT OF ROOM ▼'))+(lastTxt?'<b>'+lastTxt+'</b>':'')+'</div>'
     +(pm?'<button class="fs-btn" data-act="undo"'+(lg?'':' disabled')+' aria-label="Undo last">↩</button>':'')
     +(por?'<button class="fs-btn" data-act="fsRot">'+(ui.fsRot?'↺ Upright':'⟲ Rotate')+'</button>':'')
     +'<button class="fs-btn" data-act="fsExit">✕ Exit</button></div>'
-    +'<div class="fs-grid grid" data-seat="'+S.settings.seat+'" style="grid-template-columns:'+tc+';grid-template-rows:'+tr+'">'+cells+'</div>';
+    +'<div class="fs-grid grid" data-seat="'+S.settings.seat+'" style="grid-template-columns:'+tc+';grid-template-rows:'+tr+'">'+cells+'</div>'+(FB()?'<div class="fs-front fs-bot">▲ FRONT OF ROOM ▲</div>':'');
 }
 function enterFS(mode){
   const c=cur();if(!c.students.length){toast('Add students first');return}
@@ -1050,6 +1056,7 @@ const act={
   syncOut(){if(!confirm('Sign out of Google sync on this device?\n\nYour classes stay on this device and in Google Drive.'))return;unlink(false)},
   syncOutClear(){if(!confirm('Sign out and REMOVE all classes from this device?'+(S.sync.dirty?'\n\nSome changes have not been uploaded yet and will be lost.':'')+'\n\nYour copy in Google Drive is kept.'))return;unlink(true)},
   setTheme(c,t){S.settings.theme=t.dataset.v;save();applyTheme();renderModal();render();if(isCute())sparkle()},
+  setFront(c,t){S.settings.front=t.dataset.v;save();renderModal();render();if(ui.fs)renderFS()},
   setFs(c,t){S.settings.fs=t.dataset.v;save();applyTheme();renderModal();render()},
   cheer(){const k=CUTE[S.settings.theme];if(!k)return;toast(k.msgs[Math.floor(Math.random()*k.msgs.length)]);const m=$('.mas');if(m){m.classList.remove('jump');void m.offsetWidth;m.classList.add('jump')}sparkle()},
   setSeat(c,t){S.settings.seat=t.dataset.v;save();render()},
