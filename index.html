@@ -180,6 +180,16 @@ body.fsmode .top,body.fsmode main{display:none}
 .fs-front{flex:1;text-align:center;font-size:.75rem;letter-spacing:.15em;color:var(--mut);background:var(--soft);border-radius:6px;padding:8px 4px}
 .fs-btn{background:var(--pri);color:#fff;border:0;border-radius:8px;height:36px;padding:0 12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .fs-grid{flex:1;min-height:0}
+.fs-chip{background:#fff;color:var(--pri);border:2px solid var(--pri);border-radius:999px;height:36px;min-width:38px;padding:0 10px;font-weight:800;font-size:1rem;cursor:pointer;flex:0 0 auto}
+.fs-chip.on{background:var(--pri);color:#fff}
+.fs-btn:disabled{opacity:.4}
+.fs-front{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-front b{color:var(--ink,#1d2b28);letter-spacing:0;font-size:.95rem}
+button.seat{font-family:inherit;color:inherit}
+.fs button.seat{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fs .seat.pop{animation:fspop .35s ease-out}
+@keyframes fspop{0%{transform:scale(1)}35%{transform:scale(1.09);box-shadow:0 0 0 4px var(--pri)}100%{transform:scale(1)}}
+body.fsmode #toast{z-index:70}
 .fs .seat{min-height:0;height:100%;font-size:var(--fsz,14px);flex-direction:column;gap:3px;padding:2px 3px;border-radius:10px}
 .fs .seat .nm{font-size:1em;line-height:1.15;-webkit-line-clamp:2}
 .fs .sc{font-size:.9em;font-weight:800;background:#ffe9a8;color:#6b4b00;border-radius:999px;padding:0 .55em;line-height:1.4;white-space:nowrap}
@@ -502,11 +512,24 @@ function syncModalHtml(){
 const smap=c=>{const m={};c.students.forEach(s=>m[s.id]=s);return m};
 function applyTheme(){document.documentElement.setAttribute('data-theme',S.settings.theme);const m=$('#metaTheme');if(m)m.setAttribute('content',THEMES[S.settings.theme][1])}
 
-const ui={tab:'students',sel:null,pv:1,brush:'A',date:today(),skipAbs:true,noRep:true,prio:true,gSkip:false,sort:'name',gsel:null,lastPick:null,spin:false,timer:null,focus:null,importMode:'merge',tagType:'quiz',tagLabel:'',taskFilter:'all',taskView:'student',modal:null,drag:null,fs:false,fsRot:false,fsEntered:false};
+const ui={tab:'students',sel:null,pv:1,brush:'A',date:today(),skipAbs:true,noRep:true,prio:true,gSkip:false,sort:'name',gsel:null,lastPick:null,spin:false,timer:null,focus:null,importMode:'merge',tagType:'quiz',tagLabel:'',taskFilter:'all',taskView:'student',modal:null,drag:null,fs:false,fsRot:false,fsEntered:false,fsMode:'view',fsPop:null};
 ui.tab=cur().students.length?'seats':'students';
 
 /* ---------- operations ---------- */
 function cleanName(n){return String(n).split('\t').map(x=>x.trim()).filter(Boolean).join(', ').replace(/^\s*\d+[\.\)]\s+/,'').replace(/\s+/g,' ').trim().slice(0,60)}
+/* copy rows, columns, aisles and who sits where from one class to another (matched by name) */
+function copySeating(src,dst){
+  const byName={};dst.students.forEach(s=>{byName[s.name.toLowerCase()]=s.id});
+  const sm=smap(src),used=new Set();
+  const seats=src.seats.map(id=>{
+    const s=id&&sm[id];if(!s)return null;
+    const nid=byName[cleanName(s.name).toLowerCase()];
+    if(!nid||used.has(nid))return null;used.add(nid);return nid;
+  });
+  dst.rows=src.rows;dst.cols=src.cols;dst.aisleCols=src.aisleCols.slice();dst.aisleRows=src.aisleRows.slice();
+  dst.seats=seats;ensureSeats(dst);
+  dst.aisleCols=cleanIdx(dst.aisleCols,dst.cols-1);dst.aisleRows=cleanIdx(dst.aisleRows,dst.rows-1);
+}
 function addStudents(c,names){
   let added=0,dup=0;const have=new Set(c.students.map(s=>s.name.toLowerCase()));
   names.forEach(n=>{n=cleanName(n);if(!n)return;const k=n.toLowerCase();if(have.has(k)){dup++;return}have.add(k);c.students.push({id:uid(),name:n});added++});
@@ -654,7 +677,7 @@ V.students=c=>{
   +'<label class="chk"><input type="checkbox" id="replaceChk"> Replace the current list (this clears points, attendance, day tags and groups)</label>'
   +'<div class="row wrap"><button class="btn pri" data-act="addBulk">Add pasted names</button><label class="btn">📂 Upload .txt / .csv<input type="file" hidden accept=".txt,.csv,text/plain,text/csv" data-chg="file"></label></div>'
   +'<div class="row wrap"><span class="muted">For CSV files, use:</span><select id="csvMode"><option value="one">First column</option><option value="two">First + second column (Last, First)</option></select></div></section>'
-  +(others.length?'<section class="card"><h2>Copy students from another class</h2><p class="muted">Adds the names only. Points, attendance and seating are not copied.</p><div class="row wrap"><select id="copySel">'+others.map(k=>'<option value="'+k.id+'">'+esc(k.name)+' ('+k.students.length+' students)</option>').join('')+'</select><button class="btn" data-act="copyFrom">Copy names here</button></div></section>':'')
+  +(others.length?'<section class="card"><h2>Copy students from another class</h2><p class="muted">Adds the names. Points and attendance are not copied.</p><label class="chk"><input type="checkbox" id="copySeats"> Also carry over the seating plan (replaces this class\'s current seating)</label><div class="row wrap"><select id="copySel">'+others.map(k=>'<option value="'+k.id+'">'+esc(k.name)+' ('+k.students.length+' students)</option>').join('')+'</select><button class="btn" data-act="copyFrom">Copy names here</button></div></section>':'')
   +'<section class="card"><div class="rowsp"><h2>Class list ('+c.students.length+')</h2><button class="btn sm" data-act="sortAZ">Sort A–Z</button></div>'
   +(c.students.length?'<ol class="slist">'+items+'</ol><p class="muted">Tap a name to edit it.</p>':'<p class="muted">No students yet. Add some above.</p>')+'</section>'
   +'<section class="card"><h2>Class settings</h2><div class="row wrap"><button class="btn" data-act="renameClass">Rename class</button><button class="btn danger" data-act="delClass">Delete class</button></div></section>';
@@ -683,6 +706,7 @@ V.points=c=>{
   return '<section class="card"><h2>Give points</h2><p class="muted">Pick an amount, then tap a student on the seat plan.</p>'
   +'<div class="chips">'+vals.map(v=>'<button class="chip'+(ui.pv===v?' on':'')+'" data-act="setpv" data-v="'+v+'">'+fmtV(v)+'</button>').join('')
   +'<button class="chip'+(vals.indexOf(ui.pv)<0?' on':'')+'" data-act="custompv">'+(vals.indexOf(ui.pv)<0?fmtV(ui.pv):'Custom')+'</button></div>'
+  +'<div class="row wrap"><button class="btn pri" data-act="fsEnterPts"'+(c.students.length?'':' disabled')+'>🖥 Landscape view (tap to score)</button></div>'
   +(c.students.length?seatGrid(c,'points'):'<p class="muted">Add students first.</p>')
   +'<div class="row wrap"><button class="btn" data-act="undo"'+(last?'':' disabled')+'>↩ Undo last</button><span class="muted">'+(last&&m[last.sid]?'Last: '+fmtV(last.v)+' → '+esc(m[last.sid].name):'')+'</span></div></section>';
 };
@@ -850,7 +874,8 @@ function renderModal(){
     b='<h2>New class</h2><label class="lb" for="ncName">Class / section name</label><input id="ncName" type="text" maxlength="60" placeholder="e.g. Organic Chemistry" autocomplete="off">'
       +'<label class="lb" for="ncCopy">Copy the student list from</label><select id="ncCopy"><option value="">Start empty</option>'
       +withS.map(k=>'<option value="'+k.id+'"'+(k.id===S.activeId?' selected':'')+'>'+esc(k.name)+' ('+k.students.length+' students)</option>').join('')+'</select>'
-      +'<p class="muted">Only the names are copied. Points, attendance and seating start fresh.</p>'
+      +'<label class="chk"><input type="checkbox" id="ncSeats" checked> Also carry over the seating plan (same seats, rows, columns and aisles)</label>'
+      +'<p class="muted">Points and attendance always start fresh. Untick the box above for a new seating plan.</p>'
       +'<div class="row wrap"><button class="btn pri" data-act="ncCreate">Create class</button><button class="btn" data-act="closeModal">Cancel</button></div>';
   }
   el.className='ov';el.innerHTML='<div class="mbox" role="dialog" aria-modal="true">'+b+'</div>';
@@ -877,7 +902,9 @@ function renderFS(){
       if(!id||!m[id])cells+='<div class="seat empty ni"></div>';
       else{
         const pts=c.points[id]||0,rw=S.settings.seat==='rows'?' rw'+(r%4):'';
-        cells+='<div class="seat ni'+rw+'"><span class="nm">'+esc(m[id].name)+'</span><span class="sc'+(pts<0?' neg':(pts===0?' z':''))+'">⭐ '+pts+'</span></div>';
+        const inner='<span class="nm">'+esc(m[id].name)+'</span><span class="sc'+(pts<0?' neg':(pts===0?' z':''))+'">⭐ '+pts+'</span>';
+        if(ui.fsMode==='points')cells+='<button type="button" class="seat'+rw+(ui.fsPop===r*c.cols+k?' pop':'')+'" data-act="fsSeat" data-i="'+(r*c.cols+k)+'">'+inner+'</button>';
+        else cells+='<div class="seat ni'+rw+'">'+inner+'</div>';
       }
       if(ac.has(k)&&k<c.cols-1)cells+='<div class="aisle-v" aria-hidden="true"></div>';
     }
@@ -885,14 +912,19 @@ function renderFS(){
   }
   el.hidden=false;el.className='fs'+(ui.fsRot?' rot':'');el.style.setProperty('--fsz',fz.toFixed(1)+'px');
   document.body.style.overflow='hidden';
-  el.innerHTML='<div class="fs-bar"><div class="fs-front">▼ FRONT OF ROOM ▼</div>'
+  const pm=ui.fsMode==='points',pvs=[1,2,3,5,-1],lg=c.log[c.log.length-1];
+  const chips=pm?pvs.map(v=>'<button class="fs-chip'+(ui.pv===v?' on':'')+'" data-act="setpv" data-v="'+v+'">'+fmtV(v)+'</button>').join('')
+    +'<button class="fs-chip'+(pvs.indexOf(ui.pv)<0?' on':'')+'" data-act="custompv" aria-label="Custom amount">'+(pvs.indexOf(ui.pv)<0?fmtV(ui.pv):'✎')+'</button>':'';
+  const lastTxt=pm&&lg&&m[lg.sid]?' · '+fmtV(lg.v)+' → '+esc(m[lg.sid].name):'';
+  el.innerHTML='<div class="fs-bar">'+chips+'<div class="fs-front">'+(pm?'▼ FRONT ▼':'▼ FRONT OF ROOM ▼')+(lastTxt?'<b>'+lastTxt+'</b>':'')+'</div>'
+    +(pm?'<button class="fs-btn" data-act="undo"'+(lg?'':' disabled')+' aria-label="Undo last">↩</button>':'')
     +(por?'<button class="fs-btn" data-act="fsRot">'+(ui.fsRot?'↺ Upright':'⟲ Rotate')+'</button>':'')
     +'<button class="fs-btn" data-act="fsExit">✕ Exit</button></div>'
     +'<div class="fs-grid grid" data-seat="'+S.settings.seat+'" style="grid-template-columns:'+tc+';grid-template-rows:'+tr+'">'+cells+'</div>';
 }
-function enterFS(){
+function enterFS(mode){
   const c=cur();if(!c.students.length){toast('Add students first');return}
-  ui.fs=true;ui.fsRot=false;renderFS();
+  ui.fs=true;ui.fsRot=false;ui.fsMode=mode==='points'?'points':'view';ui.fsPop=null;renderFS();
   let p;const de=document.documentElement;
   try{p=de.requestFullscreen?de.requestFullscreen():(de.webkitRequestFullscreen?de.webkitRequestFullscreen():null)}catch(e){p=null}
   Promise.resolve(p).then(()=>{const so=window.screen&&window.screen.orientation;if(so&&so.lock)return so.lock('landscape')}).catch(()=>{})
@@ -914,12 +946,14 @@ const act={
     const srcId=$('#ncCopy').value,src=S.classes.find(k=>k.id===srcId);
     const k=newClass(n);S.classes.push(k);
     let msg='Class created';
-    if(src){const r=addStudents(k,src.students.map(s=>s.name));msg='Class created with '+r.added+' students'}
+    if(src){const r=addStudents(k,src.students.map(s=>s.name));msg='Class created with '+r.added+' students';const cs=$('#ncSeats');if(cs&&cs.checked){copySeating(src,k);msg+=' and the seating plan'}}
     S.activeId=k.id;ui.tab=k.students.length?'seats':'students';ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.modal=null;
     save();renderModal();render();toast(msg);
   },
   closeModal(){ui.modal=null;renderModal()},
-  fsEnter(){enterFS()},
+  fsEnter(){enterFS('view')},
+  fsEnterPts(){enterFS('points')},
+  fsSeat(c,t){const i=+t.dataset.i,id=c.seats[i];if(!id||!smap(c)[id])return;addPoints(c,id,ui.pv,'seat');ui.fsPop=i;renderFS()},
   fsExit(){exitFS()},
   fsRot(){ui.fsRot=!ui.fsRot;renderFS()},
   openTheme(){ui.modal='theme';renderModal()},
@@ -930,7 +964,7 @@ const act={
   syncOutClear(){if(!confirm('Sign out and REMOVE all classes from this device?'+(S.sync.dirty?'\n\nSome changes have not been uploaded yet and will be lost.':'')+'\n\nYour copy in Google Drive is kept.'))return;unlink(true)},
   setTheme(c,t){S.settings.theme=t.dataset.v;save();applyTheme();renderModal();render()},
   setSeat(c,t){S.settings.seat=t.dataset.v;save();render()},
-  copyFrom(c){const src=S.classes.find(k=>k.id===($('#copySel')||{}).value);if(!src)return;const r=addStudents(c,src.students.map(s=>s.name));toast('Copied '+r.added+(r.dup?' ('+r.dup+' already here)':''));render()},
+  copyFrom(c){const src=S.classes.find(k=>k.id===($('#copySel')||{}).value);if(!src)return;const cs=$('#copySeats'),withSeats=!!(cs&&cs.checked);const r=addStudents(c,src.students.map(s=>s.name));if(withSeats){copySeating(src,c);save()}toast('Copied '+r.added+(r.dup?' ('+r.dup+' already here)':'')+(withSeats?' with the seating plan':''));render()},
   renameClass(c){const n=prompt('New class name?',c.name);if(n&&n.trim()){c.name=n.trim();save();render()}},
   delClass(c){if(!confirm('Delete class "'+c.name+'" and ALL its data? This cannot be undone.'))return;S.deleted[c.id]=Date.now();S.classes=S.classes.filter(k=>k.id!==c.id);if(!S.classes.length)S.classes.push(newClass('My Class'));S.activeId=S.classes[0].id;ui.sel=null;ui.gsel=null;save();render()},
   addOne(c){const i=$('#nameIn');if(!i||!i.value.trim())return;const r=addStudents(c,[i.value]);toast(r.added?'Added':'Already in the list');ui.focus='#nameIn';render()},
@@ -959,9 +993,9 @@ const act={
       save();render();
     }
   },
-  setpv(c,t){ui.pv=+t.dataset.v;render()},
-  custompv(){const v=parseInt(prompt('Points per tap (use a minus sign for deductions):',ui.pv),10);if(!isNaN(v)&&v!==0){ui.pv=clamp(v,-100,100);render()}},
-  undo(c){const e=c.log.pop();if(!e)return;c.points[e.sid]=(c.points[e.sid]||0)-e.v;save();const s=smap(c)[e.sid];toast('Undid '+fmtV(e.v)+(s?' for '+s.name:''));render()},
+  setpv(c,t){ui.pv=+t.dataset.v;render();if(ui.fs)renderFS()},
+  custompv(){const v=parseInt(prompt('Points per tap (use a minus sign for deductions):',ui.pv),10);if(!isNaN(v)&&v!==0){ui.pv=clamp(v,-100,100);render();if(ui.fs)renderFS()}},
+  undo(c){const e=c.log.pop();if(!e)return;c.points[e.sid]=(c.points[e.sid]||0)-e.v;save();const s=smap(c)[e.sid];toast('Undid '+fmtV(e.v)+(s?' for '+s.name:''));ui.fsPop=null;render();if(ui.fs)renderFS()},
   brush(c,t){ui.brush=t.dataset.v;render()},
   prevDay(){shiftDate(-1);render()},
   nextDay(){shiftDate(1);render()},
