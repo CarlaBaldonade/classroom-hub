@@ -6,6 +6,10 @@
 <meta name="theme-color" content="#1f6f5c" id="metaTheme">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Classroom Hub">
 <title>Classroom Hub</title>
 <style>
 :root{--bg:#f3f7f6;--card:#fff;--ink:#1d2b28;--mut:#66787a;--pri:#1f6f5c;--pri2:#e2f2ed;--pri3:#a9d5c7;--line:#d9e4e1;--soft:#f0f6f4;--red:#c94545;--amb:#d98a00;--blu:#2f6fd0;--grn:#2e9e6b;--r:12px}
@@ -159,6 +163,14 @@ th{background:var(--soft);position:sticky;top:0}
 .tbtn{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 4px;cursor:pointer;font-weight:600}
 .tbtn.on{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri)}
 .tsw{width:44px;height:44px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+/* sync badge */
+.ib{position:relative}
+.ib[data-s]::after{content:"";position:absolute;top:4px;right:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--pri);background:#9aa5a3}
+.ib[data-s="ok"]::after{background:#4ade80}
+.ib[data-s="pending"]::after,.ib[data-s="busy"]::after{background:#fbbf24}
+.ib[data-s="needs"]::after,.ib[data-s="err"]::after,.ib[data-s="mismatch"]::after{background:#f87171}
+.ssts{border-radius:10px;padding:8px 10px;margin:8px 0;background:var(--pri3);font-size:.92rem}
+.ssts.bad{background:#fde4e1;color:#7a1f14}
 /* landscape / full-screen seat view */
 #fs[hidden]{display:none}
 body.fsmode .top,body.fsmode main{display:none}
@@ -185,6 +197,7 @@ body.fsmode .top,body.fsmode main{display:none}
   <div class="bar">
     <div class="brand">🎓<span> Classroom Hub</span></div>
     <select id="clsSel" data-chg="cls" aria-label="Choose class"></select>
+    <button class="ib" id="syncBtn" data-act="openSync" title="Google Drive sync" aria-label="Google Drive sync">☁️</button>
     <button class="ib" data-act="openTheme" title="Theme colors" aria-label="Theme colors">🎨</button>
     <button class="ib" data-act="newClass" title="New class" aria-label="New class">＋</button>
   </div>
@@ -200,6 +213,11 @@ body.fsmode .top,body.fsmode main{display:none}
 'use strict';
 /* ---------- helpers ---------- */
 const KEY='classroomhub.v1';
+const CLIENT_ID='1054809448673-4iq7a4bm911b3kcsfcb0o7281odig2rm.apps.googleusercontent.com';
+const SCOPE='https://www.googleapis.com/auth/drive.appdata';
+const SYNC_ORIGIN='https://carlabaldonade.github.io';
+const SYNC_FILE='classroomhub-sync.json';
+const DRIVE='https://www.googleapis.com/drive/v3',UPLOAD='https://www.googleapis.com/upload/drive/v3';
 const $=s=>document.querySelector(s);
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -224,7 +242,7 @@ function taskName(t){const T=TYPES[t.type],l=(t.label||'').trim();if(!l)return T
 const cleanIdx=(a,max)=>Array.isArray(a)?Array.from(new Set(a.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<max))).sort((x,y)=>x-y):[];
 
 /* ---------- data ---------- */
-function newClass(name){return{id:uid(),name:name||'My Class',students:[],rows:5,cols:6,seats:Array(30).fill(null),aisleCols:[],aisleRows:[],points:{},log:[],attendance:{},dayTags:{},taskMiss:{},taskDone:{},picked:[],pickCount:{},round:1,lastRound:{},groups:[],groupNames:[],groupScores:[],groupCount:4}}
+function newClass(name){return{id:uid(),mod:Date.now(),name:name||'My Class',students:[],rows:5,cols:6,seats:Array(30).fill(null),aisleCols:[],aisleRows:[],points:{},log:[],attendance:{},dayTags:{},taskMiss:{},taskDone:{},picked:[],pickCount:{},round:1,lastRound:{},groups:[],groupNames:[],groupScores:[],groupCount:4}}
 function ensureSeats(c){
   const ids=new Set(c.students.map(s=>s.id));
   const n=c.rows*c.cols;
@@ -257,16 +275,230 @@ function normClass(c){
 }
 function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&Array.isArray(o.classes))return o}}catch(e){}return null}
 let warned=false;
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!warned){warned=true;toast('Auto-save is blocked in this browser. Use Backup → Export often.')}}}
+let syncTimer,tok=null,tokExp=0,syncing=false,again=false,tc=null,tcRes=null,tcRej=null,tcTimer=null,gisP=null,syncState='';
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){if(!warned){warned=true;toast('Auto-save is blocked in this browser. Use Backup → Export often.')}}}
+function save(){stamp();if(S.sync&&S.sync.on)S.sync.dirty=true;persist();scheduleSync()}
 let S=load();
 if(!S)S={classes:[newClass('My Class')]};
 S.settings=Object.assign({theme:'green',seat:'theme'},S.settings||{});
 if(!THEMES[S.settings.theme])S.settings.theme='green';
 if(!SEATS.some(x=>x[0]===S.settings.seat))S.settings.seat='theme';
+S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
+if(!S.deleted||typeof S.deleted!=='object'||Array.isArray(S.deleted))S.deleted={};
 S.classes=S.classes.map(normClass);
 if(!S.classes.length)S.classes.push(newClass('My Class'));
 if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
 const cur=()=>S.classes.find(k=>k.id===S.activeId)||S.classes[0];
+
+/* ---------- Google Drive sync (optional) ---------- */
+function cyrb53(str){let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36)}
+function stable(v){if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v)}
+function stripC(k){const o=Object.assign({},k);delete o.mod;delete o._h;return o}
+const hashOf=k=>cyrb53(stable(stripC(k)));
+/* a class's "mod" time only moves when its content really changed */
+function stamp(){S.classes.forEach(k=>{const h=hashOf(k);if(k._h===undefined)k._h=h;else if(k._h!==h){k._h=h;k.mod=Date.now()}})}
+const sig=(cl,del)=>stable([(cl||[]).map(k=>[String(k.id),+k.mod||0]).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0),Object.keys(del||{}).sort().map(i=>[i,+del[i]||0])]);
+const newUid=()=>uid()+uid();
+const canSync=()=>location.origin===SYNC_ORIGIN;
+const gisReady=()=>!!(window.google&&google.accounts&&google.accounts.oauth2);
+const tokOk=()=>!!tok&&Date.now()<tokExp-60000;
+function setSync(s){
+  syncState=s;const b=$('#syncBtn');
+  if(b){if(s)b.setAttribute('data-s',s);else b.removeAttribute('data-s')}
+  if(ui&&ui.modal==='sync')renderModal();
+}
+function scheduleSync(){
+  if(!S.sync.on||!canSync())return;
+  if(syncing){again=true;return}
+  if(!navigator.onLine){setSync('offline');return}
+  if(!tokOk()){setSync('needs');return}
+  clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow(false),4000);setSync('pending');
+}
+function loadGIS(){
+  if(gisReady())return Promise.resolve();
+  if(gisP)return gisP;
+  gisP=new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;
+    s.onload=()=>res();s.onerror=()=>{gisP=null;s.remove();rej(new Error('offline'))};
+    document.head.appendChild(s);
+  });
+  return gisP;
+}
+function initTC(){
+  if(tc)return;
+  const done=(fn,v)=>{clearTimeout(tcTimer);const r=fn==='ok'?tcRes:tcRej;tcRes=tcRej=null;if(r)r(v)};
+  tc=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,scope:SCOPE,
+    callback:r=>{
+      if(r&&r.access_token){
+        if(google.accounts.oauth2.hasGrantedAllScopes&&!google.accounts.oauth2.hasGrantedAllScopes(r,SCOPE)){done('no',new Error('scope'));return}
+        tok=r.access_token;tokExp=Date.now()+(+r.expires_in||3600)*1000;done('ok',tok);
+      }else done('no',new Error((r&&r.error)||'denied'));
+    },
+    error_callback:e=>done('no',new Error((e&&e.type)||'popup'))
+  });
+}
+function getToken(interactive){
+  if(tokOk())return Promise.resolve(tok);
+  if(!interactive)return Promise.reject(new Error('needs'));
+  if(!gisReady()){loadGIS().catch(()=>{});return Promise.reject(new Error('retap'))}
+  /* the Google window must be opened straight from the tap, so nothing async may happen before this line */
+  return new Promise((res,rej)=>{
+    try{initTC()}catch(e){rej(e);return}
+    tcRes=res;tcRej=rej;
+    clearTimeout(tcTimer);tcTimer=setTimeout(()=>{if(tcRej===rej){tcRes=tcRej=null;rej(new Error('timeout'))}},120000);
+    try{tc.requestAccessToken({prompt:S.sync.on?'':'select_account'})}catch(e){clearTimeout(tcTimer);tcRes=tcRej=null;rej(e)}
+  });
+}
+async function gfetch(url,opt){
+  opt=opt||{};
+  const r=await fetch(url,Object.assign({},opt,{headers:Object.assign({Authorization:'Bearer '+tok},opt.headers||{})}));
+  if(r.status===401){tok=null;tokExp=0;throw new Error('needs')}
+  if(!r.ok){
+    let j=null;try{j=await r.json()}catch(e){}
+    const er=new Error('http');er.status=r.status;er.reason=(j&&j.error&&j.error.errors&&j.error.errors[0]&&j.error.errors[0].reason)||(j&&j.error&&j.error.status)||'';er.detail=(j&&j.error&&j.error.message)||'';
+    throw er;
+  }
+  return r;
+}
+async function findFile(){
+  const q=encodeURIComponent("name='"+SYNC_FILE+"' and trashed=false");
+  const r=await gfetch(DRIVE+'/files?spaces=appDataFolder&q='+q+'&orderBy=modifiedTime%20desc&pageSize=5&fields=files(id)');
+  const j=await r.json();return j.files&&j.files[0]?j.files[0].id:null;
+}
+async function upload(fid,payload){
+  const body=JSON.stringify(payload);
+  if(fid){
+    await gfetch(UPLOAD+'/files/'+fid+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json; charset=UTF-8'},body:body});
+    return fid;
+  }
+  const bd='chub'+uid()+uid();
+  const mp='--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:SYNC_FILE,parents:['appDataFolder']})+'\r\n--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+body+'\r\n--'+bd+'--';
+  const r=await gfetch(UPLOAD+'/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:mp});
+  return (await r.json()).id;
+}
+const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted});
+function isPristine(k){return !k.students.length&&!k.log.length&&!Object.keys(k.attendance).length&&!Object.keys(k.dayTags).length&&!k.groups.length&&k.name==='My Class'}
+/* union of both sides; for the same class the newer edit wins; deletions are remembered so they spread */
+function mergeRemote(rem,first){
+  const rcs=rem.classes.filter(k=>k&&k.id).map(k=>{const n=normClass(k);n._h=hashOf(n);n.mod=+k.mod||0;return n});
+  const rd=rem.deleted&&typeof rem.deleted==='object'&&!Array.isArray(rem.deleted)?rem.deleted:{};
+  const del=Object.assign({},S.deleted);
+  for(const id in rd){const v=+rd[id]||0;if(v>(del[id]||0))del[id]=v}
+  let loc=S.classes;
+  if(first&&rcs.length)loc=loc.filter(k=>!isPristine(k));
+  const rm=new Map(rcs.map(k=>[k.id,k])),lm=new Map(loc.map(k=>[k.id,k]));
+  const ids=loc.map(k=>k.id).concat(rcs.filter(k=>!lm.has(k.id)).map(k=>k.id));
+  const out=[];
+  ids.forEach(id=>{
+    const l=lm.get(id),r=rm.get(id);
+    const w=l&&r?((+r.mod||0)>(+l.mod||0)?r:l):(l||r);
+    const d=del[id];
+    if(d&&d>=(+w.mod||0))return;
+    if(d)delete del[id];
+    out.push(w);
+  });
+  const cut=Date.now()-180*864e5;
+  for(const id in del)if(del[id]<cut)delete del[id];
+  S.classes=out;S.deleted=del;
+  if(!S.classes.length)S.classes.push(newClass('My Class'));
+  if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
+}
+function afterRemoteChange(){ui.sel=null;ui.gsel=null;if(!cur().students.length&&ui.tab==='seats')ui.tab='students';render();if(ui.fs)renderFS()}
+function friendlyErr(e){
+  const m=e&&e.message;
+  if(m==='popup_closed'||m==='popup_failed_to_open'||m==='popup')return 'The Google window was closed or blocked. Tap again, and allow pop-ups if asked.';
+  if(m==='access_denied'||m==='denied')return 'Google sign-in was cancelled.';
+  if(m==='scope')return 'Please tick the Google Drive “app data” permission box when signing in.';
+  if(m==='timeout')return 'Google sign-in took too long. Tap Sync now to try again.';
+  if(m==='badfile')return 'The saved copy in Google Drive could not be read, so nothing was changed.';
+  if(m==='offline'||e instanceof TypeError)return 'No internet connection.';
+  if(e&&e.status===403&&/accessNotConfigured|SERVICE_DISABLED|has not been used|is disabled/i.test((e.reason||'')+' '+(e.detail||'')))return 'Google Drive is not switched on for this app yet. (In Google Cloud, the “Google Drive API” must be enabled.)';
+  if(e&&e.status===403)return 'Google refused access. Sign in again and allow the Drive “app data” permission.';
+  if(e&&(e.status===429||e.status>=500))return 'Google Drive is busy right now. Try again in a minute.';
+  return 'Sync did not work ('+(m||'unknown error')+').';
+}
+async function syncNow(interactive,link){
+  if(!canSync())return;
+  if(!S.sync.on&&!link)return;
+  if(syncing){if(interactive)toast('Already syncing…');else again=true;return}
+  clearTimeout(syncTimer);syncing=true;setSync('busy');
+  let merged=false;
+  try{
+    await getToken(interactive);
+    const fid0=await findFile();
+    let rem=null;
+    if(fid0){
+      rem=await (await gfetch(DRIVE+'/files/'+fid0+'?alt=media')).json();
+      if(!rem||typeof rem!=='object'||!Array.isArray(rem.classes))throw new Error('badfile');
+    }
+    let myUid=S.sync.uid,first=!myUid;
+    const before=sig(S.classes,{});
+    if(rem){
+      const ru=String(rem.uid||'');
+      if(myUid&&ru&&ru!==myUid){
+        if(!(interactive&&confirm('This device was synced with a different Google account than the one you just used.\n\nCombine this device\'s classes with that account\'s classes?'))){
+          S.sync.on=false;S.sync.err='This device was synced with a different Google account, so sync was turned off to keep the two separate. Use “Sign out & clear this device”, then sign in again with the right account.';persist();setSync('mismatch');return;
+        }
+        first=true;
+      }
+      myUid=ru||myUid||newUid();
+      mergeRemote(rem,first);merged=true;
+    }else{
+      if(myUid&&!(interactive&&confirm('Google Drive has no saved copy any more (it may have been deleted).\n\nUpload this device\'s data as a new copy?'))){
+        S.sync.err='The saved copy in Google Drive is missing. Tap Sync now to upload this device\'s data again.';persist();setSync('err');return;
+      }
+      myUid=myUid||newUid();
+    }
+    S.sync.uid=myUid;
+    const need=!rem||sig(rem.classes,rem.deleted)!==sig(S.classes,S.deleted)||String(rem.uid||'')!==myUid;
+    if(need){S.sync.dirty=false;await upload(fid0,syncPayload())}
+    S.sync.on=true;S.sync.last=Date.now();S.sync.err='';
+    persist();setSync('ok');
+    if(merged&&sig(S.classes,{})!==before)afterRemoteChange();
+  }catch(e){
+    if(merged){S.sync.dirty=true;persist();afterRemoteChange()}
+    const m=e&&e.message;
+    if(m==='needs'){setSync('needs');if(interactive)toast('Please sign in to Google again')}
+    else if(m==='retap'){setSync(S.sync.on?'needs':'');toast('Connecting to Google… tap once more')}
+    else if(m==='offline'||e instanceof TypeError){setSync(S.sync.on?'offline':'');if(interactive)toast('No internet connection')}
+    else{S.sync.err=friendlyErr(e);persist();setSync(S.sync.on?'err':'');if(interactive)toast(S.sync.err)}
+  }finally{
+    syncing=false;
+    if(again){again=false;scheduleSync()}
+  }
+}
+function unlink(clear){
+  clearTimeout(syncTimer);
+  const t=tok;tok=null;tokExp=0;
+  if(clear&&t&&gisReady()){try{google.accounts.oauth2.revoke(t,()=>{})}catch(e){}}
+  S.sync.on=false;S.sync.dirty=false;S.sync.err='';S.sync.last=0;
+  if(clear){S.sync.uid='';S.deleted={};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
+  stamp();persist();setSync('');render();
+}
+function syncModalHtml(){
+  let b='<h2>☁️ Google Drive sync</h2>';
+  if(!canSync()){
+    return b+'<p class="muted">Sign-in only works on the published app, so this copy stays offline-only. Your data is still saved on this device.</p><p class="muted">Open <b>'+esc(SYNC_ORIGIN)+'/classroom-hub/</b> to turn on sync.</p><div class="row"><button class="btn pri" data-act="closeModal">OK</button></div>';
+  }
+  const sy=S.sync;
+  if(!sy.on){
+    b+='<p class="muted">Keep your classes in step on your phone and laptop. Each teacher signs in with their own Google account and only sees their own classes.</p>'
+     +'<p class="muted">The app can only use its own private folder in <b>your</b> Google Drive. It cannot see your other files, and it does not ask for your name or email. <a href="privacy.html" target="_blank" rel="noopener">Privacy policy</a></p>';
+    if(sy.err)b+='<div class="ssts bad">'+esc(sy.err)+'</div>';
+    if(syncState==='busy')b+='<div class="ssts">Connecting…</div>';
+    b+='<div class="row wrap"><button class="btn pri" data-act="syncSignIn"'+(syncState==='busy'?' disabled':'')+'>Sign in with Google</button><button class="btn" data-act="closeModal">Not now</button></div>';
+    return b;
+  }
+  const st={ok:'✅ Up to date',pending:'⏳ Changes waiting to upload…',busy:'🔄 Syncing…',needs:sy.dirty?'🔒 Changes are saved on this device. Tap “Sync now” to upload them.':'🔒 Tap “Sync now” to check for changes from your other devices.',offline:'📴 Offline. It will sync when you are back online.',err:'⚠️ Problem',mismatch:'⚠️ Problem'}[syncState]||'';
+  b+='<div class="ssts'+(syncState==='err'||syncState==='mismatch'?' bad':'')+'">'+st+(sy.last?'<br><span class="muted">Last synced: '+esc(new Date(sy.last).toLocaleString())+'</span>':'')+'</div>';
+  if(sy.err)b+='<div class="ssts bad">'+esc(sy.err)+'</div>';
+  b+='<div class="row wrap"><button class="btn pri" data-act="syncNowBtn"'+(syncState==='busy'?' disabled':'')+'>🔄 Sync now</button><button class="btn" data-act="closeModal">Close</button></div>'
+   +'<p class="muted">Google asks you to confirm about once an hour, so after a break tap “Sync now”. Theme and seat colors stay per device.</p>'
+   +'<div class="row wrap"><button class="btn" data-act="syncOut">Sign out</button><button class="btn danger" data-act="syncOutClear">Sign out &amp; clear this device</button></div>'
+   +'<p class="muted">Use “Sign out &amp; clear” on a shared or school computer. Your copy in Google Drive is kept.</p>';
+  return b;
+}
 const smap=c=>{const m={};c.students.forEach(s=>m[s.id]=s);return m};
 function applyTheme(){document.documentElement.setAttribute('data-theme',S.settings.theme);const m=$('#metaTheme');if(m)m.setAttribute('content',THEMES[S.settings.theme][1])}
 
@@ -592,7 +824,8 @@ V.data=c=>{
   +'<label class="btn danger" data-act="impMode" data-v="replace">⬆ Import (replace everything)<input type="file" hidden accept=".json,application/json" data-chg="impfile"></label></div></section>'
   +'<section class="card"><h2>Reset tools — '+esc(c.name)+'</h2><div class="row wrap"><button class="btn danger" data-act="resetPoints">Reset all points</button><button class="btn danger" data-act="clearAtt">Clear all attendance</button></div>'
   +'<div class="row wrap"><button class="btn danger" data-act="wipeAll">Erase ALL data on this device</button></div></section>'
-  +'<section class="card"><h2>Offline use</h2><p class="muted">This app needs no internet. Everything stays on your device. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
+  +'<section class="card"><h2>Google Drive sync</h2><p class="muted">'+(S.sync.on?'Sync is <b>on</b>'+(S.sync.last?' (last synced '+esc(new Date(S.sync.last).toLocaleString())+')':'')+'.':'Optional: sign in with Google to keep your phone and laptop in step.')+'</p><div class="row wrap"><button class="btn" data-act="openSync">☁️ '+(S.sync.on?'Sync settings':'Set up sync')+'</button></div></section>'
+  +'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
 };
 
 function render(){
@@ -610,6 +843,8 @@ function renderModal(){
     b='<h2>🎨 App theme</h2><p class="muted">Pick the color of the app. Seat colors are on the Seats tab.</p><div class="themes">'
       +Object.keys(THEMES).map(k=>'<button class="tbtn'+(S.settings.theme===k?' on':'')+'" data-act="setTheme" data-v="'+k+'"><span class="tsw" style="background:linear-gradient(135deg,'+THEMES[k][1]+' 55%,'+THEMES[k][2]+' 55%)"></span>'+THEMES[k][0]+'</button>').join('')
       +'</div><div class="row"><button class="btn pri" data-act="closeModal">Done</button></div>';
+  }else if(ui.modal==='sync'){
+    b=syncModalHtml();
   }else if(ui.modal==='newclass'){
     const withS=S.classes.filter(k=>k.students.length);
     b='<h2>New class</h2><label class="lb" for="ncName">Class / section name</label><input id="ncName" type="text" maxlength="60" placeholder="e.g. Organic Chemistry" autocomplete="off">'
@@ -688,11 +923,16 @@ const act={
   fsExit(){exitFS()},
   fsRot(){ui.fsRot=!ui.fsRot;renderFS()},
   openTheme(){ui.modal='theme';renderModal()},
+  openSync(){ui.modal='sync';renderModal();if(canSync()&&!gisReady())loadGIS().catch(()=>{})},
+  syncSignIn(){syncNow(true,true)},
+  syncNowBtn(){syncNow(true)},
+  syncOut(){if(!confirm('Sign out of Google sync on this device?\n\nYour classes stay on this device and in Google Drive.'))return;unlink(false)},
+  syncOutClear(){if(!confirm('Sign out and REMOVE all classes from this device?'+(S.sync.dirty?'\n\nSome changes have not been uploaded yet and will be lost.':'')+'\n\nYour copy in Google Drive is kept.'))return;unlink(true)},
   setTheme(c,t){S.settings.theme=t.dataset.v;save();applyTheme();renderModal();render()},
   setSeat(c,t){S.settings.seat=t.dataset.v;save();render()},
   copyFrom(c){const src=S.classes.find(k=>k.id===($('#copySel')||{}).value);if(!src)return;const r=addStudents(c,src.students.map(s=>s.name));toast('Copied '+r.added+(r.dup?' ('+r.dup+' already here)':''));render()},
   renameClass(c){const n=prompt('New class name?',c.name);if(n&&n.trim()){c.name=n.trim();save();render()}},
-  delClass(c){if(!confirm('Delete class "'+c.name+'" and ALL its data? This cannot be undone.'))return;S.classes=S.classes.filter(k=>k.id!==c.id);if(!S.classes.length)S.classes.push(newClass('My Class'));S.activeId=S.classes[0].id;ui.sel=null;ui.gsel=null;save();render()},
+  delClass(c){if(!confirm('Delete class "'+c.name+'" and ALL its data? This cannot be undone.'))return;S.deleted[c.id]=Date.now();S.classes=S.classes.filter(k=>k.id!==c.id);if(!S.classes.length)S.classes.push(newClass('My Class'));S.activeId=S.classes[0].id;ui.sel=null;ui.gsel=null;save();render()},
   addOne(c){const i=$('#nameIn');if(!i||!i.value.trim())return;const r=addStudents(c,[i.value]);toast(r.added?'Added':'Already in the list');ui.focus='#nameIn';render()},
   addBulk(c){const t=$('#bulk').value;const names=t.split(/\r?\n/);if(!names.some(x=>x.trim())){toast('Paste some names first');return}importNames(c,names)},
   sortAZ(c){c.students.sort((a,b)=>a.name.localeCompare(b.name));save();render()},
@@ -812,7 +1052,7 @@ const act={
   impMode(c,t){ui.importMode=t.dataset.v},
   resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);save();render();toast('Points reset')},
   clearAtt(c){if(!confirm('Clear ALL attendance records for "'+c.name+'"?'))return;c.attendance={};save();render();toast('Attendance cleared')},
-  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'))return;if(!confirm('Really erase everything?'))return;S={classes:[newClass('My Class')],settings:S.settings};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
+  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
 };
 
 function importNames(c,names){
@@ -855,8 +1095,10 @@ const chg={
       try{
         const o=JSON.parse(r.result);if(!o||!Array.isArray(o.classes))throw new Error('bad');
         const cls=o.classes.map(normClass);
+        const nowT=Date.now();cls.forEach(k=>{k.mod=nowT;delete k._h;delete S.deleted[k.id]});
         if(ui.importMode==='replace'){
           if(!confirm('Replace ALL current data with this backup?'))return;
+          S.classes.forEach(k=>{if(!cls.some(x=>x.id===k.id))S.deleted[k.id]=nowT});
           S.classes=cls;S.activeId=(o.activeId&&cls.find(k=>k.id===o.activeId))?o.activeId:(cls[0]&&cls[0].id);
           if(o.settings&&THEMES[o.settings.theme]){S.settings.theme=o.settings.theme;if(SEATS.some(x=>x[0]===o.settings.seat))S.settings.seat=o.settings.seat;applyTheme()}
         }else{
@@ -924,8 +1166,15 @@ document.addEventListener('webkitfullscreenchange',fsChanged);
 window.addEventListener('resize',()=>{if(ui.fs)renderFS()});
 window.addEventListener('orientationchange',()=>{if(ui.fs)setTimeout(renderFS,200)});
 
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||!S.sync.on||!canSync())return;if(!navigator.onLine)setSync('offline');else if(tokOk())syncNow(false);else setSync('needs')});
+window.addEventListener('online',()=>{if(S.sync.on&&canSync()){if(tokOk())syncNow(false);else setSync('needs')}});
+window.addEventListener('offline',()=>{if(S.sync.on&&canSync())setSync('offline')});
+setInterval(()=>{if(S.sync.on&&canSync()&&document.visibilityState==='visible'&&tokOk()&&!syncing&&navigator.onLine)syncNow(false)},90000);
+
+stamp();persist();
 applyTheme();
 render();
+if(S.sync.on&&canSync()){setSync('needs');loadGIS().catch(()=>{});toast('☁️ Tap the cloud, then “Sync now”, to update from Google Drive')}
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(function(){})}
 })();
 </script>
