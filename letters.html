@@ -209,6 +209,22 @@ table.plg-table thead th.plg-quiz-max { position: sticky; }
 table.plg-table thead th.plg-name-head { left: 0; z-index: 7; }
 table.plg-table thead th.plg-hps-label { left: 0; z-index: 7; text-align: left; font-size: 10.5px; background: #fff6e0; }
 table.plg-table thead tr.plg-hps th { background: #fff6e0; }
+/* flat, spreadsheet look: no boxes around cells, just grid lines */
+#plg-root table.plg-table td.plg-c, #plg-root table.plg-table th.plg-c { padding: 0; }
+#plg-root table.plg-table td.plg-c input, #plg-root table.plg-table th.plg-c input {
+  display: block; width: 100%; min-width: 48px; margin: 0; padding: 7px 2px; border: 0; border-radius: 0;
+  background: transparent; text-align: center; font-size: 12.5px; box-shadow: none; outline: none;
+}
+#plg-root table.plg-table th.plg-c input { font-weight: 700; }
+#plg-root table.plg-table td.plg-c input:focus, #plg-root table.plg-table th.plg-c input:focus {
+  background: #fff; box-shadow: inset 0 0 0 2px var(--navy);
+}
+#plg-root table.plg-table td.plg-c input.plg-cell-sel, #plg-root table.plg-table th.plg-c input.plg-cell-sel { box-shadow: inset 0 0 0 9999px rgba(37,99,235,0.18); }
+#plg-root table.plg-table td.plg-name-cell { padding: 0; }
+#plg-root table.plg-table td.plg-name-cell input { display: block; width: 100%; margin: 0; padding: 7px 8px; border: 0; border-radius: 0; background: transparent; font-size: 12.5px; box-shadow: none; outline: none; }
+#plg-root table.plg-table td.plg-name-cell input:hover { border: 0; }
+#plg-root table.plg-table td.plg-name-cell input:focus { background: #fff; box-shadow: inset 0 0 0 2px var(--navy); }
+#plg-root table.plg-table thead th.plg-hps-label { background: #fff6e0; }
 button.plg-col-clear {
   all: unset;
   cursor: pointer;
@@ -1735,7 +1751,7 @@ function renderSection(container, secIdx){
   groups.forEach(g => { for (let i = 0; i < g[1]; i++) thead += `<th class="plg-quiz-max">${g[2]}${i+1}<button type="button" class="plg-col-clear" data-clearcol="${g[0]}" data-clearidx="${i}" title="Clear ${g[2]}${i+1} scores for all students">&times;</button></th>`; });
   thead += `<th class="plg-quiz-max">TE<button type="button" class="plg-col-clear" data-clearcol="te" title="Clear TE scores for all students">&times;</button></th></tr>`;
   thead += `<tr class="plg-hps"><th class="plg-hps-label" title="Highest possible score for each column">Highest Possible Score</th>`;
-  for (let c = 1; c < GRID_COLS; c++) thead += `<th class="plg-quiz-max">${dataCell(0, c, sheetGet(sec, 0, c), ' title="Highest possible score"')}</th>`;
+  for (let c = 1; c < GRID_COLS; c++) thead += `<th class="plg-quiz-max plg-c">${dataCell(0, c, sheetGet(sec, 0, c), ' title="Highest possible score"')}</th>`;
   thead += '</tr></thead>';
   table.innerHTML = thead;
 
@@ -1743,7 +1759,7 @@ function renderSection(container, secIdx){
   sec.students.forEach((stu, si) => {
     const tr = document.createElement('tr');
     let row = `<td class="plg-name-cell">${dataCell(si + 1, 0, stu.name, ` placeholder="Student ${si+1}"`)}</td>`;
-    for (let c = 1; c < GRID_COLS; c++) row += `<td>${dataCell(si + 1, c, sheetGet(sec, si + 1, c), ' class="plg-score"')}</td>`;
+    for (let c = 1; c < GRID_COLS; c++) row += `<td class="plg-c">${dataCell(si + 1, c, sheetGet(sec, si + 1, c), ' class="plg-score"')}</td>`;
     const hasName = !!(stu.name && stu.name.trim());
     const c = calcStudent(stu, sec, subject);
     if (hasName){
@@ -2337,9 +2353,14 @@ function escapeHtml(v){ return (v===undefined||v===null?'':String(v)).replace(/&
 const THEME_DEFS = {"sakura": {"name": "Sakura", "e": "🌸", "sp": ["🌸", "✨", "💗"], "msgs": ["You are doing great~ 🌸", "Petals of encouragement for you!", "Every class is a little bloom 💗", "Tea break soon? You deserve it~", "Hello, wonderful teacher! ✨"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><ellipse cx=\"22\" cy=\"15\" rx=\"6.5\" ry=\"14\" fill=\"#fff\" stroke=\"#eda9c3\" stroke-width=\"2\"/><ellipse cx=\"22\" cy=\"16\" rx=\"3\" ry=\"9\" fill=\"#fbcadb\"/><ellipse cx=\"42\" cy=\"15\" rx=\"6.5\" ry=\"14\" fill=\"#fff\" stroke=\"#eda9c3\" stroke-width=\"2\"/><ellipse cx=\"42\" cy=\"16\" rx=\"3\" ry=\"9\" fill=\"#fbcadb\"/><ellipse cx=\"32\" cy=\"43\" rx=\"22\" ry=\"18\" fill=\"#fff\" stroke=\"#eda9c3\" stroke-width=\"2\"/><g fill=\"#f26b9b\"><circle cx=\"46\" cy=\"9\" r=\"3\"/><circle cx=\"50\" cy=\"12\" r=\"3\"/><circle cx=\"48\" cy=\"17\" r=\"3\"/><circle cx=\"43\" cy=\"16\" r=\"3\"/><circle cx=\"42\" cy=\"11\" r=\"3\"/><\/g><circle cx=\"46\" cy=\"13\" r=\"1.8\" fill=\"#ffe27a\"/><circle cx=\"24.5\" cy=\"42\" r=\"2.4\" fill=\"#5a3446\"/><circle cx=\"39.5\" cy=\"42\" r=\"2.4\" fill=\"#5a3446\"/><ellipse cx=\"19\" cy=\"48\" rx=\"4\" ry=\"2.5\" fill=\"#fbb5cc\"/><ellipse cx=\"45\" cy=\"48\" rx=\"4\" ry=\"2.5\" fill=\"#fbb5cc\"/><path d=\"M29 47q3 3.2 6 0\" fill=\"none\" stroke=\"#5a3446\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#d94f84", "#f7b6cd"]}, "lavender": {"name": "Lavender", "e": "🌙", "sp": ["⭐", "✨", "💜"], "msgs": ["Sleepy but proud of you~ 💜", "Dream big, teach bright ✨", "Deep breath. You’ve got this!", "Twinkle twinkle, great teacher ⭐", "Cozy classroom vibes~ ☁️"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><g fill=\"#b9a2e6\"><circle cx=\"20\" cy=\"42\" r=\"14\"/><circle cx=\"34\" cy=\"32\" r=\"16\"/><circle cx=\"46\" cy=\"43\" r=\"13\"/><rect x=\"18\" y=\"42\" width=\"30\" height=\"15\" rx=\"7\"/><\/g><g fill=\"#fff\"><circle cx=\"20\" cy=\"42\" r=\"12\"/><circle cx=\"34\" cy=\"32\" r=\"14\"/><circle cx=\"46\" cy=\"43\" r=\"11\"/><rect x=\"20\" y=\"42\" width=\"26\" height=\"13\" rx=\"6\"/><\/g><path d=\"M25 42q3 3.4 6.5 0M37 42q3 3.4 6.5 0\" fill=\"none\" stroke=\"#4d3d73\" stroke-width=\"2\" stroke-linecap=\"round\"/><ellipse cx=\"22\" cy=\"48\" rx=\"3.6\" ry=\"2.3\" fill=\"#f2b6d6\"/><ellipse cx=\"47\" cy=\"48\" rx=\"3.6\" ry=\"2.3\" fill=\"#f2b6d6\"/><path d=\"M34 49q2.4 2.4 4.8 0\" fill=\"none\" stroke=\"#4d3d73\" stroke-width=\"1.7\" stroke-linecap=\"round\"/><path d=\"M52 8Q52 14 58 14Q52 14 52 20Q52 14 46 14Q52 14 52 8Z\" fill=\"#ffd966\"/><path d=\"M12 14Q12 18 16 18Q12 18 12 22Q12 18 8 18Q12 18 12 14Z\" fill=\"#cdbcf0\"/><\/svg>", "sw": ["#8a63d2", "#cdbcf0"]}, "matcha": {"name": "Matcha", "e": "🍃", "sp": ["🍃", "🍀", "✨"], "msgs": ["Growing bit by bit~ 🌱", "Fresh start, fresh sprouts!", "You help minds grow 🍃", "Sip some tea, you’re doing great!", "Leaf it to you, teacher! 🍀"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M32 58C8 58 6 36 32 31C58 36 56 58 32 58Z\" fill=\"#8cc79d\"/><path d=\"M32 56C11 56 9 38 32 33C55 38 53 56 32 56Z\" fill=\"#f1fbef\"/><path d=\"M32 32v-9\" stroke=\"#5fae7b\" stroke-width=\"2.5\" stroke-linecap=\"round\"/><ellipse cx=\"25\" cy=\"19\" rx=\"8\" ry=\"4\" transform=\"rotate(-28 25 19)\" fill=\"#7cc795\"/><ellipse cx=\"39\" cy=\"17\" rx=\"8\" ry=\"4\" transform=\"rotate(28 39 17)\" fill=\"#6bb98a\"/><circle cx=\"24\" cy=\"45\" r=\"2.4\" fill=\"#2f5a42\"/><circle cx=\"40\" cy=\"45\" r=\"2.4\" fill=\"#2f5a42\"/><ellipse cx=\"18.5\" cy=\"50\" rx=\"3.8\" ry=\"2.4\" fill=\"#f6b9c9\"/><ellipse cx=\"45.5\" cy=\"50\" rx=\"3.8\" ry=\"2.4\" fill=\"#f6b9c9\"/><path d=\"M29 49.5q3 3 6 0\" fill=\"none\" stroke=\"#2f5a42\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#3f8a5c", "#b3dcc0"]}, "sky": {"name": "Sky", "e": "🐦", "sp": ["☁️", "✨", "💙"], "msgs": ["Sunny day, sunny class~ ☀️", "Tweet tweet! Nice work 🐦", "Your students look up to you 💙", "Clear skies ahead!", "Fly high, teacher! ✨"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M25 18q2-8 7-9q-1 5 1 8q2-6 8-6q-3 4-3 8z\" fill=\"#8fbbea\"/><circle cx=\"32\" cy=\"39\" r=\"22\" fill=\"#8fbbea\"/><circle cx=\"32\" cy=\"39\" r=\"20\" fill=\"#e6f2ff\"/><ellipse cx=\"11\" cy=\"43\" rx=\"5\" ry=\"8\" transform=\"rotate(20 11 43)\" fill=\"#b7d6f6\" stroke=\"#8fbbea\" stroke-width=\"1.5\"/><ellipse cx=\"53\" cy=\"43\" rx=\"5\" ry=\"8\" transform=\"rotate(-20 53 43)\" fill=\"#b7d6f6\" stroke=\"#8fbbea\" stroke-width=\"1.5\"/><circle cx=\"25\" cy=\"37\" r=\"2.4\" fill=\"#27456b\"/><circle cx=\"39\" cy=\"37\" r=\"2.4\" fill=\"#27456b\"/><path d=\"M28.5 42h7l-3.5 5.2z\" fill=\"#f6a04d\"/><ellipse cx=\"19.5\" cy=\"44\" rx=\"3.8\" ry=\"2.4\" fill=\"#f9b8c8\"/><ellipse cx=\"44.5\" cy=\"44\" rx=\"3.8\" ry=\"2.4\" fill=\"#f9b8c8\"/><\/svg>", "sw": ["#3b82d6", "#aacff2"]}, "peach": {"name": "Peach", "e": "🍑", "sp": ["🍑", "✨", "🧡"], "msgs": ["Peachy day ahead~ 🍑", "You’re a real gem, teacher!", "Sweet work today 🧡", "Juicy ideas incoming ✨", "Just peachy! Keep going~"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M32 58C12 58 6 42 12 30C17 21 26 20 32 24C38 20 47 21 52 30C58 42 52 58 32 58Z\" fill=\"#f4a681\"/><path d=\"M32 56C14 56 9 42 14 31C18 24 26 23 32 27C38 23 46 24 50 31C55 42 50 56 32 56Z\" fill=\"#ffd9c2\"/><path d=\"M32 25Q29 38 32 55\" fill=\"none\" stroke=\"#f4a681\" stroke-width=\"1.4\" opacity=\".7\"/><path d=\"M32 24v-7\" stroke=\"#8a5a3c\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><ellipse cx=\"40\" cy=\"15\" rx=\"9\" ry=\"4.2\" transform=\"rotate(-22 40 15)\" fill=\"#7cc795\"/><circle cx=\"24\" cy=\"42\" r=\"2.4\" fill=\"#6b3f2a\"/><circle cx=\"40\" cy=\"42\" r=\"2.4\" fill=\"#6b3f2a\"/><ellipse cx=\"18.5\" cy=\"48\" rx=\"4\" ry=\"2.5\" fill=\"#fb9fa6\"/><ellipse cx=\"45.5\" cy=\"48\" rx=\"4\" ry=\"2.5\" fill=\"#fb9fa6\"/><path d=\"M29 47.5q3 3.4 6 0\" fill=\"none\" stroke=\"#6b3f2a\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#d9663a", "#f8bf9f"]}, "strawberry": {"name": "Strawberry", "e": "🍓", "sp": ["🍓", "✨", "💖"], "msgs": ["Berry proud of you! 🍓", "You’re the sweetest teacher~", "Strawberry sunshine for you ✨", "Ripe for a great class!", "Sweet progress today 💖"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M32 59C12 51 6 36 11 27C16 19 27 21 32 26C37 21 48 19 53 27C58 36 52 51 32 59Z\" fill=\"#ff8a98\" stroke=\"#d6455d\" stroke-width=\"2\"/><g fill=\"#ffe9a8\"><ellipse cx=\"16\" cy=\"34\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"48\" cy=\"34\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"22\" cy=\"50\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"42\" cy=\"50\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"32\" cy=\"55\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"14\" cy=\"42\" rx=\"1.3\" ry=\"2\"/><ellipse cx=\"50\" cy=\"42\" rx=\"1.3\" ry=\"2\"/><\/g><path d=\"M20 24Q32 12 44 24Q37 22 32 27Q27 22 20 24Z\" fill=\"#6bbf7f\"/><path d=\"M32 23v-9\" stroke=\"#4fa466\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><circle cx=\"25\" cy=\"39\" r=\"2.4\" fill=\"#4a2030\"/><circle cx=\"39\" cy=\"39\" r=\"2.4\" fill=\"#4a2030\"/><ellipse cx=\"19.5\" cy=\"44\" rx=\"3.8\" ry=\"2.4\" fill=\"#ffc2cc\"/><ellipse cx=\"44.5\" cy=\"44\" rx=\"3.8\" ry=\"2.4\" fill=\"#ffc2cc\"/><path d=\"M29 44q3 3.2 6 0\" fill=\"none\" stroke=\"#4a2030\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#d6455d", "#f6aab7"]}, "lemon": {"name": "Lemon", "e": "🍋", "sp": ["🍋", "✨", "💛"], "msgs": ["When life gives lemons, teach~ 🍋", "Zest for learning today!", "You brighten the room 💛", "Squeeze the day! ✨", "Sunny teacher, sunny class~"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"37\" r=\"3.6\" fill=\"#e8b923\"/><circle cx=\"55\" cy=\"37\" r=\"3.6\" fill=\"#e8b923\"/><ellipse cx=\"32\" cy=\"37\" rx=\"23\" ry=\"19\" fill=\"#e8b923\"/><circle cx=\"9\" cy=\"37\" r=\"2.4\" fill=\"#ffe066\"/><circle cx=\"55\" cy=\"37\" r=\"2.4\" fill=\"#ffe066\"/><ellipse cx=\"32\" cy=\"37\" rx=\"21\" ry=\"17\" fill=\"#ffe066\"/><path d=\"M32 19v-5\" stroke=\"#8a5a3c\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><ellipse cx=\"40\" cy=\"14\" rx=\"8.5\" ry=\"4\" transform=\"rotate(-20 40 14)\" fill=\"#7cc795\"/><circle cx=\"24\" cy=\"36\" r=\"2.4\" fill=\"#5b4a12\"/><circle cx=\"40\" cy=\"36\" r=\"2.4\" fill=\"#5b4a12\"/><ellipse cx=\"18\" cy=\"42\" rx=\"3.8\" ry=\"2.4\" fill=\"#ffb98a\"/><ellipse cx=\"46\" cy=\"42\" rx=\"3.8\" ry=\"2.4\" fill=\"#ffb98a\"/><path d=\"M29 41q3 3.2 6 0\" fill=\"none\" stroke=\"#5b4a12\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#b07d00", "#f3dc7a"]}, "ocean": {"name": "Ocean", "e": "🐳", "sp": ["🐚", "🫧", "💙"], "msgs": ["Making waves today! 🌊", "Whale done, teacher! 🐳", "Dive into a great lesson~", "Calm seas ahead 🐚", "You’re a treasure 💙"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><path d=\"M48 36Q61 31 59 18Q54 27 44 30Z\" fill=\"#8ecfe0\" stroke=\"#5aa9c0\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><ellipse cx=\"29\" cy=\"40\" rx=\"23\" ry=\"17\" fill=\"#8ecfe0\" stroke=\"#5aa9c0\" stroke-width=\"2\"/><ellipse cx=\"27\" cy=\"48\" rx=\"15\" ry=\"8\" fill=\"#e9f8fc\"/><path d=\"M25 23q1-6 5-8M33 23q-1-6-5-8\" fill=\"none\" stroke=\"#8ecfe0\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><circle cx=\"23\" cy=\"9\" r=\"1.8\" fill=\"#b7e4f0\"/><circle cx=\"35\" cy=\"8\" r=\"1.8\" fill=\"#b7e4f0\"/><circle cx=\"20\" cy=\"37\" r=\"2.4\" fill=\"#24505e\"/><circle cx=\"35\" cy=\"37\" r=\"2.4\" fill=\"#24505e\"/><ellipse cx=\"14\" cy=\"43\" rx=\"3.6\" ry=\"2.3\" fill=\"#f9b8c8\"/><ellipse cx=\"41\" cy=\"43\" rx=\"3.6\" ry=\"2.3\" fill=\"#f9b8c8\"/><path d=\"M24 43q3 3.2 6 0\" fill=\"none\" stroke=\"#24505e\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#178a97", "#9fd6dc"]}, "cocoa": {"name": "Cocoa", "e": "🐻", "sp": ["🍪", "✨", "🤎"], "msgs": ["Bear hugs for you! 🐻", "Warm cocoa, warm class~", "You’re beary special 🤎", "Cookie break after class? 🍪", "Cozy and capable, teacher!"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><circle cx=\"16\" cy=\"17\" r=\"9\" fill=\"#a9715a\"/><circle cx=\"16\" cy=\"17\" r=\"4.6\" fill=\"#e8b9a3\"/><circle cx=\"48\" cy=\"17\" r=\"9\" fill=\"#a9715a\"/><circle cx=\"48\" cy=\"17\" r=\"4.6\" fill=\"#e8b9a3\"/><circle cx=\"32\" cy=\"38\" r=\"23\" fill=\"#a9715a\"/><circle cx=\"32\" cy=\"38\" r=\"21\" fill=\"#c48a6f\"/><ellipse cx=\"32\" cy=\"46\" rx=\"10.5\" ry=\"7.5\" fill=\"#f3d9c8\"/><ellipse cx=\"32\" cy=\"42.5\" rx=\"3.6\" ry=\"2.6\" fill=\"#5a3a2c\"/><path d=\"M32 45v2.5M28.5 48q3.5 3 7 0\" fill=\"none\" stroke=\"#5a3a2c\" stroke-width=\"1.6\" stroke-linecap=\"round\"/><circle cx=\"23\" cy=\"33\" r=\"2.5\" fill=\"#3d2a22\"/><circle cx=\"41\" cy=\"33\" r=\"2.5\" fill=\"#3d2a22\"/><ellipse cx=\"16.5\" cy=\"42\" rx=\"3.8\" ry=\"2.4\" fill=\"#f0a58f\"/><ellipse cx=\"47.5\" cy=\"42\" rx=\"3.8\" ry=\"2.4\" fill=\"#f0a58f\"/><\/svg>", "sw": ["#8a5a44", "#dcb9a6"]}, "candy": {"name": "Candy", "e": "🍬", "sp": ["🍭", "✨", "💗"], "msgs": ["Sweet job, teacher! 🍬", "Sprinkles of encouragement~", "You’re one smart cookie 🍭", "Candy-coated confidence!", "A sugary-sweet day ahead ✨"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><polygon points=\"18,34 4,23 4,45\" fill=\"#ffd0ea\" stroke=\"#ee86c4\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><polygon points=\"46,34 60,23 60,45\" fill=\"#ffd0ea\" stroke=\"#ee86c4\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/><circle cx=\"32\" cy=\"34\" r=\"17\" fill=\"#ee86c4\"/><circle cx=\"32\" cy=\"34\" r=\"15.2\" fill=\"#ffb3d9\"/><path d=\"M20 24Q32 18 44 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.6\" stroke-linecap=\"round\" opacity=\".75\"/><circle cx=\"26.5\" cy=\"33\" r=\"2.4\" fill=\"#6b2a55\"/><circle cx=\"37.5\" cy=\"33\" r=\"2.4\" fill=\"#6b2a55\"/><ellipse cx=\"21.5\" cy=\"39\" rx=\"3.4\" ry=\"2.2\" fill=\"#ff8fb8\"/><ellipse cx=\"42.5\" cy=\"39\" rx=\"3.4\" ry=\"2.2\" fill=\"#ff8fb8\"/><path d=\"M29 38.5q3 3 6 0\" fill=\"none\" stroke=\"#6b2a55\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><path d=\"M52 8Q52 13 57 13Q52 13 52 18Q52 13 47 13Q52 13 52 8Z\" fill=\"#ffd966\"/><\/svg>", "sw": ["#c04fb5", "#eaaee3"]}, "berry": {"name": "Berry", "e": "🍇", "sp": ["🍇", "✨", "💜"], "msgs": ["Berry good work! 🍇", "Juicy ideas are coming~", "Pop! Another great lesson ✨", "Plum perfect, teacher!", "You’re one in a berry-million 💜"], "svg": "<svg viewBox=\"0 0 64 64\" aria-hidden=\"true\"><circle cx=\"32\" cy=\"38\" r=\"23\" fill=\"#5b5fc7\"/><circle cx=\"32\" cy=\"38\" r=\"21\" fill=\"#7a7fe0\"/><ellipse cx=\"21\" cy=\"27\" rx=\"6\" ry=\"3.4\" transform=\"rotate(-35 21 27)\" fill=\"#fff\" opacity=\".35\"/><polygon points=\"32,15 35,21 41,19 38,25 32,23 26,25 23,19 29,21\" fill=\"#4a4eab\"/><circle cx=\"32\" cy=\"21\" r=\"1.6\" fill=\"#a9acf0\"/><circle cx=\"24\" cy=\"39\" r=\"2.8\" fill=\"#1f2050\"/><circle cx=\"40\" cy=\"39\" r=\"2.8\" fill=\"#1f2050\"/><circle cx=\"25\" cy=\"38\" r=\"1\" fill=\"#fff\"/><circle cx=\"41\" cy=\"38\" r=\"1\" fill=\"#fff\"/><ellipse cx=\"18.5\" cy=\"45\" rx=\"3.8\" ry=\"2.4\" fill=\"#f3b1d6\"/><ellipse cx=\"45.5\" cy=\"45\" rx=\"3.8\" ry=\"2.4\" fill=\"#f3b1d6\"/><path d=\"M29 45q3 3.2 6 0\" fill=\"none\" stroke=\"#1f2050\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><\/svg>", "sw": ["#5b5fc7", "#b4b7ea"]}};
 const THEME_ORDER = ['classic'].concat(Object.keys(THEME_DEFS));
 let currentTheme = 'classic';
+// The chosen theme lives in one small record (plg-pref) that is synced between devices like the grade data.
+// An older plain 'plg-theme' value is still read as a fallback.
+const PREF_KEY = 'plg-pref';
 function loadTheme(){
   try {
-    const t = localStorage.getItem('plg-theme');
+    let t = null;
+    try { const pr = JSON.parse(localStorage.getItem(PREF_KEY) || 'null'); if (pr && typeof pr === 'object') t = pr.theme; } catch(e) {}
+    if (!t) t = localStorage.getItem('plg-theme');
     if (t === 'classic' || THEME_DEFS[t]) currentTheme = t;
   } catch(e) {}
 }
@@ -2354,7 +2375,13 @@ function applyTheme(){
 function setTheme(k){
   if (k !== 'classic' && !THEME_DEFS[k]) return;
   currentTheme = k;
-  try { localStorage.setItem('plg-theme', k); } catch(e) {}
+  try {
+    const prev = localStorage.getItem(PREF_KEY), raw = JSON.stringify({ theme: k });
+    localStorage.setItem(PREF_KEY, raw);
+    localStorage.setItem('plg-theme', k);
+    syncNoteEdit(PREF_KEY, raw, prev);
+    scheduleSync();
+  } catch(e) {}
   applyTheme();
   render();
 }
@@ -2460,6 +2487,7 @@ function allSyncKeys(){
     out.push(settingsKey(s.id, t.id));
     for (let i = 1; i <= SECTION_COUNT; i++) out.push(sectionKey(s.id, t.id, i));
   }));
+  out.push(PREF_KEY);
   return out;
 }
 // Each section is merged row by row (row 0 = section name + maximum scores, then one row per student),
@@ -2522,16 +2550,18 @@ function mergeRows(l, r, localWins){
 function isBlankRecord(kind, d){
   const empty = v => v === '' || v === null || v === undefined;
   const arrEmpty = a => !Array.isArray(a) || a.every(empty);
+  if (kind === 'pref') return !d.theme;
   if (kind === 'settings') return !(d.teacher || d.meetingDate || d.meetingTime || d.meetingPlace) && (!d.detailLevel || d.detailLevel === 'full');
   if (!/^Section \d+$/.test(String(d.name || ''))) return false;
   if (!arrEmpty(d.wwMax) || !arrEmpty(d.petaMax) || !arrEmpty(d.summMax) || !empty(d.teMax)) return false;
   return !(d.students || []).some(s => s && (s.name || !arrEmpty(s.wwScores) || !arrEmpty(s.petaScores) || !arrEmpty(s.summScores) || !empty(s.teScore)));
 }
-function kindOfKey(k){ return k.indexOf('plg-settings-') === 0 ? 'settings' : 'section'; }
+function kindOfKey(k){ return k === PREF_KEY ? 'pref' : k.indexOf('plg-settings-') === 0 ? 'settings' : 'section'; }
 // Checks one record received from Google Drive; anything odd-looking is ignored.
 function checkRemoteItem(k, it){
   if (!it || typeof it !== 'object' || !it.data || typeof it.data !== 'object' || Array.isArray(it.data)) return null;
   const kind = kindOfKey(k), d = it.data;
+  if (kind === 'pref' && !(d.theme === 'classic' || (typeof d.theme === 'string' && THEME_DEFS[d.theme]))) return null;
   if (kind === 'section'){
     const okArr = a => a === undefined || (Array.isArray(a) && a.length <= 50);
     if (!Array.isArray(d.students) || d.students.length > 200) return null;
@@ -2768,6 +2798,7 @@ async function syncNow(interactive, link){
     // If the section/term on screen changed, reload it so the screen matches.
     const cur = new Set([settingsKey(currentSubjectId, currentTermId)]);
     for (let i = 1; i <= SECTION_COUNT; i++) cur.add(sectionKey(currentSubjectId, currentTermId, i));
+    if (touched.indexOf(PREF_KEY) >= 0){ loadTheme(); applyTheme(); render(); }
     if (touched.some(k => cur.has(k))){
       loadSubjectTermData(currentSubjectId, currentTermId);
       window.__plgLastGenerated = null; window.__plgLastCount = 0; window.__plgIndState = null;
