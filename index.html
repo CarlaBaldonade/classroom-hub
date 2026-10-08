@@ -1487,6 +1487,7 @@ function renderModal(){
   }else if(ui.modal==='more'){
     const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
     b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['notes','summary'])+sec('Teaching bank',['quiz','vocab'])+sec('Planning',['plan'])+sec('Data',['data'])
+      +'<div class="sec">Other tools</div><div class="mgrid"><button class="mtile" data-act="openLetters"><span class="mi">✉️</span><b>Letters</b><small>Parent grade letters</small></button></div>'
       +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
     b=syncModalHtml();
@@ -1578,6 +1579,7 @@ const act={
   closeModal(){ui.modal=null;renderModal();renderNav()},
   openMore(){ui.modal='more';renderModal();renderNav()},
   moreGo(c,t){ui.modal=null;renderModal();act.tab(c,t)},
+  openLetters(){location.href='letters.html'},
   fsEnter(){enterFS('swap')},
   fsSwap(c,t){const i=+t.dataset.i;if(ui.sel==null){if(c.seats[i])ui.sel=i}else if(ui.sel===i)ui.sel=null;else{swapSeats(c,ui.sel,i);(ui.swapHist=ui.swapHist||[]).push([ui.sel,i]);ui.sel=null}renderFS()},
   fsUndoSwap(c){const hh=ui.swapHist||[],l=hh.pop();if(!l)return;swapSeats(c,l[0],l[1]);ui.sel=null;renderFS()},

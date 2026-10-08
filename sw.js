@@ -1,7 +1,7 @@
 // Classroom Hub service worker: lets the app open with no internet once it has been loaded once.
 // It only ever touches files from this site. Google sign-in and Drive requests are never intercepted or cached.
-const CACHE = 'classroomhub-v2';
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'classroomhub-v3';
+const FILES = ['./', './index.html', './letters.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
