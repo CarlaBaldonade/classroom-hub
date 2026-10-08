@@ -401,6 +401,29 @@ html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
 .gcard.tgt{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri3)}
 .gh.gt{width:auto;padding:0 10px;font-size:.78rem}
 @media print{.hello{display:none!important}}
+
+/* teaching bank: quizzes, word bank, storage */
+.qz,.vw{border:1px solid var(--line);border-left-width:6px;border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff}
+.qz{border-left-color:var(--pri)}
+.vw{border-left-color:var(--pri3)}
+.vw.used{border-left-color:#c3c9cb;background:#fafbfb}
+.qz .row,.vw .row{margin:6px 0 0}
+.qtx{white-space:pre-wrap;word-break:break-word;background:var(--soft);border-radius:10px;padding:10px;margin:8px 0}
+.qtx.key{background:#fff6d1}
+.meter{height:12px;border-radius:999px;background:var(--soft);border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--pri);border-radius:999px}
+.meter.warn i{background:var(--amb)}
+.meter.bad i{background:var(--red)}
+.vdup{min-height:1.4em;margin:4px 0;font-size:.88rem;font-weight:700}
+.vdup .bad{color:var(--red)}.vdup .warn{color:var(--amb)}.vdup .ok{color:var(--grn)}
+.vpl{margin:6px 0 10px;padding-left:22px}
+.vpl li{margin:4px 0}
+.qxl{max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:2px 10px;margin:8px 0}
+.qxl label{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.qxl label:last-child{border:0}
+.qxl input{width:20px;height:20px;flex:0 0 auto}
+#qSearch,#vSearch{margin:6px 0}
+
 </style>
 </head>
 <body>
@@ -452,7 +475,7 @@ cocoa:{e:"\ud83d\udc3b",pe:"\ud83c\udf6a",sp:["🍪", "✨", "🤎"],msgs:["Bear
 candy:{e:"\ud83c\udf6c",pe:"\ud83c\udf6d",sp:["🍭", "✨", "💗"],msgs:["Sweet job, teacher! 🍬", "Sprinkles of encouragement~", "You’re one smart cookie 🍭", "Candy-coated confidence!", "A sugary-sweet day ahead ✨"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="18,34 4,23 4,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><polygon points="46,34 60,23 60,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><circle cx="32" cy="34" r="17" fill="#ee86c4"/><circle cx="32" cy="34" r="15.2" fill="#ffb3d9"/><path d="M20 24Q32 18 44 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><circle cx="26.5" cy="33" r="2.4" fill="#6b2a55"/><circle cx="37.5" cy="33" r="2.4" fill="#6b2a55"/><ellipse cx="21.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><ellipse cx="42.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><path d="M29 38.5q3 3 6 0" fill="none" stroke="#6b2a55" stroke-width="1.8" stroke-linecap="round"/><path d="M52 8Q52 13 57 13Q52 13 52 18Q52 13 47 13Q52 13 52 8Z" fill="#ffd966"/></svg>'},
 berry:{e:"\ud83c\udf47",pe:"\ud83c\udf47",sp:["🍇", "✨", "💜"],msgs:["Berry good work! 🍇", "Juicy ideas are coming~", "Pop! Another great lesson ✨", "Plum perfect, teacher!", "You’re one in a berry-million 💜"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="38" r="23" fill="#5b5fc7"/><circle cx="32" cy="38" r="21" fill="#7a7fe0"/><ellipse cx="21" cy="27" rx="6" ry="3.4" transform="rotate(-35 21 27)" fill="#fff" opacity=".35"/><polygon points="32,15 35,21 41,19 38,25 32,23 26,25 23,19 29,21" fill="#4a4eab"/><circle cx="32" cy="21" r="1.6" fill="#a9acf0"/><circle cx="24" cy="39" r="2.8" fill="#1f2050"/><circle cx="40" cy="39" r="2.8" fill="#1f2050"/><circle cx="25" cy="38" r="1" fill="#fff"/><circle cx="41" cy="38" r="1" fill="#fff"/><ellipse cx="18.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><ellipse cx="45.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><path d="M29 45q3 3.2 6 0" fill="none" stroke="#1f2050" stroke-width="1.8" stroke-linecap="round"/></svg>'},
 };
-const TIPS={plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
+const TIPS={quiz:'Store and reuse your short quizzes',vocab:'Build a word bank with no repeats',plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
 const TK=()=>{const k=S.classes.find(x=>x.id===S.activeId)||S.classes[0];return (k&&k.theme&&THEMES[k.theme])?k.theme:S.settings.theme};
 const FB=()=>S.settings.front!=='t';
 const NK={obs:['👀','Observation'],concern:['⚠️','Concern'],good:['🌟','Positive'],follow:['📌','Follow-up']};
@@ -481,7 +504,7 @@ function normPlan(i){
   return{id:String(i.id),k:i.k,d:i.d,e:(isD(i.e)&&i.e>i.d)?i.e:'',t:isT(i.t)?i.t:'',title:String(i.title||'').slice(0,100),note:String(i.note||'').slice(0,300),done:!!i.done};
 }
 const pd=k=>{const a=k.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
-const gmod=()=>S.schedule.mod+'|'+S.planner.mod;
+const gmod=()=>S.schedule.mod+'|'+S.planner.mod+'|'+isig(S.quizzes.items)+'|'+isig(S.vocab.items);
 const itemsOnDate=k=>S.planner.items.filter(i=>i.d<=k&&k<=(i.e||i.d)).sort((a,b)=>((a.k==='susp'?0:1)-(b.k==='susp'?0:1))||((a.t||'99')<(b.t||'99')?-1:(a.t||'99')>(b.t||'99')?1:0));
 const isCute=()=>!!CUTE[TK()];
 const PE=()=>isCute()?CUTE[TK()].pe:'⭐';
@@ -500,6 +523,112 @@ function download(name,text,type){const b=new Blob([text],{type:type||'text/plai
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'class';
 function taskName(t){const T=TYPES[t.type],l=(t.label||'').trim();if(!l)return T;if(/^\d+$/.test(l))return T+' '+l;if(l.toLowerCase().indexOf(T.toLowerCase())===0)return l;return T+' – '+l}
 const cleanIdx=(a,max)=>Array.isArray(a)?Array.from(new Set(a.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<max))).sort((x,y)=>x-y):[];
+
+/* ---------- teaching bank: data helpers, Word (.docx) builder ---------- */
+const kb=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(n<10240?1:0)+' KB':(n/1048576).toFixed(2)+' MB';
+function normQuiz(i){
+  if(!i||!i.id)return null;
+  return{id:String(i.id),t:String(i.t||'').slice(0,120),d:isD(i.d)?i.d:today(),s:String(i.s||'').slice(0,60),x:String(i.x||'').slice(0,20000),a:String(i.a||'').slice(0,10000),m:+i.m||0};
+}
+function normVocab(i){
+  if(!i||!i.id||typeof i.w!=='string'||!i.w.trim())return null;
+  return{id:String(i.id),w:i.w.trim().replace(/\s+/g,' ').slice(0,80),f:String(i.f||'').slice(0,800),tp:String(i.tp||'').slice(0,40),
+    u:(Array.isArray(i.u)?i.u:[]).filter(u=>u&&isD(u.d)).map(u=>({d:u.d,c:String(u.c||''),n:String(u.n||'').slice(0,60)})).slice(-60),m:+i.m||0};
+}
+/* a word is "the same" when letters match ignoring capitals, spaces, punctuation and accents */
+const vkey=w=>String(w).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}\s]/gu,'').replace(/\s+/g,' ').trim();
+function vstem(k){
+  return k.split(' ').map(t=>t.length>4&&/ies$/.test(t)?t.replace(/ies$/,'y'):t.length>4&&/(ses|xes|ches|shes)$/.test(t)?t.replace(/es$/,''):t.length>3&&/s$/.test(t)&&!/ss$/.test(t)?t.replace(/s$/,''):t).join(' ');
+}
+const isig=a=>stable((Array.isArray(a)?a:[]).map(i=>[String(i.id),+i.m||0]).sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:0));
+/* union of both sides by id; the newer edit wins; deletions are remembered (prefix q: or v:) */
+function mergeItems(loc,rem,pre,norm){
+  const del=S.deleted,by=new Map();
+  (loc||[]).forEach(i=>by.set(i.id,i));
+  (rem||[]).map(norm).filter(Boolean).forEach(r=>{const l=by.get(r.id);if(!l||(+r.m||0)>(+l.m||0))by.set(r.id,r)});
+  const out=[];
+  by.forEach((w,id)=>{const d=del[pre+id];if(d&&d>=(+w.m||0))return;if(d)delete del[pre+id];out.push(w)});
+  return out;
+}
+function mergeLib(rem){
+  S.quizzes.items=mergeItems(S.quizzes.items,rem.quizzes&&Array.isArray(rem.quizzes.items)?rem.quizzes.items:[],'q:',normQuiz);
+  S.vocab.items=mergeItems(S.vocab.items,rem.vocab&&Array.isArray(rem.vocab.items)?rem.vocab.items:[],'v:',normVocab);
+}
+/* Word (.docx) files built right in the browser, so it works offline. No libraries needed. */
+const DX={
+  enc:new TextEncoder(),crcT:null,
+  crc(u8){
+    if(!DX.crcT){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}DX.crcT=t}
+    let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=DX.crcT[(c^u8[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;
+  },
+  zip(files){
+    const now=new Date(),dt=((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate(),tm=(now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1);
+    const parts=[],cen=[];let off=0;
+    files.forEach(f=>{
+      const nm=DX.enc.encode(f[0]),data=DX.enc.encode(f[1]),crc=DX.crc(data);
+      const lh=new DataView(new ArrayBuffer(30));
+      lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);
+      lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
+      parts.push(new Uint8Array(lh.buffer),nm,data);
+      const ch=new DataView(new ArrayBuffer(46));
+      ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);
+      ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);ch.setUint16(28,nm.length,true);
+      ch.setUint16(30,0,true);ch.setUint16(32,0,true);ch.setUint16(34,0,true);ch.setUint16(36,0,true);ch.setUint32(38,0,true);ch.setUint32(42,off,true);
+      cen.push(new Uint8Array(ch.buffer),nm);
+      off+=30+nm.length+data.length;
+    });
+    let cl=0;cen.forEach(a=>cl+=a.length);
+    const e=new DataView(new ArrayBuffer(22));
+    e.setUint32(0,0x06054b50,true);e.setUint16(4,0,true);e.setUint16(6,0,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cl,true);e.setUint32(16,off,true);e.setUint16(20,0,true);
+    return new Blob(parts.concat(cen,[new Uint8Array(e.buffer)]),{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  },
+  x(s){return String(s==null?'':s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')},
+  run(t,o){
+    o=o||{};let pr='';
+    if(o.b)pr+='<w:b/><w:bCs/>';if(o.i)pr+='<w:i/><w:iCs/>';if(o.c)pr+='<w:color w:val="'+o.c+'"/>';if(o.sz)pr+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';
+    const rp=pr?'<w:rPr>'+pr+'</w:rPr>':'';
+    return String(t).split('\t').map((sg,i)=>(i?'<w:r>'+rp+'<w:tab/></w:r>':'')+(sg?'<w:r>'+rp+'<w:t xml:space="preserve">'+DX.x(sg)+'</w:t></w:r>':'')).join('');
+  },
+  p(t,o){
+    o=o||{};let pp='';
+    if(o.st)pp+='<w:pStyle w:val="'+o.st+'"/>';if(o.keep)pp+='<w:keepNext/>';if(o.pb)pp+='<w:pageBreakBefore/>';
+    if(o.af!=null||o.bf!=null)pp+='<w:spacing'+(o.bf!=null?' w:before="'+o.bf+'"':'')+(o.af!=null?' w:after="'+o.af+'"':'')+'/>';
+    if(o.ind)pp+='<w:ind w:left="'+o.ind+'"/>';if(o.al)pp+='<w:jc w:val="'+o.al+'"/>';
+    return '<w:p>'+(pp?'<w:pPr>'+pp+'</w:pPr>':'')+DX.run(t,o)+'</w:p>';
+  },
+  lines(t,o){return String(t||'').split(/\r?\n/).map(l=>DX.p(l,o)).join('')},
+  tbl(rows,widths,o){
+    o=o||{};const tw=widths.reduce((a,b)=>a+b,0);
+    let s='<w:tbl><w:tblPr><w:tblW w:w="'+tw+'" w:type="dxa"/><w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(b=>'<w:'+b+' w:val="single" w:sz="4" w:space="0" w:color="999999"/>').join('')
+      +'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="100" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+widths.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>';
+    rows.forEach((r,ri)=>{
+      const head=o.head&&ri===0;
+      s+='<w:tr><w:trPr><w:cantSplit/>'+(head?'<w:tblHeader/>':'')+'</w:trPr>';
+      r.forEach((c,ci)=>{
+        s+='<w:tc><w:tcPr><w:tcW w:w="'+widths[ci]+'" w:type="dxa"/>'+(head?'<w:shd w:val="clear" w:color="auto" w:fill="E7EFEC"/>':'')+'</w:tcPr>'
+          +String(c==null?'':c).split(/\r?\n/).map(l=>DX.p(l,{b:head,af:40,bf:40})).join('')+'</w:tc>';
+      });
+      s+='</w:tr>';
+    });
+    return s+'</w:tbl>'+DX.p('',{af:0});
+  },
+  build(body){
+    const W='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"',R='xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"',H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    const doc=H+'<w:document '+W+' '+R+'><w:body>'+body+'<w:sectPr><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="720" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    const hs=(id,nm,sz,col,bf,af)=>'<w:style w:type="paragraph" w:styleId="'+id+'"><w:name w:val="'+nm+'"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="'+bf+'" w:after="'+af+'"/>'+(id!=='Title'?'<w:outlineLvl w:val="'+(id==='Heading1'?0:1)+'"/>':'')+'</w:pPr><w:rPr><w:b/><w:bCs/><w:color w:val="'+col+'"/><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/></w:rPr></w:style>';
+    const styles=H+'<w:styles '+W+'><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="en-US"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>'
+      +'<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>'
+      +hs('Title','Title',40,'1F4D40',0,80)+hs('Heading1','heading 1',30,'1F6F5C',240,80)+hs('Heading2','heading 2',25,'1F6F5C',200,60)
+      +'<w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>';
+    const footer=H+'<w:ftr '+W+'><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:color w:val="777777"/><w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">Page </w:t></w:r><w:fldSimple w:instr=" PAGE "><w:r><w:rPr><w:color w:val="777777"/><w:sz w:val="18"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+    const ct=H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+    const rels=H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+    const drels=H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>';
+    return DX.zip([['[Content_Types].xml',ct],['_rels/.rels',rels],['word/document.xml',doc],['word/styles.xml',styles],['word/footer1.xml',footer],['word/_rels/document.xml.rels',drels]]);
+  }
+};
+
+const DOCX_MIME='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 /* ---------- data ---------- */
 function newClass(name){return{id:uid(),mod:Date.now(),name:name||'My Class',students:[],rows:5,cols:6,seats:Array(30).fill(null),aisleCols:[],aisleRows:[],points:{},log:[],attendance:{},dayTags:{},taskMiss:{},taskDone:{},picked:[],pickCount:{},round:1,lastRound:{},groups:[],groupNames:[],groupScores:[],groupCount:4}}
@@ -551,6 +680,8 @@ if(!S.schedule||typeof S.schedule!=='object'||!Array.isArray(S.schedule.items))S
 S.schedule.mod=+S.schedule.mod||0;S.schedule.items=S.schedule.items.map(normSched).filter(Boolean);
 if(!S.planner||typeof S.planner!=='object'||!Array.isArray(S.planner.items))S.planner={mod:0,items:[]};
 S.planner.mod=+S.planner.mod||0;S.planner.items=S.planner.items.map(normPlan).filter(Boolean);
+if(!S.quizzes||!Array.isArray(S.quizzes.items))S.quizzes={items:[]};if(!S.vocab||!Array.isArray(S.vocab.items))S.vocab={items:[]};
+S.quizzes.items=S.quizzes.items.map(normQuiz).filter(Boolean);S.vocab.items=S.vocab.items.map(normVocab).filter(Boolean);
 S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
 if(!S.deleted||typeof S.deleted!=='object'||Array.isArray(S.deleted))S.deleted={};
 S.classes=S.classes.map(normClass);
@@ -645,7 +776,7 @@ async function upload(fid,payload){
   const r=await gfetch(UPLOAD+'/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:mp});
   return (await r.json()).id;
 }
-const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted,schedule:S.schedule,planner:S.planner});
+const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted,schedule:S.schedule,planner:S.planner,quizzes:S.quizzes,vocab:S.vocab});
 function isPristine(k){return !k.students.length&&!k.log.length&&!Object.keys(k.attendance).length&&!Object.keys(k.dayTags).length&&!k.groups.length&&k.name==='My Class'}
 /* union of both sides; for the same class the newer edit wins; deletions are remembered so they spread */
 function mergeRemote(rem,first){
@@ -668,7 +799,7 @@ function mergeRemote(rem,first){
   });
   const cut=Date.now()-180*864e5;
   for(const id in del)if(del[id]<cut)delete del[id];
-  S.classes=out;S.deleted=del;
+  S.classes=out;S.deleted=del;mergeLib(rem);
   if(rem.planner&&Array.isArray(rem.planner.items)&&(+rem.planner.mod||0)>S.planner.mod)S.planner={mod:+rem.planner.mod,items:rem.planner.items.map(normPlan).filter(Boolean)};
   if(rem.schedule&&Array.isArray(rem.schedule.items)&&(+rem.schedule.mod||0)>S.schedule.mod)S.schedule={mod:+rem.schedule.mod,items:rem.schedule.items.map(normSched).filter(Boolean)};
   if(!S.classes.length)S.classes.push(newClass('My Class'));
@@ -721,7 +852,7 @@ async function syncNow(interactive,link){
       myUid=myUid||newUid();
     }
     S.sync.uid=myUid;
-    const need=!rem||sig(rem.classes,rem.deleted)!==sig(S.classes,S.deleted)||(+(rem.schedule&&rem.schedule.mod)||0)!==S.schedule.mod||(+(rem.planner&&rem.planner.mod)||0)!==S.planner.mod||String(rem.uid||'')!==myUid;
+    const need=!rem||sig(rem.classes,rem.deleted)!==sig(S.classes,S.deleted)||(+(rem.schedule&&rem.schedule.mod)||0)!==S.schedule.mod||(+(rem.planner&&rem.planner.mod)||0)!==S.planner.mod||isig(rem.quizzes&&rem.quizzes.items)!==isig(S.quizzes.items)||isig(rem.vocab&&rem.vocab.items)!==isig(S.vocab.items)||String(rem.uid||'')!==myUid;
     if(need){S.sync.dirty=false;await upload(fid0,syncPayload())}
     S.sync.on=true;S.sync.last=Date.now();S.sync.err='';
     persist();setSync('ok');
@@ -743,7 +874,7 @@ function unlink(clear){
   const t=tok;tok=null;tokExp=0;
   if(clear&&t&&gisReady()){try{google.accounts.oauth2.revoke(t,()=>{})}catch(e){}}
   S.sync.on=false;S.sync.dirty=false;S.sync.err='';S.sync.last=0;
-  if(clear){S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.planner={mod:0,items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
+  if(clear){S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.planner={mod:0,items:[]};S.quizzes={items:[]};S.vocab={items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
   stamp();persist();setSync('');render();
 }
 function syncModalHtml(){
@@ -889,7 +1020,7 @@ function gMove(c,id,to){
 }
 
 /* ---------- views ---------- */
-const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['summary','📊','Summary'],['sched','📅','Schedule'],['plan','🗓️','Planner'],['data','💾','Backup']];
+const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['summary','📊','Summary'],['sched','📅','Schedule'],['plan','🗓️','Planner'],['quiz','📋','Quizzes'],['vocab','🔤','Words'],['data','💾','Backup']];
 
 function seatGrid(c,mode){
   const m=smap(c),att=c.attendance[ui.date]||{};
@@ -1307,11 +1438,11 @@ V.data=c=>{
   +'<section class="card"><h2>Reset tools — '+esc(c.name)+'</h2><div class="row wrap"><button class="btn danger" data-act="resetPoints">Reset all points</button><button class="btn danger" data-act="clearAtt">Clear all attendance</button></div>'
   +'<div class="row wrap"><button class="btn danger" data-act="wipeAll">Erase ALL data on this device</button></div></section>'
   +'<section class="card"><h2>Google Drive sync</h2><p class="muted">'+(S.sync.on?'Sync is <b>on</b>'+(S.sync.last?' (last synced '+esc(new Date(S.sync.last).toLocaleString())+')':'')+'.':'Optional: sign in with Google to keep your phone and laptop in step.')+'</p><div class="row wrap"><button class="btn" data-act="openSync">☁️ '+(S.sync.on?'Sync settings':'Set up sync')+'</button></div></section>'
-  +'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
+  +storageCard()+'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
 };
 
 
-const MDESC={students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
+const MDESC={quiz:'Store your short quizzes',vocab:'Word bank with no repeats',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
 const tabInfo=id=>TABS.find(t=>t[0]===id);
 const isWide=()=>window.innerWidth>=720;
 const navIds=()=>isWide()?['students','seats','points','attend','picker','groups','sched']:['seats','points','attend','sched'];
@@ -1351,14 +1482,15 @@ function renderModal(){
       +'<label class="lb" for="rpCat">Category</label><select id="rpCat"><option value="">All categories</option>'+Object.keys(NK).map(k=>'<option value="'+k+'">'+NK[k][0]+' '+NK[k][1]+'</option>').join('')+'</select>'
       +'<label class="lb" for="rpStu">Student</label><select id="rpStu"><option value="">All students</option>'+cc.students.map(s=>'<option value="'+s.id+'">'+esc(s.name)+'</option>').join('')+'</select>'
       +'<label class="chk"><input type="checkbox" id="rpSign" checked> Add signature lines</label>'
-      +'<div class="row wrap"><button class="btn pri" data-act="rpGo">Print / Save as PDF</button><button class="btn" data-act="closeModal">Cancel</button></div>'
+      +'<div class="row wrap"><button class="btn pri" data-act="rpGo">Print / Save as PDF</button><button class="btn" data-act="rpDocx">Word (.docx)</button><button class="btn" data-act="closeModal">Cancel</button></div>'
       +'<p class="muted">In the print window, choose “Save as PDF” to keep a copy.</p>';
   }else if(ui.modal==='more'){
     const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
-    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['notes','summary'])+sec('Planning',['plan'])+sec('Data',['data'])
+    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['notes','summary'])+sec('Teaching bank',['quiz','vocab'])+sec('Planning',['plan'])+sec('Data',['data'])
       +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
     b=syncModalHtml();
+  }else if(ui.modal==='qexp'||ui.modal==='vexp'){b=libModalHtml();
   }else if(ui.modal==='newclass'){
     const withS=S.classes.filter(k=>k.students.length);
     b='<h2>New class</h2><label class="lb" for="ncName">Class / section name</label><input id="ncName" type="text" maxlength="60" placeholder="e.g. Organic Chemistry" autocomplete="off">'
@@ -1678,13 +1810,365 @@ const act={
   grename(c,t){const g=+t.dataset.g;const n=prompt('Group name?',c.groupNames[g]||'Group '+(g+1));if(n&&n.trim()){c.groupNames[g]=n.trim().slice(0,40);save();render()}},
   csv(c){download('classroom-summary-'+slug(c.name)+'-'+today()+'.csv',summaryCSV(c),'text/csv;charset=utf-8')},
   print(){window.print()},
-  exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,planner:S.planner,classes:S.classes},null,1),'application/json');render()},
+  exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,planner:S.planner,quizzes:S.quizzes,vocab:S.vocab,classes:S.classes},null,1),'application/json');render()},
   exportClass(c){S.lastBackup=Date.now();save();download('classroom-hub-'+slug(c.name)+'-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:c.id,classes:[c]},null,1),'application/json');render()},
   impMode(c,t){ui.importMode=t.dataset.v},
   resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);save();render();toast('Points reset')},
   clearAtt(c){if(!confirm('Clear ALL attendance records for "'+c.name+'"?'))return;c.attendance={};save();render();toast('Attendance cleared')},
-  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
+  wipeAll(){if(!confirm('Erase ALL classes, quizzes, words and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S.quizzes.items.forEach(q=>{S.deleted['q:'+q.id]=now});S.vocab.items.forEach(v=>{S.deleted['v:'+v.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]},quizzes:{items:[]},vocab:{items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
 };
+
+/* ---------- teaching bank: quizzes notepad & word bank ---------- */
+const blankQf=()=>({id:'',t:'',d:today(),s:'',x:'',a:''});
+Object.assign(ui,{qform:false,qf:blankQf(),qsearch:'',qsub:'',qopen:{},qkey:{},qx:null,
+  vf:{id:'',w:'',f:'',tp:''},vbulk:'',vbtp:'',vres:null,vn:5,vptopic:'',vscope:'all',vpick:null,vfilter:'all',vtopic:'',vsearch:'',vlim:40});
+const BOM=String.fromCharCode(0xFEFF);
+const cmpW=(a,b)=>a.w.localeCompare(b.w,undefined,{sensitivity:'base'});
+function copyText(t){
+  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t);
+  return new Promise((res,rej)=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();ok?res():rej()});
+}
+/* how much of the browser's storage the app is using (browsers allow roughly 5 million characters) */
+function storeInfo(){
+  let s='';try{s=localStorage.getItem(KEY)||''}catch(e){}
+  if(!s)s=JSON.stringify(S);
+  const limit=5000000;return{used:s.length,limit:limit,pct:Math.min(100,s.length/limit*100)};
+}
+function meterHtml(pct){return '<div class="meter'+(pct>=90?' bad':pct>=70?' warn':'')+'" role="img" aria-label="'+Math.round(pct)+' percent of storage used"><i style="width:'+Math.max(1,pct).toFixed(1)+'%"></i></div>'}
+function roomLine(si){
+  const qn=S.quizzes.items.length,qs=qn?JSON.stringify(S.quizzes).length/qn:2000;
+  return 'Room for roughly <b>'+Math.max(0,Math.floor((si.limit-si.used)/qs)).toLocaleString()+'</b> more quizzes like '+(qn?'yours':'a typical one (about 2 KB)')+'.';
+}
+function storageLine(){
+  const si=storeInfo();
+  return '<div style="margin-top:8px">'+meterHtml(si.pct)+'<p class="muted">Using '+kb(si.used)+' of about 5 MB on this device ('+(si.pct<1?'under 1':Math.round(si.pct))+'%). '+roomLine(si)+'</p></div>';
+}
+function storageCard(){
+  const si=storeInfo(),qj=JSON.stringify(S.quizzes).length,vj=JSON.stringify(S.vocab).length;
+  const note=si.pct>=90?'<div class="ssts bad">Storage is almost full. Export your quizzes and words to Word, then delete the ones you no longer need.</div>':si.pct>=70?'<div class="ssts bad">Storage is getting full. Download a backup, then delete old items you no longer need.</div>':'';
+  return '<section class="card"><h2>Storage on this device</h2>'+meterHtml(si.pct)
+    +'<p class="muted">Using <b>'+kb(si.used)+'</b> of about 5 MB ('+(si.pct<1?'under 1':Math.round(si.pct))+'%). The limit depends on the browser.</p>'+note
+    +'<div class="stats"><div class="stat"><b>'+S.quizzes.items.length+'</b>Quizzes<br><span class="muted">'+kb(qj)+'</span></div><div class="stat"><b>'+S.vocab.items.length+'</b>Words<br><span class="muted">'+kb(vj)+'</span></div><div class="stat"><b>'+S.classes.length+'</b>Classes</div></div>'
+    +'<p class="muted">'+roomLine(si)+' Quizzes and words are plain text, so they take very little space. Word files you export are saved on your device, not inside the app.</p></section>';
+}
+
+/* ----- quizzes ----- */
+function qList(){
+  const term=(ui.qsearch||'').trim().toLowerCase(),fs=ui.qsub||'';
+  return S.quizzes.items.filter(q=>(!fs||q.s===fs)&&(!term||(q.t+' '+q.s+' '+q.x+' '+q.a).toLowerCase().indexOf(term)>=0))
+    .sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:(b.m||0)-(a.m||0));
+}
+function quizItemsHtml(){
+  if(!S.quizzes.items.length)return '<p class="muted">No quizzes saved yet. Tap “＋ New quiz” to write or paste your first one.</p>';
+  const list=qList();
+  if(!list.length)return '<p class="muted">No quiz matches that search.</p>';
+  return '<p class="muted">'+list.length+' quiz'+(list.length===1?'':'zes')+'</p>'+list.map(q=>{
+    const open=!!ui.qopen[q.id],key=!!ui.qkey[q.id],n=q.x.split(/\r?\n/).filter(l=>l.trim()).length,id=' data-id="'+q.id+'"';
+    return '<div class="qz"><div class="rowsp"><b>'+esc(q.t||'Untitled quiz')+'</b><span class="muted">'+shortDate(q.d)+'</span></div>'
+      +'<div>'+(q.s?'<span class="pill">'+esc(q.s)+'</span>':'')+'<span class="pill">'+n+' line'+(n===1?'':'s')+'</span>'+(q.a?'<span class="pill">has answer key</span>':'')+'</div>'
+      +(open?'<div class="qtx">'+esc(q.x)+'</div>'+(q.a?(key?'<div class="qtx key"><b>Answer key</b>\n'+esc(q.a)+'</div><button class="btn sm" data-act="qKey"'+id+'>🙈 Hide answer key</button>':'<button class="btn sm" data-act="qKey"'+id+'>👁 Show answer key</button>'):''):'<div class="muted">'+esc(q.x.replace(/\s+/g,' ').slice(0,110))+(q.x.length>110?'…':'')+'</div>')
+      +'<div class="row wrap noprint"><button class="btn sm'+(open?' pri':'')+'" data-act="qOpen"'+id+'>'+(open?'Close':'Open')+'</button><button class="btn sm" data-act="qEdit"'+id+'>✎ Edit</button><button class="btn sm" data-act="qCopy"'+id+'>📋 Copy</button><button class="btn sm" data-act="qExport"'+id+'>📄 Word</button><button class="btn sm danger" data-act="qDel"'+id+'>Delete</button></div></div>';
+  }).join('');
+}
+V.quiz=c=>{
+  const f=ui.qf,subs=Array.from(new Set(S.quizzes.items.map(q=>q.s).filter(Boolean))).sort();
+  if(ui.qsub&&subs.indexOf(ui.qsub)<0)ui.qsub='';
+  let h='<section class="card"><div class="rowsp"><h2>📋 Quizzes</h2><span class="muted">'+S.quizzes.items.length+' saved</span></div>'
+    +'<p class="muted">Your quiz notebook. It is saved on this device, works offline, and is shared by all your classes.</p>'
+    +'<div class="row wrap"><button class="btn pri" data-act="qNew">＋ New quiz</button><button class="btn" data-act="qExportMany"'+(S.quizzes.items.length?'':' disabled')+'>📄 Export to Word…</button></div>'+storageLine()+'</section>';
+  if(ui.qform){
+    h+='<section class="card" id="qFormCard"><h2>'+(f.id?'Edit quiz':'New quiz')+'</h2>'
+      +'<label class="lb" for="qfT">Title</label><input id="qfT" type="text" maxlength="120" data-qf="t" value="'+esc(f.t)+'" placeholder="e.g. Quiz 3 – Classifying Matter" autocomplete="off">'
+      +'<div class="row wrap"><div><label class="lb" for="qfD">Date</label><input id="qfD" type="date" data-qf="d" value="'+esc(f.d)+'" style="width:auto"></div>'
+      +'<div style="flex:1;min-width:160px"><label class="lb" for="qfS">Subject or topic (optional)</label><input id="qfS" type="text" maxlength="60" data-qf="s" list="qSubs" value="'+esc(f.s)+'" placeholder="e.g. Science 7" autocomplete="off"><datalist id="qSubs">'+subs.map(s=>'<option value="'+esc(s)+'">').join('')+'</datalist></div></div>'
+      +'<label class="lb" for="qfX">Questions</label><textarea id="qfX" rows="10" data-qf="x" placeholder="1. What is matter?&#10;2. ...">'+esc(f.x)+'</textarea>'
+      +'<label class="lb" for="qfA">Answer key (optional)</label><textarea id="qfA" rows="4" data-qf="a" placeholder="1. Anything that has mass and takes up space&#10;2. ...">'+esc(f.a)+'</textarea>'
+      +'<div class="row wrap"><button class="btn pri" data-act="qSave">'+(f.id?'Update quiz':'Save quiz')+'</button><button class="btn" data-act="qCancel">Cancel</button></div></section>';
+  }
+  h+='<section class="card"><h2>My quizzes</h2>'
+    +'<input id="qSearch" type="text" placeholder="🔍 Search title or questions" value="'+esc(ui.qsearch)+'" autocomplete="off">'
+    +(subs.length?'<div class="chips"><button class="chip s'+(ui.qsub?'':' on')+'" data-act="qsub" data-v="">All</button>'+subs.map(s=>'<button class="chip s'+(ui.qsub===s?' on':'')+'" data-act="qsub" data-v="'+esc(s)+'">'+esc(s)+'</button>').join('')+'</div>':'')
+    +'<div id="qList">'+quizItemsHtml()+'</div></section>';
+  return h;
+};
+
+/* ----- word bank ----- */
+const vTopics=()=>Array.from(new Set(S.vocab.items.map(w=>w.tp).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+function vfind(w,ignoreId){
+  const k=vkey(w);if(!k)return{exact:null,sim:[]};
+  const st=vstem(k);let exact=null;const sim=[];
+  S.vocab.items.forEach(x=>{if(x.id===ignoreId)return;const xk=vkey(x.w);if(xk===k)exact=x;else if(vstem(xk)===st)sim.push(x)});
+  return{exact:exact,sim:sim};
+}
+function vdupMsg(w,ignoreId){
+  if(!vkey(w))return '';
+  const r=vfind(w,ignoreId);
+  if(r.exact){const u=r.exact.u,l=u[u.length-1];return '<span class="bad">⚠ Already in your word bank: <b>'+esc(r.exact.w)+'</b> ('+(l?'last used '+shortDate(l.d)+(l.n?' with '+esc(l.n):''):'not used yet')+')</span>'}
+  if(r.sim.length)return '<span class="warn">Looks similar to: '+r.sim.slice(0,3).map(x=>'<b>'+esc(x.w)+'</b>').join(', ')+'</span>';
+  return '<span class="ok">✓ New word</span>';
+}
+function vParseLine(l){
+  l=l.replace(/^\s*(?:\d+[\.\)]\s+|[-•*]\s+)/,'').trim();
+  if(!l)return null;
+  const seps=['\t',' – ',' — ',' - ',':','=','–','—'];
+  let bi=-1,bl=0;
+  seps.forEach(s=>{const i=l.indexOf(s);if(i>0&&(bi<0||i<bi||(i===bi&&s.length>bl))){bi=i;bl=s.length}});
+  if(bi<0){const i=l.indexOf(',');if(i>0){bi=i;bl=1}}
+  const w=(bi<0?l:l.slice(0,bi)).trim().replace(/\s+/g,' '),f=(bi<0?'':l.slice(bi+bl)).trim();
+  return w?{w:w.slice(0,80),f:f.slice(0,800)}:null;
+}
+const usedLast=w=>{const l=w.u[w.u.length-1];return l?shortDate(l.d)+(l.n?' · '+l.n:'')+(w.u.length>1?' (+'+(w.u.length-1)+' earlier)':''):''};
+function vFiltered(){
+  const term=(ui.vsearch||'').trim().toLowerCase(),f=ui.vfilter,tp=ui.vtopic;
+  return S.vocab.items.filter(w=>(f==='all'||(f==='used'?w.u.length>0:w.u.length===0))&&(!tp||w.tp===tp)&&(!term||(w.w+' '+w.f+' '+w.tp).toLowerCase().indexOf(term)>=0)).sort(cmpW);
+}
+function vItemsHtml(){
+  if(!S.vocab.items.length)return '<p class="muted">No words yet. Add your first word above.</p>';
+  const all=vFiltered();
+  if(!all.length)return '<p class="muted">No words match.</p>';
+  const shown=all.slice(0,ui.vlim);
+  return '<p class="muted">'+all.length+' word'+(all.length===1?'':'s')+'</p>'+shown.map(w=>{
+    const id=' data-id="'+w.id+'"';
+    return '<div class="vw'+(w.u.length?' used':'')+'"><div class="rowsp"><b>'+esc(w.w)+'</b>'+(w.tp?'<span class="pill">'+esc(w.tp)+'</span>':'')+'</div>'
+      +'<div>'+(w.f?esc(w.f):'<span class="muted">No meaning yet</span>')+'</div>'
+      +'<div class="muted">'+(w.u.length?'Used: '+w.u.slice(-3).map(x=>shortDate(x.d)+(x.n?' · '+esc(x.n):'')).join(', ')+(w.u.length>3?' (+'+(w.u.length-3)+' earlier)':''):'Not used yet')+'</div>'
+      +'<div class="row wrap noprint"><button class="btn sm" data-act="vUse"'+id+'>✔ Used today</button>'+(w.u.length?'<button class="btn sm" data-act="vUnuse"'+id+'>↩ Undo last use</button>':'')+'<button class="btn sm" data-act="vEdit"'+id+'>✎ Edit</button><button class="btn sm danger" data-act="vDel"'+id+' aria-label="Delete word">✕</button></div></div>';
+  }).join('')+(all.length>shown.length?'<div class="row"><button class="btn" data-act="vMore">Show more ('+(all.length-shown.length)+' left)</button></div>':'');
+}
+V.vocab=c=>{
+  const f=ui.vf,items=S.vocab.items,topics=vTopics(),unusedAll=items.filter(w=>!w.u.length).length;
+  const scope=ui.vscope,usedFn=w=>scope==='class'?w.u.some(x=>x.c===c.id):w.u.length>0;
+  const avail=items.filter(w=>!usedFn(w)&&(!ui.vptopic||w.tp===ui.vptopic));
+  const picks=(ui.vpick||[]).map(id=>items.find(w=>w.id===id)).filter(Boolean);
+  const res=ui.vres;
+  let h='<section class="card"><div class="rowsp"><h2>🔤 Word bank</h2><span class="muted">'+items.length+' words · '+unusedAll+' unused</span></div>'
+    +'<p class="muted">Science vocabulary and general-knowledge terms. The app warns you about repeats and remembers which words you already used. The bank is shared by all your classes.</p>'
+    +'<h3>'+(f.id?'Edit word':'Add a word')+'</h3>'
+    +'<label class="lb" for="vfW">Word or term</label><input id="vfW" type="text" maxlength="80" data-vf="w" value="'+esc(f.w)+'" autocomplete="off" autocapitalize="off">'
+    +'<div id="vDup" class="vdup">'+vdupMsg(f.w,f.id)+'</div>'
+    +'<label class="lb" for="vfF">Meaning</label><textarea id="vfF" rows="2" maxlength="800" data-vf="f">'+esc(f.f)+'</textarea>'
+    +'<label class="lb" for="vfT">Topic (optional)</label><input id="vfT" type="text" maxlength="40" list="vTopics" data-vf="tp" value="'+esc(f.tp)+'" placeholder="e.g. Cells, Matter, Weather" autocomplete="off"><datalist id="vTopics">'+topics.map(t=>'<option value="'+esc(t)+'">').join('')+'</datalist>'
+    +'<div class="row wrap"><button class="btn pri" data-act="vSave">'+(f.id?'Update word':'Add word')+'</button>'+(f.id?'<button class="btn" data-act="vCancel">Cancel edit</button>':'')+'</div></section>';
+  h+='<section class="card"><h2>Add many at once</h2><p class="muted">Paste one word per line with its meaning, like <b>Cell – the basic unit of life</b>. A dash, a colon, an equals sign, a tab or a comma between the word and the meaning all work. Words already in the bank are skipped.</p>'
+    +'<textarea id="vBulk" rows="5" placeholder="Atom – smallest unit of an element&#10;Molecule: two or more atoms bonded together">'+esc(ui.vbulk)+'</textarea>'
+    +'<div class="row wrap"><input id="vBulkTp" type="text" maxlength="40" list="vTopics" placeholder="Topic for all of these (optional)" value="'+esc(ui.vbtp)+'" autocomplete="off" style="flex:1;min-width:180px"><button class="btn pri" data-act="vBulk">Add pasted words</button></div>';
+  if(res){
+    const more=a=>a.slice(0,25).map(esc).join(', ')+(a.length>25?' … and '+(a.length-25)+' more':'');
+    h+='<div class="ssts"><b>Added '+res.added+' word'+(res.added===1?'':'s')+'.</b>'+(res.nomean?' '+res.nomean+' had no meaning yet.':'')
+      +(res.dups.length?'<br>Skipped '+res.dups.length+' already in the bank: '+more(res.dups):'')
+      +(res.sims.length?'<br>Added, but they look similar to existing words: '+more(res.sims):'')
+      +' <button class="link" data-act="vResDismiss">Dismiss</button></div>';
+  }
+  h+='</section>';
+  h+='<section class="card"><h2>🎲 Pick words for today</h2>'
+    +'<div class="row wrap"><span>How many?</span><div class="stepper"><button class="btn sm" data-act="vnum" data-v="-1">−</button><b>'+ui.vn+'</b><button class="btn sm" data-act="vnum" data-v="1">＋</button></div>'
+    +(topics.length?'<select data-chg="vptopic" aria-label="Topic"><option value="">All topics</option>'+topics.map(t=>'<option value="'+esc(t)+'"'+(ui.vptopic===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'')+'</div>'
+    +'<div class="chips"><button class="chip s'+(scope==='all'?' on':'')+'" data-act="vscope" data-v="all">No repeats across all classes</button><button class="chip s'+(scope==='class'?' on':'')+'" data-act="vscope" data-v="class">No repeats within '+esc(c.name)+'</button></div>'
+    +'<p class="muted">'+avail.length+' unused word'+(avail.length===1?'':'s')+' available.</p>'
+    +'<button class="btn pri big" data-act="vPick"'+(avail.length?'':' disabled')+'>🎲 Pick '+Math.min(ui.vn,avail.length||ui.vn)+' unused word'+(Math.min(ui.vn,avail.length||ui.vn)===1?'':'s')+'</button>';
+  if(picks.length){
+    h+='<h3>Today’s words</h3><ol class="vpl">'+picks.map(w=>'<li><b>'+esc(w.w)+'</b> – '+(w.f?esc(w.f):'<span class="muted">(no meaning yet)</span>')+'</li>').join('')+'</ol>'
+      +'<div class="row wrap"><button class="btn pri" data-act="vUseAll">✔ Mark as used today</button><button class="btn" data-act="vPick">🔀 Pick again</button><button class="btn" data-act="vPickDocx">📄 Word</button><button class="btn" data-act="vPickClear">Clear</button></div>'
+      +'<p class="muted">“Mark as used” records today’s date and '+esc(c.name)+' for each word, so they will not be picked again.</p>';
+  }
+  h+='</section>';
+  h+='<section class="card"><h2>All words</h2>'
+    +'<div class="stats"><div class="stat"><b>'+items.length+'</b>Total</div><div class="stat P"><b>'+unusedAll+'</b>Unused</div><div class="stat"><b>'+(items.length-unusedAll)+'</b>Used</div></div>'
+    +'<input id="vSearch" type="text" placeholder="🔍 Search words or meanings" value="'+esc(ui.vsearch)+'" autocomplete="off">'
+    +'<div class="chips">'+[['all','All'],['unused','Unused'],['used','Used']].map(x=>'<button class="chip s'+(ui.vfilter===x[0]?' on':'')+'" data-act="vfilter" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'
+    +(topics.length?'<div class="row"><select data-chg="vtopic" aria-label="Filter by topic"><option value="">All topics</option>'+topics.map(t=>'<option value="'+esc(t)+'"'+(ui.vtopic===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></div>':'')
+    +'<div id="vList">'+vItemsHtml()+'</div>'
+    +'<div class="row wrap noprint"><button class="btn" data-act="vExport"'+(items.length?'':' disabled')+'>📄 Export to Word…</button><button class="btn" data-act="vCsv"'+(items.length?'':' disabled')+'>⬇ Download CSV</button><button class="btn danger" data-act="vResetUsed"'+(items.length-unusedAll?'':' disabled')+'>Clear all “used” marks</button></div>'
+    +'<p class="muted">New term? Export first, then use “Clear all used marks” to make every word available again, or keep the marks so old words are never repeated.</p></section>';
+  return h;
+};
+
+/* ----- Word export: content builders ----- */
+function quizDocx(list,o){
+  let b='';
+  list.forEach((q,i)=>{
+    b+=DX.p(q.t||'Quiz',{st:'Title',pb:i>0&&o.sep});
+    const meta=[q.s?'Subject: '+q.s:'',q.d?'Date: '+prettyDate(q.d):''].filter(Boolean).join('   |   ');
+    if(meta)b+=DX.p(meta,{c:'555555',af:120});
+    if(o.head)b+=DX.p('Name: ______________________   Section: ____________   Score: ______',{bf:120,af:200});
+    b+=DX.lines(q.x);
+    if(o.key&&q.a)b+=DX.p('Answer Key',{st:'Heading1'})+DX.lines(q.a);
+    if(i<list.length-1&&!o.sep)b+=DX.p('',{af:300});
+  });
+  return DX.build(b);
+}
+function vocabDocx(items,o){
+  const sorted=items.slice().sort(cmpW);
+  let b=DX.p(o.title||'Science Vocabulary',{st:'Title'});
+  b+=DX.p([sorted.length+' word'+(sorted.length===1?'':'s'),o.sub,'Printed '+pdate()].filter(Boolean).join('   |   '),{c:'555555',af:160});
+  const table=(arr,showTopic)=>{
+    const head=['No.','Word','Meaning'];if(showTopic)head.push('Topic');if(o.used)head.push('Last used');
+    const w=[560,2000,0];if(showTopic)w.push(1300);if(o.used)w.push(1900);
+    w[2]=9972-w.reduce((a,x)=>a+x,0);
+    return DX.tbl([head].concat(arr.map((x,i)=>{const r=[String(i+1),x.w,x.f||''];if(showTopic)r.push(x.tp||'');if(o.used)r.push(usedLast(x));return r})),w,{head:true});
+  };
+  if(o.group){
+    const g={};sorted.forEach(x=>{(g[x.tp||'']=g[x.tp||'']||[]).push(x)});
+    Object.keys(g).sort((a,c)=>a===''?1:c===''?-1:a.localeCompare(c)).forEach(k=>{b+=DX.p((k||'No topic')+' ('+g[k].length+')',{st:'Heading2'})+table(g[k],false)});
+  }else b+=table(sorted,!!o.topic);
+  return DX.build(b);
+}
+function libModalHtml(){
+  if(ui.modal==='qexp'){
+    const sel=new Set((ui.qx&&ui.qx.ids)||[]),all=S.quizzes.items.slice().sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
+    return '<h2>📄 Export quizzes to Word</h2><p class="muted">Tick the quizzes to put in one Word file.</p>'
+      +'<div class="row wrap"><button class="btn sm" data-act="qxAll" data-v="1">Select all</button><button class="btn sm" data-act="qxAll" data-v="0">Select none</button></div>'
+      +'<div class="qxl">'+all.map(q=>'<label><input type="checkbox" class="qxc" value="'+q.id+'"'+(sel.has(q.id)?' checked':'')+'><span><b>'+esc(q.t||'Untitled')+'</b> <span class="muted">'+shortDate(q.d)+(q.s?' · '+esc(q.s):'')+'</span></span></label>').join('')+'</div>'
+      +'<label class="chk"><input type="checkbox" id="qxHead" checked> Add a Name / Section / Score line (student copy)</label>'
+      +'<label class="chk"><input type="checkbox" id="qxKey"> Include the answer key</label>'
+      +'<label class="chk"><input type="checkbox" id="qxSep" checked> Start each quiz on a new page</label>'
+      +'<div class="row wrap"><button class="btn pri" data-act="qxGo">Download Word file</button><button class="btn" data-act="closeModal">Cancel</button></div>';
+  }
+  const tps=vTopics();
+  return '<h2>📄 Export words to Word</h2>'
+    +'<label class="lb" for="vxTitle">Title</label><input id="vxTitle" type="text" maxlength="80" value="Science Vocabulary">'
+    +'<label class="lb" for="vxSet">Which words?</label><select id="vxSet"><option value="all">All words</option><option value="unused">Unused words only</option><option value="used">Used words only</option></select>'
+    +(tps.length?'<label class="lb" for="vxTp">Topic</label><select id="vxTp"><option value="">All topics</option>'+tps.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('')+'</select>':'')
+    +'<label class="chk"><input type="checkbox" id="vxGrp"> Group by topic</label>'
+    +'<label class="chk"><input type="checkbox" id="vxTpc"> Show a Topic column</label>'
+    +'<label class="chk"><input type="checkbox" id="vxUsed"> Show when each word was last used</label>'
+    +'<div class="row wrap"><button class="btn pri" data-act="vxGo">Download Word file</button><button class="btn" data-act="closeModal">Cancel</button></div>';
+}
+
+Object.assign(act,{
+  /* quizzes */
+  qNew(){ui.qf=blankQf();ui.qform=true;ui.focus='#qfT';render()},
+  qEdit(c,t){const q=S.quizzes.items.find(z=>z.id===t.dataset.id);if(!q)return;ui.qf=Object.assign(blankQf(),q);ui.qform=true;ui.focus='#qfT';render();window.scrollTo(0,0)},
+  qCancel(){ui.qf=blankQf();ui.qform=false;render()},
+  qSave(){
+    [['qfT','t'],['qfD','d'],['qfS','s'],['qfX','x'],['qfA','a']].forEach(p=>{const e=document.getElementById(p[0]);if(e)ui.qf[p[1]]=e.value});
+    const f=ui.qf,t=f.t.trim(),x=f.x.replace(/\s+$/,'');
+    if(!t&&!x.trim()){toast('Add a title or some questions first');return}
+    if(x.length>20000||f.a.length>10000){toast('That quiz is too long. Please split it into two.');return}
+    const q=normQuiz({id:f.id||uid(),t:t||'Untitled quiz',d:isD(f.d)?f.d:today(),s:f.s.trim(),x:x,a:f.a.replace(/\s+$/,''),m:Date.now()});
+    const i=S.quizzes.items.findIndex(z=>z.id===q.id),was=i>=0;
+    if(was)S.quizzes.items[i]=q;else S.quizzes.items.push(q);
+    delete S.deleted['q:'+q.id];
+    ui.qf=blankQf();ui.qform=false;save();render();toast(was?'Quiz updated':'Quiz saved');
+  },
+  qDel(c,t){
+    const q=S.quizzes.items.find(z=>z.id===t.dataset.id);if(!q||!confirm('Delete "'+(q.t||'Untitled quiz')+'"? This cannot be undone.'))return;
+    S.deleted['q:'+q.id]=Date.now();S.quizzes.items=S.quizzes.items.filter(z=>z.id!==q.id);delete ui.qopen[q.id];delete ui.qkey[q.id];save();render();toast('Quiz deleted');
+  },
+  qOpen(c,t){const id=t.dataset.id;ui.qopen[id]=!ui.qopen[id];if(!ui.qopen[id])delete ui.qkey[id];const l=$('#qList');if(l)l.innerHTML=quizItemsHtml();else render()},
+  qKey(c,t){const id=t.dataset.id;ui.qkey[id]=!ui.qkey[id];const l=$('#qList');if(l)l.innerHTML=quizItemsHtml();else render()},
+  qCopy(c,t){const q=S.quizzes.items.find(z=>z.id===t.dataset.id);if(!q)return;copyText(q.x).then(()=>toast('Questions copied'),()=>toast('Could not copy. Open the quiz and copy by hand.'))},
+  qsub(c,t){ui.qsub=t.dataset.v||'';render()},
+  qExport(c,t){ui.qx={ids:[t.dataset.id]};ui.modal='qexp';renderModal();renderNav()},
+  qExportMany(){ui.qx={ids:qList().map(q=>q.id)};ui.modal='qexp';renderModal();renderNav()},
+  qxAll(c,t){const on=t.dataset.v==='1';document.querySelectorAll('.qxc').forEach(e=>{e.checked=on})},
+  qxGo(){
+    const ids=Array.from(document.querySelectorAll('.qxc')).filter(e=>e.checked).map(e=>e.value);
+    const list=S.quizzes.items.filter(q=>ids.indexOf(q.id)>=0).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:(a.t<b.t?-1:1));
+    if(!list.length){toast('Tick at least one quiz');return}
+    const o={head:$('#qxHead').checked,key:$('#qxKey').checked,sep:$('#qxSep').checked};
+    download((list.length===1?'quiz-'+slug(list[0].t||'quiz'):'quizzes')+'-'+today()+'.docx',quizDocx(list,o),DOCX_MIME);
+    ui.modal=null;renderModal();renderNav();toast('Word file downloaded');
+  },
+  /* word bank */
+  vSave(){
+    const g=(id,k)=>{const e=document.getElementById(id);if(e)ui.vf[k]=e.value};
+    g('vfW','w');g('vfF','f');g('vfT','tp');
+    const f=ui.vf,w=f.w.trim().replace(/\s+/g,' ');
+    if(!w){toast('Type the word first');return}
+    if(!vkey(w)){toast('Please type a real word or term');return}
+    const r=vfind(w,f.id);
+    if(r.exact){toast('That word is already in the bank');const m=$('#vDup');if(m)m.innerHTML=vdupMsg(w,f.id);return}
+    if(r.sim.length&&!confirm('"'+w+'" looks similar to "'+r.sim[0].w+'" which is already in the bank.\n\nAdd it anyway?'))return;
+    const now=Date.now(),tp=f.tp.trim().slice(0,40);
+    if(f.id){const x=S.vocab.items.find(z=>z.id===f.id);if(x){x.w=w.slice(0,80);x.f=f.f.trim().slice(0,800);x.tp=tp;x.m=now}}
+    else S.vocab.items.push(normVocab({id:uid(),w:w,f:f.f.trim(),tp:tp,u:[],m:now}));
+    const was=!!f.id;ui.vf={id:'',w:'',f:'',tp:tp};ui.focus='#vfW';save();render();toast(was?'Word updated':'Word added');
+  },
+  vCancel(){ui.vf={id:'',w:'',f:'',tp:ui.vf.tp};render()},
+  vEdit(c,t){const w=S.vocab.items.find(z=>z.id===t.dataset.id);if(!w)return;ui.vf={id:w.id,w:w.w,f:w.f,tp:w.tp};ui.focus='#vfW';render();window.scrollTo(0,0)},
+  vDel(c,t){const w=S.vocab.items.find(z=>z.id===t.dataset.id);if(!w||!confirm('Delete the word "'+w.w+'"?'))return;S.deleted['v:'+w.id]=Date.now();S.vocab.items=S.vocab.items.filter(z=>z.id!==w.id);ui.vpick=(ui.vpick||[]).filter(id=>id!==w.id);save();render()},
+  vUse(c,t){
+    const w=S.vocab.items.find(z=>z.id===t.dataset.id);if(!w)return;
+    if(w.u.some(x=>x.d===today()&&x.c===c.id)){toast('Already marked as used today for '+c.name);return}
+    w.u.push({d:today(),c:c.id,n:c.name.slice(0,60)});if(w.u.length>60)w.u.shift();w.m=Date.now();save();render();toast('Marked as used: '+w.w);
+  },
+  vUnuse(c,t){const w=S.vocab.items.find(z=>z.id===t.dataset.id);if(!w||!w.u.length)return;w.u.pop();w.m=Date.now();save();render()},
+  vMore(){ui.vlim+=40;const l=$('#vList');if(l)l.innerHTML=vItemsHtml();else render()},
+  vfilter(c,t){ui.vfilter=t.dataset.v;ui.vlim=40;render()},
+  vnum(c,t){ui.vn=clamp(ui.vn+(+t.dataset.v),1,50);render()},
+  vscope(c,t){ui.vscope=t.dataset.v;ui.vpick=null;render()},
+  vPick(c){
+    const usedFn=w=>ui.vscope==='class'?w.u.some(x=>x.c===c.id):w.u.length>0;
+    const pool=S.vocab.items.filter(w=>!usedFn(w)&&(!ui.vptopic||w.tp===ui.vptopic));
+    if(!pool.length){toast('No unused words left');return}
+    ui.vpick=shuffle(pool).slice(0,ui.vn).map(w=>w.id);render();
+    if(pool.length<ui.vn)toast('Only '+pool.length+' unused word'+(pool.length===1?'':'s')+' left');
+  },
+  vPickClear(){ui.vpick=null;render()},
+  vUseAll(c){
+    const ws=(ui.vpick||[]).map(id=>S.vocab.items.find(w=>w.id===id)).filter(Boolean);if(!ws.length)return;
+    const now=Date.now();let n=0;
+    ws.forEach(w=>{if(!w.u.some(x=>x.d===today()&&x.c===c.id)){w.u.push({d:today(),c:c.id,n:c.name.slice(0,60)});if(w.u.length>60)w.u.shift();w.m=now;n++}});
+    ui.vpick=null;save();render();toast(n+' word'+(n===1?'':'s')+' marked as used');
+  },
+  vPickDocx(){
+    const ws=(ui.vpick||[]).map(id=>S.vocab.items.find(w=>w.id===id)).filter(Boolean);if(!ws.length)return;
+    download('words-'+today()+'.docx',vocabDocx(ws,{title:'Words for '+prettyDate(today())}),DOCX_MIME);toast('Word file downloaded');
+  },
+  vBulk(c){
+    const ta=$('#vBulk'),bt=$('#vBulkTp'),text=ta?ta.value:ui.vbulk,tp=(bt?bt.value:ui.vbtp).trim().slice(0,40);
+    const lines=text.split(/\r?\n/).map(vParseLine).filter(Boolean);
+    if(!lines.length){toast('Paste some words first');return}
+    const keys=new Set(),stems=new Map();
+    S.vocab.items.forEach(w=>{const k=vkey(w.w);keys.add(k);stems.set(vstem(k),w)});
+    const res={added:0,dups:[],sims:[],nomean:0},now=Date.now();
+    lines.forEach(l=>{
+      const k=vkey(l.w);if(!k)return;
+      if(keys.has(k)){res.dups.push(l.w);return}
+      const st=vstem(k);if(stems.has(st))res.sims.push(l.w+' (like '+stems.get(st).w+')');
+      const w=normVocab({id:uid(),w:l.w,f:l.f,tp:tp,u:[],m:now});
+      S.vocab.items.push(w);keys.add(k);stems.set(st,w);res.added++;if(!l.f)res.nomean++;
+    });
+    ui.vres=res;ui.vbulk='';ui.vbtp=tp;save();render();
+  },
+  vResDismiss(){ui.vres=null;render()},
+  vResetUsed(){
+    const n=S.vocab.items.filter(w=>w.u.length).length;if(!n)return;
+    if(!confirm('Clear the “used” marks on '+n+' word'+(n===1?'':'s')+'?\n\nThe words stay in the bank and become available to pick again. Export to Word first if you want a record of what was used.'))return;
+    const now=Date.now();S.vocab.items.forEach(w=>{if(w.u.length){w.u=[];w.m=now}});ui.vpick=null;save();render();toast('Used marks cleared');
+  },
+  vCsv(){
+    const rows=[['Word','Meaning','Topic','Times used','Last used','Used with']];
+    S.vocab.items.slice().sort(cmpW).forEach(w=>{const l=w.u[w.u.length-1];rows.push([w.w,w.f,w.tp,w.u.length,l?l.d:'',Array.from(new Set(w.u.map(x=>x.n).filter(Boolean))).join('; ')])});
+    download('word-bank-'+today()+'.csv',BOM+rows.map(r=>r.map(csvq).join(',')).join('\r\n'),'text/csv');
+  },
+  vExport(){ui.modal='vexp';renderModal();renderNav()},
+  vxGo(){
+    const set=$('#vxSet').value,tpEl=$('#vxTp'),tp=tpEl?tpEl.value:'';
+    const items=S.vocab.items.filter(w=>(set==='all'||(set==='used'?w.u.length>0:w.u.length===0))&&(!tp||w.tp===tp));
+    if(!items.length){toast('No words match those choices');return}
+    const sub=[set==='unused'?'Unused words':set==='used'?'Used words':'',tp?'Topic: '+tp:''].filter(Boolean).join(', ');
+    download('word-bank-'+today()+'.docx',vocabDocx(items,{title:($('#vxTitle').value||'Science Vocabulary').trim(),sub:sub,group:$('#vxGrp').checked,topic:$('#vxTpc').checked,used:$('#vxUsed').checked}),DOCX_MIME);
+    ui.modal=null;renderModal();renderNav();toast('Word file downloaded');
+  },
+  /* anecdotal notes as a Word file (same choices as the print report) */
+  rpDocx(c){
+    const f=$('#rpFrom').value,t=$('#rpTo').value,cat=$('#rpCat').value,st=$('#rpStu').value,sg=$('#rpSign').checked;
+    if(!isD(f)||!isD(t)||f>t){toast('Check the dates');return}
+    const list=(c.notes||[]).filter(n=>n.d>=f&&n.d<=t&&(!cat||n.k===cat)&&(!st||(n.s||[]).indexOf(st)>=0)).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.t-b.t);
+    if(!list.length){toast('No notes match those choices');return}
+    const m=smap(c),cn={};list.forEach(n=>{cn[n.k]=(cn[n.k]||0)+1});
+    let b=DX.p('Anecdotal Records Report',{st:'Title'});
+    b+=DX.p('Class: '+c.name+'   |   Period: '+prettyDate(f)+' – '+prettyDate(t)+'   |   Printed: '+pdate(),{c:'555555',af:120});
+    b+=DX.p(list.length+' note'+(list.length===1?'':'s')+'  ·  '+Object.keys(NK).filter(k=>cn[k]).map(k=>NK[k][1]+': '+cn[k]).join('  ·  '),{af:160});
+    const rows=[['Date','Category','Student(s)','Note']].concat(list.map(n=>[prettyDate(n.d)+'\n'+new Date(n.t||0).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),NK[n.k][1],(n.s||[]).filter(id=>m[id]).map(id=>m[id].name).join(', ')||'—',n.x]));
+    b+=DX.tbl(rows,[1700,1400,2100,4772],{head:true});
+    if(sg)b+=DX.p('Prepared by: ____________________     Date: ____________     Noted by: ____________________',{bf:480});
+    ui.rp={f:f,t:t};download('anecdotal-records-'+slug(c.name)+'-'+today()+'.docx',DX.build(b),DOCX_MIME);
+    ui.modal=null;renderModal();renderNav();toast('Word file downloaded');
+  }
+});
 
 function importNames(c,names){
   const rep=$('#replaceChk')&&$('#replaceChk').checked;
@@ -1742,12 +2226,40 @@ const chg={
         if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
         if(o.schedule&&Array.isArray(o.schedule.items)&&(ui.importMode==='replace'||!S.schedule.items.length))S.schedule={mod:Date.now(),items:o.schedule.items.map(normSched).filter(Boolean)};
         if(o.planner&&Array.isArray(o.planner.items)&&(ui.importMode==='replace'||!S.planner.items.length))S.planner={mod:Date.now(),items:o.planner.items.map(normPlan).filter(Boolean)};
+        (function(){const nw=Date.now();
+          [['quizzes','q:',normQuiz],['vocab','v:',normVocab]].forEach(([key,pre,nf])=>{
+            if(!o[key]||!Array.isArray(o[key].items))return;
+            const inc=o[key].items.map(nf).filter(Boolean);inc.forEach(x=>{x.m=nw;delete S.deleted[pre+x.id]});
+            const ids={};inc.forEach(x=>{ids[x.id]=1});
+            if(ui.importMode==='replace'){S[key].items.forEach(x=>{if(!ids[x.id])S.deleted[pre+x.id]=nw});S[key].items=inc}
+            else{const have={};S[key].items.forEach(x=>{have[x.id]=1});inc.forEach(x=>{if(!have[x.id])S[key].items.push(x)})}
+          })})();
         ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.tab='students';save();render();toast('Imported '+cls.length+' class'+(cls.length===1?'':'es'));
       }catch(e){alert('That file is not a valid Classroom Hub backup.')}
     };
     r.readAsText(f);
   }
 };
+
+/* ---------- teaching bank: change/input handlers ---------- */
+Object.assign(chg,{
+  vtopic(c,t){ui.vtopic=t.value;ui.vlim=40;render()},
+  vptopic(c,t){ui.vptopic=t.value;ui.vpick=null;render()}
+});
+document.addEventListener('input',e=>{
+  const el=e.target;if(!el)return;
+  const d=el.dataset||{};
+  if(d.qf&&ui.qf){ui.qf[d.qf]=el.value;return}
+  if(d.vf){ui.vf[d.vf]=el.value;if(d.vf==='w'){const m=$('#vDup');if(m)m.innerHTML=vdupMsg(el.value,ui.vf.id)}return}
+  if(el.id==='vBulk')ui.vbulk=el.value;
+  else if(el.id==='vBulkTp')ui.vbtp=el.value;
+  else if(el.id==='qSearch'){ui.qsearch=el.value;const l=$('#qList');if(l)l.innerHTML=quizItemsHtml()}
+  else if(el.id==='vSearch'){ui.vsearch=el.value;ui.vlim=40;const l=$('#vList');if(l)l.innerHTML=vItemsHtml()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target&&e.target.id==='vfW'){e.preventDefault();act.vSave(cur())}
+});
+
 
 document.addEventListener('click',e=>{
   if(e.target.id==='modal'&&ui.modal){act.closeModal();return}
