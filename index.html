@@ -419,6 +419,10 @@ html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
 .seat.sb-M{background:#fde4e4;border-color:var(--red)}
 .seat.sb-X{background:#e9eeed;border-color:#6b7b78}
 .stat.sb-S b{color:var(--grn)}.stat.sb-I b{color:var(--amb)}.stat.sb-L b{color:var(--blu)}.stat.sb-M b{color:var(--red)}.stat.sb-X b{color:#6b7b78}
+.ovb{display:inline-block;border-radius:999px;padding:0 6px;font-size:.68rem;font-weight:800;line-height:1.5;white-space:nowrap}
+.ovb.bad{background:#fbd0d0;color:#8a1f1f}.ovb.ok{background:#e3f6ec;color:#2a6b4a}.ovb.tsk{background:transparent;padding:0}
+.ovst{border-radius:999px;padding:1px 10px;font-size:.8rem;font-weight:800;margin-left:4px}
+.ovst.bad{background:#fbd0d0;color:#8a1f1f}.ovst.ok{background:#e3f6ec;color:#2a6b4a}.ovst.mut{background:var(--soft);color:var(--mut)}
 .todo-sub{margin:6px 0 0;padding-left:20px}.todo-sub li{margin:3px 0}
 
 </style>
@@ -473,7 +477,7 @@ cocoa:{e:"\ud83d\udc3b",pe:"\ud83c\udf6a",sp:["🍪", "✨", "🤎"],msgs:["Bear
 candy:{e:"\ud83c\udf6c",pe:"\ud83c\udf6d",sp:["🍭", "✨", "💗"],msgs:["Sweet job, teacher! 🍬", "Sprinkles of encouragement~", "You’re one smart cookie 🍭", "Candy-coated confidence!", "A sugary-sweet day ahead ✨"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="18,34 4,23 4,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><polygon points="46,34 60,23 60,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><circle cx="32" cy="34" r="17" fill="#ee86c4"/><circle cx="32" cy="34" r="15.2" fill="#ffb3d9"/><path d="M20 24Q32 18 44 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><circle cx="26.5" cy="33" r="2.4" fill="#6b2a55"/><circle cx="37.5" cy="33" r="2.4" fill="#6b2a55"/><ellipse cx="21.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><ellipse cx="42.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><path d="M29 38.5q3 3 6 0" fill="none" stroke="#6b2a55" stroke-width="1.8" stroke-linecap="round"/><path d="M52 8Q52 13 57 13Q52 13 52 18Q52 13 47 13Q52 13 52 8Z" fill="#ffd966"/></svg>'},
 berry:{e:"\ud83c\udf47",pe:"\ud83c\udf47",sp:["🍇", "✨", "💜"],msgs:["Berry good work! 🍇", "Juicy ideas are coming~", "Pop! Another great lesson ✨", "Plum perfect, teacher!", "You’re one in a berry-million 💜"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="38" r="23" fill="#5b5fc7"/><circle cx="32" cy="38" r="21" fill="#7a7fe0"/><ellipse cx="21" cy="27" rx="6" ry="3.4" transform="rotate(-35 21 27)" fill="#fff" opacity=".35"/><polygon points="32,15 35,21 41,19 38,25 32,23 26,25 23,19 29,21" fill="#4a4eab"/><circle cx="32" cy="21" r="1.6" fill="#a9acf0"/><circle cx="24" cy="39" r="2.8" fill="#1f2050"/><circle cx="40" cy="39" r="2.8" fill="#1f2050"/><circle cx="25" cy="38" r="1" fill="#fff"/><circle cx="41" cy="38" r="1" fill="#fff"/><ellipse cx="18.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><ellipse cx="45.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><path d="M29 45q3 3.2 6 0" fill="none" stroke="#1f2050" stroke-width="1.8" stroke-linecap="round"/></svg>'},
 };
-const TIPS={subs:'Check who has handed in their work',plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
+const TIPS={overview:'All your classes in one place',subs:'Check who has handed in their work',plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
 const TK=()=>{const k=S.classes.find(x=>x.id===S.activeId)||S.classes[0];return (k&&k.theme&&THEMES[k.theme])?k.theme:S.settings.theme};
 const FB=()=>S.settings.front!=='t';
 const NK={obs:['👀','Observation'],concern:['⚠️','Concern'],good:['🌟','Positive'],follow:['📌','Follow-up']};
@@ -991,7 +995,7 @@ function gMove(c,id,to){
 }
 
 /* ---------- views ---------- */
-const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['summary','📊','Summary'],['sched','📅','Schedule'],['subs','📥','Submissions'],['plan','🗓️','Planner'],['data','💾','Backup']];
+const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['overview','🗂️','Overview'],['summary','📊','Summary'],['sched','📅','Schedule'],['subs','📥','Submissions'],['plan','🗓️','Planner'],['data','💾','Backup']];
 
 function seatGrid(c,mode){
   const m=smap(c),att=c.attendance[ui.date]||{};
@@ -1418,10 +1422,84 @@ V.data=c=>{
 };
 
 
-const MDESC={subs:'Who has handed in what',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
+/* ---------- overview: all classes at once ---------- */
+const ovCls=()=>(!ui.ovc||ui.ovc==='all')?S.classes:S.classes.filter(k=>k.id===ui.ovc);
+function ovDay(d){
+  const out=[];
+  ovCls().forEach(k=>{
+    const a=k.attendance[d];if(!a||!Object.keys(a).length)return;
+    const g={A:[],L:[],E:[]};k.students.forEach(s=>{const v=a[s.id];if(g[v])g[v].push(s.name)});
+    out.push({k:k,g:g});
+  });
+  return out;
+}
+function ovTasks(){
+  const r=[];
+  ovCls().forEach(k=>allTasks(k).forEach(t=>{
+    const miss=[],mad=[];
+    k.students.forEach(s=>{const st=taskState(k,t,s.id);if(st==='missing')miss.push(s.name);else if(st==='madeup')mad.push(s.name)});
+    r.push({k:k,t:t,miss:miss,mad:mad,taken:!!(k.attendance[t.date]&&Object.keys(k.attendance[t.date]).length)});
+  }));
+  r.sort((a,b)=>a.t.date<b.t.date?1:a.t.date>b.t.date?-1:(a.k.name<b.k.name?-1:1));
+  return r;
+}
+V.overview=c=>{
+  if(!ui.ovm)ui.ovm=today().slice(0,7);if(!ui.ovd)ui.ovd=today();
+  const f=ui.ovf||'all',a=ui.ovm.split('-').map(Number),y=a[0],mo=a[1];
+  const off=(new Date(y,mo-1,1).getDay()+6)%7,nd=new Date(y,mo,0).getDate(),rows=Math.ceil((off+nd)/7),td=today();
+  let cells='',monthAbs=0,absDays=0;
+  for(let n=0;n<rows*7;n++){
+    const dn=n-off+1;
+    if(dn<1||dn>nd){cells+='<div class="pc out"></div>';continue}
+    const key=y+'-'+pad(mo)+'-'+pad(dn),info=ovDay(key);
+    const na=info.reduce((s,x)=>s+x.g.A.length,0);
+    const hasTask=ovCls().some(k=>(k.dayTags[key]||[]).length);
+    monthAbs+=na;if(na)absDays++;
+    cells+='<button class="pc'+(key===td?' today':'')+(key===ui.ovd?' sel':'')+(n%7>=5?' wk':'')+'" data-act="ovDay" data-d="'+key+'"><span class="pn">'+dn+'</span>'
+      +(na?'<span class="ovb bad">'+na+' abs</span>':(info.length?'<span class="ovb ok">✓</span>':''))
+      +(hasTask?'<span class="ovb tsk">📌</span>':'')+'</button>';
+  }
+  const sel=ovDay(ui.ovd),tl=ovTasks();
+  const withMiss=tl.filter(x=>x.miss.length).length,openN=tl.reduce((s,x)=>s+x.miss.length,0);
+  const shown=tl.filter(x=>f==='all'||(f==='missing'?x.miss.length>0:x.miss.length===0));
+  let h='<section class="card"><h2>🗂️ Overview — all classes</h2>'
+   +'<p class="muted">Combines every class so you do not have to switch one by one.</p>'
+   +'<label class="lb" for="ovc">Show</label><select id="ovc" data-chg="ovc"><option value="all">All classes ('+S.classes.length+')</option>'+S.classes.map(k=>'<option value="'+k.id+'"'+(ui.ovc===k.id?' selected':'')+'>'+esc(k.name)+'</option>').join('')+'</select></section>';
+  h+='<section class="card"><h2>📅 Attendance calendar</h2>'
+   +'<div class="rowsp"><button class="btn sm" data-act="ovPrev" aria-label="Previous month">◀</button><h3 style="margin:0">'+MONTHS[mo-1]+' '+y+'</h3><button class="btn sm" data-act="ovNext" aria-label="Next month">▶</button></div>'
+   +'<div class="row wrap noprint"><button class="btn sm" data-act="ovToday">This month</button></div>'
+   +'<div class="pgrid"><div class="ph">Mon</div><div class="ph">Tue</div><div class="ph">Wed</div><div class="ph">Thu</div><div class="ph">Fri</div><div class="ph wk">Sat</div><div class="ph wk">Sun</div>'+cells+'</div>'
+   +'<p class="muted"><span class="ovb bad">n abs</span> absent students that day · <span class="ovb ok">✓</span> attendance taken, nobody absent · <span class="ovb tsk">📌</span> activity/quiz/exam day</p>'
+   +'<div class="stats"><div class="stat A"><b>'+monthAbs+'</b>Absences this month</div><div class="stat"><b>'+absDays+'</b>Days with absences</div></div>'
+   +'<h3>'+prettyDate(ui.ovd)+'</h3>';
+  const tg=ovCls().map(k=>(k.dayTags[ui.ovd]||[]).map(t=>'<span class="tg tg-'+t.type+'">'+esc(taskName(t))+' · '+esc(k.name)+'</span>').join('')).join('');
+  if(tg)h+='<div>'+tg+'</div>';
+  if(!sel.length)h+='<p class="muted">No attendance recorded for this day.</p>';
+  sel.forEach(x=>{
+    const pl=(l,cls)=>l.length?'<div><b>'+cls+':</b> '+l.map(n=>'<span class="pill">'+esc(n)+'</span>').join('')+'</div>':'';
+    h+='<div class="tk"><div><b>'+esc(x.k.name)+'</b></div>'
+      +(x.g.A.length||x.g.L.length||x.g.E.length?pl(x.g.A,'Absent')+pl(x.g.L,'Late')+pl(x.g.E,'Excused'):'<span class="muted">Nobody absent, late or excused 🎉</span>')+'</div>';
+  });
+  h+='</section>';
+  h+='<section class="card"><h2>📌 Tasks &amp; assessments</h2>'
+   +'<div class="stats"><div class="stat"><b>'+tl.length+'</b>Tagged days</div><div class="stat A"><b>'+withMiss+'</b>With missing</div><div class="stat A"><b>'+openN+'</b>Open missing</div><div class="stat P"><b>'+(tl.length-withMiss)+'</b>Complete</div></div>'
+   +'<div class="chips noprint">'+[['all','All'],['missing','With missing'],['complete','Complete']].map(x=>'<button class="chip s'+(f===x[0]?' on':'')+'" data-act="ovf" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>';
+  if(!tl.length)h+='<p class="muted">No days are tagged yet. In Attendance, choose a date and tag it as an activity, quiz, PeTa, summative or exam.</p>';
+  else if(!shown.length)h+='<p class="muted">Nothing under this filter.</p>';
+  shown.forEach(x=>{
+    const st=x.miss.length?'<span class="ovst bad">⚠ '+x.miss.length+' missing</span>':(x.mad.length?'<span class="ovst ok">✓ Complete (all made up)</span>':(x.taken?'<span class="ovst ok">✓ Complete</span>':'<span class="ovst mut">No attendance taken that day</span>'));
+    h+='<div class="tk"><div><span class="tg tg-'+x.t.type+'">'+esc(taskName(x.t))+'</span> '+st+'</div>'
+      +'<div class="muted">'+esc(x.k.name)+' · '+prettyDate(x.t.date)+'</div>'
+      +(x.miss.length?'<div><b>Missing:</b> '+x.miss.map(n=>'<span class="pill">'+esc(n)+'</span>').join('')+'</div>':'')
+      +(x.mad.length?'<div><b>Made up:</b> '+x.mad.map(n=>'<span class="pill">'+esc(n)+'</span>').join('')+'</div>':'')+'</div>';
+  });
+  h+='<p class="muted">To mark a student as made up, open that class and use Summary → Missing tasks.</p></section>';
+  return h;
+};
+const MDESC={overview:'All classes: absences & missing tasks',subs:'Who has handed in what',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
 const tabInfo=id=>TABS.find(t=>t[0]===id);
 const isWide=()=>window.innerWidth>=720;
-const navIds=()=>isWide()?['students','seats','points','attend','picker','groups','sched']:['seats','points','attend','sched'];
+const navIds=()=>isWide()?['students','seats','points','attend','overview','sched']:['seats','points','attend','sched'];
 function renderNav(){
   const nb=$('#bnav');if(!nb)return;
   const ids=navIds(),moreOn=!ids.includes(ui.tab)||ui.modal==='more';
@@ -1462,7 +1540,7 @@ function renderModal(){
       +'<p class="muted">In the print window, choose “Save as PDF” to keep a copy.</p>';
   }else if(ui.modal==='more'){
     const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
-    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['notes','summary','subs'])+sec('Planning',['plan'])+sec('Data',['data'])
+    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['overview','notes','summary','subs'])+sec('Planning',['plan'])+sec('Data',['data'])
       +'<div class="sec">Other tools</div><div class="mgrid"><button class="mtile" data-act="openLetters"><span class="mi">✉️</span><b>Letters</b><small>Parent grade letters</small></button></div>'
       +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
@@ -1991,7 +2069,14 @@ const chg={
   }
 };
 
-Object.assign(chg,{subSel(c,t){ui.subId=t.value;render()}});
+Object.assign(chg,{subSel(c,t){ui.subId=t.value;render()},ovc(c,t){ui.ovc=t.value;render()}});
+Object.assign(act,{
+  ovDay(c,t){ui.ovd=t.dataset.d;render()},
+  ovPrev(){const a=ui.ovm.split('-').map(Number);ui.ovm=dkey(new Date(a[0],a[1]-2,1)).slice(0,7);render()},
+  ovNext(){const a=ui.ovm.split('-').map(Number);ui.ovm=dkey(new Date(a[0],a[1],1)).slice(0,7);render()},
+  ovToday(){ui.ovm=today().slice(0,7);ui.ovd=today();render()},
+  ovf(c,t){ui.ovf=t.dataset.v;render()}
+});
 document.addEventListener('input',e=>{const el=e.target;if(el&&el.id==='subName')ui.subDraft=el.value});
 document.addEventListener('click',e=>{
   if(e.target.id==='modal'&&ui.modal){act.closeModal();return}
