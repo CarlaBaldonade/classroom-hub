@@ -423,7 +423,26 @@ html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
 .ovb.bad{background:#fbd0d0;color:#8a1f1f}.ovb.ok{background:#e3f6ec;color:#2a6b4a}.ovb.tsk{background:transparent;padding:0}
 .ovst{border-radius:999px;padding:1px 10px;font-size:.8rem;font-weight:800;margin-left:4px}
 .ovst.bad{background:#fbd0d0;color:#8a1f1f}.ovst.ok{background:#e3f6ec;color:#2a6b4a}.ovst.mut{background:var(--soft);color:var(--mut)}
-.todo-sub{margin:6px 0 0;padding-left:20px}.todo-sub li{margin:3px 0}
+.todo-sub{margin:6px 0 0;padding-left:20px}
+.sf2w{color:#111;font-family:var(--sans)}
+.sf2h{text-align:center;margin-bottom:4px}.sf2h h1{font-family:var(--serif);font-weight:400;font-size:15pt;margin:0}.sf2h div{font-size:8pt;color:#444}
+.sf2f{display:flex;flex-wrap:wrap;gap:2px 18px;font-size:9pt;margin:6px 0}
+.sf2t{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.5pt}
+.tw .sf2t{min-width:980px}
+.sf2t th,.sf2t td{border:1px solid #444;padding:1px 2px;text-align:center;white-space:nowrap;overflow:hidden;min-width:0}
+.sf2t th{background:#eee;position:static;font-size:7pt;white-space:normal}
+.sfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 14px}
+.sf2t td.nm{text-align:left;white-space:normal;word-break:break-word}
+.sf2t td:first-child,.sf2t th:first-child{text-align:center;min-width:0;white-space:nowrap}
+.sf2t td.rm{text-align:left;white-space:normal;font-size:6.5pt}
+.sf2t tr.sec td{background:#f1f1f1;font-weight:800;text-align:left}
+.sf2t tr.tot td{font-weight:800;background:#fafafa}
+.sf2t td.xm{font-weight:800}
+.sf2s{border-collapse:collapse;font-size:8.5pt;margin-top:10px}
+.sf2s th,.sf2s td{border:1px solid #444;padding:3px 8px;text-align:center;white-space:normal}
+.sf2s th{background:#eee;position:static}.sf2s td:first-child,.sf2s th:first-child{text-align:left;min-width:0}
+.sf2sig{display:flex;gap:30px;margin-top:22px;font-size:9pt}.sf2sig div{flex:1;text-align:center}.sf2sig span{display:block;border-top:1px solid #333;margin-top:26px;padding-top:2px;font-size:8pt}
+@media print{.sf2t,.sf2t th,.sf2t td{-webkit-print-color-adjust:exact;print-color-adjust:exact}}.todo-sub li{margin:3px 0}
 
 </style>
 </head>
@@ -477,7 +496,7 @@ cocoa:{e:"\ud83d\udc3b",pe:"\ud83c\udf6a",sp:["🍪", "✨", "🤎"],msgs:["Bear
 candy:{e:"\ud83c\udf6c",pe:"\ud83c\udf6d",sp:["🍭", "✨", "💗"],msgs:["Sweet job, teacher! 🍬", "Sprinkles of encouragement~", "You’re one smart cookie 🍭", "Candy-coated confidence!", "A sugary-sweet day ahead ✨"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="18,34 4,23 4,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><polygon points="46,34 60,23 60,45" fill="#ffd0ea" stroke="#ee86c4" stroke-width="1.6" stroke-linejoin="round"/><circle cx="32" cy="34" r="17" fill="#ee86c4"/><circle cx="32" cy="34" r="15.2" fill="#ffb3d9"/><path d="M20 24Q32 18 44 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><circle cx="26.5" cy="33" r="2.4" fill="#6b2a55"/><circle cx="37.5" cy="33" r="2.4" fill="#6b2a55"/><ellipse cx="21.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><ellipse cx="42.5" cy="39" rx="3.4" ry="2.2" fill="#ff8fb8"/><path d="M29 38.5q3 3 6 0" fill="none" stroke="#6b2a55" stroke-width="1.8" stroke-linecap="round"/><path d="M52 8Q52 13 57 13Q52 13 52 18Q52 13 47 13Q52 13 52 8Z" fill="#ffd966"/></svg>'},
 berry:{e:"\ud83c\udf47",pe:"\ud83c\udf47",sp:["🍇", "✨", "💜"],msgs:["Berry good work! 🍇", "Juicy ideas are coming~", "Pop! Another great lesson ✨", "Plum perfect, teacher!", "You’re one in a berry-million 💜"],svg:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="38" r="23" fill="#5b5fc7"/><circle cx="32" cy="38" r="21" fill="#7a7fe0"/><ellipse cx="21" cy="27" rx="6" ry="3.4" transform="rotate(-35 21 27)" fill="#fff" opacity=".35"/><polygon points="32,15 35,21 41,19 38,25 32,23 26,25 23,19 29,21" fill="#4a4eab"/><circle cx="32" cy="21" r="1.6" fill="#a9acf0"/><circle cx="24" cy="39" r="2.8" fill="#1f2050"/><circle cx="40" cy="39" r="2.8" fill="#1f2050"/><circle cx="25" cy="38" r="1" fill="#fff"/><circle cx="41" cy="38" r="1" fill="#fff"/><ellipse cx="18.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><ellipse cx="45.5" cy="45" rx="3.8" ry="2.4" fill="#f3b1d6"/><path d="M29 45q3 3.2 6 0" fill="none" stroke="#1f2050" stroke-width="1.8" stroke-linecap="round"/></svg>'},
 };
-const TIPS={overview:'All your classes in one place',subs:'Check who has handed in their work',plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
+const TIPS={sf2:'Monthly attendance report, ready to print',overview:'All your classes in one place',subs:'Check who has handed in their work',plan:'Plan suspensions, meetings and to-dos',notes:'Write today’s observations and concerns',sched:'Your classes for the week',students:'Add or paste your class list here~',seats:'Tap seats to arrange your room',points:'Tap a student to give a star',attend:'Pick a mark, then tap the seats',picker:'Who will be picked today?',groups:'Make teams in one tap',summary:'See how everyone is doing',data:'Back up your data to stay safe'};
 const TK=()=>{const k=S.classes.find(x=>x.id===S.activeId)||S.classes[0];return (k&&k.theme&&THEMES[k.theme])?k.theme:S.settings.theme};
 const FB=()=>S.settings.front!=='t';
 const NK={obs:['👀','Observation'],concern:['⚠️','Concern'],good:['🌟','Positive'],follow:['📌','Follow-up']};
@@ -898,6 +917,7 @@ function copySeating(src,dst){
   dst.seats=seats;ensureSeats(dst);
   dst.aisleCols=cleanIdx(dst.aisleCols,dst.cols-1);dst.aisleRows=cleanIdx(dst.aisleRows,dst.rows-1);
 }
+function copySex(src,dst){const by={};src.students.forEach(x=>{if(x.g==='M'||x.g==='F')by[cleanName(x.name).toLowerCase()]=x.g});dst.students.forEach(x=>{const g=by[x.name.toLowerCase()];if(g&&!x.g)x.g=g})}
 function addStudents(c,names){
   let added=0,dup=0;const have=new Set(c.students.map(s=>s.name.toLowerCase()));
   names.forEach(n=>{n=cleanName(n);if(!n)return;const k=n.toLowerCase();if(have.has(k)){dup++;return}have.add(k);c.students.push({id:uid(),name:n});added++});
@@ -995,7 +1015,7 @@ function gMove(c,id,to){
 }
 
 /* ---------- views ---------- */
-const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['overview','🗂️','Overview'],['summary','📊','Summary'],['sched','📅','Schedule'],['subs','📥','Submissions'],['plan','🗓️','Planner'],['data','💾','Backup']];
+const TABS=[['students','👥','Students'],['seats','🪑','Seats'],['points','⭐','Points'],['attend','✅','Attendance'],['picker','🎲','Picker'],['groups','🧩','Groups'],['notes','📝','Notes'],['overview','🗂️','Overview'],['sf2','📑','SF2'],['summary','📊','Summary'],['sched','📅','Schedule'],['subs','📥','Submissions'],['plan','🗓️','Planner'],['data','💾','Backup']];
 
 function seatGrid(c,mode){
   const m=smap(c),att=c.attendance[ui.date]||{};
@@ -1042,7 +1062,7 @@ function tagBadges(c,date){return (c.dayTags[date]||[]).map(t=>'<span class="tg 
 const V={};
 
 V.students=c=>{
-  const items=c.students.map((s,i)=>'<li><span class="ln">'+(i+1)+'</span><button class="lname" data-act="renameStu" data-id="'+s.id+'">'+esc(s.name)+'</button><button class="x" data-act="delStu" data-id="'+s.id+'" aria-label="Remove '+esc(s.name)+'">×</button></li>').join('');
+  const items=c.students.map((s,i)=>'<li><span class="ln">'+(i+1)+'</span><button class="lname" data-act="renameStu" data-id="'+s.id+'">'+esc(s.name)+'</button><button class="chip s'+(s.g==='M'||s.g==='F'?' on':'')+'" data-act="stuSex" data-id="'+s.id+'" aria-label="Sex of '+esc(s.name)+'">'+(s.g==='M'||s.g==='F'?s.g:'M/F')+'</button><button class="x" data-act="delStu" data-id="'+s.id+'" aria-label="Remove '+esc(s.name)+'">×</button></li>').join('');
   const others=S.classes.filter(k=>k.id!==c.id&&k.students.length);
   return '<section class="card"><h2>Add a student</h2><div class="row"><input id="nameIn" type="text" placeholder="Type a name, then press Enter" autocomplete="off"><button class="btn pri" data-act="addOne">Add</button></div></section>'
   +'<section class="card"><h2>Add many at once</h2><p class="muted">Paste one name per line (copy from Excel or Word works), or upload a .txt or .csv file.</p>'
@@ -1052,7 +1072,7 @@ V.students=c=>{
   +'<div class="row wrap"><span class="muted">For CSV files, use:</span><select id="csvMode"><option value="one">First column</option><option value="two">First + second column (Last, First)</option></select></div></section>'
   +(others.length?'<section class="card"><h2>Copy students from another class</h2><p class="muted">Adds the names. Points and attendance are not copied.</p><label class="chk"><input type="checkbox" id="copySeats"> Also carry over the seating plan (replaces this class\'s current seating)</label><div class="row wrap"><select id="copySel">'+others.map(k=>'<option value="'+k.id+'">'+esc(k.name)+' ('+k.students.length+' students)</option>').join('')+'</select><button class="btn" data-act="copyFrom">Copy names here</button></div></section>':'')
   +'<section class="card"><div class="rowsp"><h2>Class list ('+c.students.length+')</h2><button class="btn sm" data-act="sortAZ">Sort A–Z</button></div>'
-  +(c.students.length?'<ol class="slist">'+items+'</ol><p class="muted">Tap a name to edit it.</p>':'<p class="muted">No students yet. Add some above.</p>')+'</section>'
+  +(c.students.length?'<ol class="slist">'+items+'</ol><p class="muted">Tap a name to edit it. Tap M/F to set Male or Female (needed for the SF2 report).</p>':'<p class="muted">No students yet. Add some above.</p>')+'</section>'
   +'<section class="card"><h2>Class settings</h2><div class="row wrap"><button class="btn" data-act="renameClass">Rename class</button><button class="btn danger" data-act="delClass">Delete class</button></div></section>';
 };
 
@@ -1496,7 +1516,92 @@ V.overview=c=>{
   h+='<p class="muted">To mark a student as made up, open that class and use Summary → Missing tasks.</p></section>';
   return h;
 };
-const MDESC={overview:'All classes: absences & missing tasks',subs:'Who has handed in what',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
+/* ---------- SF2: Daily Attendance Report of Learners ---------- */
+const sxOf=s=>(s.g==='M'||s.g==='F')?s.g:'';
+const absV=v=>v==='A'||v==='E';
+function sf2Meta(c){
+  const m=c.sf2||{},o=(S.classes.find(k=>k!==c&&k.sf2)||{}).sf2||{},d=new Date(),y=d.getFullYear(),sy=d.getMonth()>=5?y+'-'+(y+1):(y-1)+'-'+y;
+  const g=(k,df)=>m[k]!==undefined?m[k]:(o[k]!==undefined?o[k]:df);
+  return{schoolId:g('schoolId',''),school:g('school',''),sy:g('sy',sy),grade:m.grade!==undefined?m.grade:'',section:m.section!==undefined?m.section:c.name,teacher:g('teacher',''),head:g('head','')};
+}
+function sf2Data(c,ym){
+  const a=ym.split('-').map(Number),y=a[0],mo=a[1],nd=new Date(y,mo,0).getDate(),td=today();
+  const days=[],skipped=[];
+  for(let n=1;n<=nd;n++){
+    const key=y+'-'+pad(mo)+'-'+pad(n),wd=new Date(y,mo-1,n).getDay();
+    if(itemsOnDate(key).some(i=>i.k==='susp'))continue;
+    const at=c.attendance[key];
+    if(at&&Object.keys(at).length)days.push({n:n,key:key,wd:wd});
+    else if(wd!==0&&wd!==6&&key<=td)skipped.push(n);
+  }
+  const rows=c.students.slice().sort((p,q)=>p.name.localeCompare(q.name)).map(st=>{
+    let ab=0,ta=0,run=0,mx=0;
+    const marks=days.map(d=>{const v=(c.attendance[d.key]||{})[st.id];
+      if(absV(v)){ab++;run++;mx=Math.max(mx,run);return 'x'}
+      run=0;if(v==='L'){ta++;return 't'}return ''});
+    return{s:st,g:sxOf(st),marks:marks,ab:ab,ta:ta,run:mx,pres:days.length-ab};
+  });
+  return{y:y,mo:mo,days:days,skipped:skipped,rows:rows};
+}
+function sf2Group(D,g){
+  const list=g==='*'?D.rows:D.rows.filter(r=>r.g===g),nd=D.days.length;
+  const pres=list.reduce((t,r)=>t+r.pres,0),ada=nd?pres/nd:0,reg=list.length;
+  return{list:list,reg:reg,ada:ada,pct:reg?ada/reg*100:0,five:list.filter(r=>r.run>=5),ab:list.reduce((t,r)=>t+r.ab,0),ta:list.reduce((t,r)=>t+r.ta,0),perDay:D.days.map((d,i)=>list.filter(r=>r.marks[i]!=='x').length)};
+}
+const WD=['S','M','T','W','TH','F','S'];
+function sf2Html(c,D,mt){
+  const nd=D.days.length,grp={M:sf2Group(D,'M'),F:sf2Group(D,'F'),U:sf2Group(D,''),T:sf2Group(D,'*')};
+  const mn=MONTHS[D.mo-1]+' '+D.y,dw=(55/Math.max(nd,1)).toFixed(2);
+  const col='<colgroup><col style="width:3.5%"><col style="width:22%">'+D.days.map(()=>'<col style="width:'+dw+'%">').join('')+'<col style="width:4.5%"><col style="width:4.5%"><col style="width:9.5%"></colgroup>';
+  const f=(l,v)=>'<span><b>'+l+':</b> '+(esc(v)||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')+'</span>';
+  let h='<div class="sf2w"><div class="sf2h"><h1>School Form 2 (SF 2) Daily Attendance Report of Learners</h1><div>(This replaces Form 1, Form 2 &amp; STS Form 4 - Absenteeism and Dropout Profile)</div></div>'
+   +'<div class="sf2f">'+f('School ID',mt.schoolId)+f('School Year',mt.sy)+f('Report for the Month of',mn)+'</div><div class="sf2f">'+f('Name of School',mt.school)+f('Grade Level',mt.grade)+f('Section',mt.section)+'</div>';
+  if(!nd)return h+'<p style="font-size:10pt">No attendance has been recorded for this month.</p></div>';
+  h+='<table class="sf2t">'+col+'<thead><tr><th rowspan="2">No.</th><th rowspan="2">LEARNER\'S NAME<br>(Last Name, First Name, Middle Name)</th>'+D.days.map(d=>'<th>'+d.n+'</th>').join('')+'<th colspan="2">Total for the Month</th><th rowspan="2">REMARKS</th></tr>'
+   +'<tr>'+D.days.map(d=>'<th>'+WD[d.wd]+'</th>').join('')+'<th>ABSENT</th><th>TARDY</th></tr></thead><tbody>';
+  const sect=(g,label)=>{
+    const G=grp[g];if(g==='U'&&!G.reg)return '';
+    let b='<tr class="sec"><td colspan="'+(nd+5)+'">'+label+'</td></tr>';
+    G.list.forEach((r,i)=>{b+='<tr><td>'+(i+1)+'</td><td class="nm">'+esc(r.s.name)+'</td>'+r.marks.map(m=>'<td class="xm">'+(m==='x'?'x':m==='t'?'◤':'')+'</td>').join('')+'<td>'+(r.ab||'')+'</td><td>'+(r.ta||'')+'</td><td class="rm">'+(r.run>=5?'Absent '+r.run+' days in a row':'')+'</td></tr>'});
+    b+='<tr class="tot"><td></td><td class="nm">'+(g==='U'?'TOTAL (sex not set)':'TOTAL '+(g==='M'?'Male':'Female'))+' present</td>'+G.perDay.map(n=>'<td>'+n+'</td>').join('')+'<td>'+G.ab+'</td><td>'+G.ta+'</td><td></td></tr>';
+    return b;
+  };
+  h+=sect('M','MALE')+sect('F','FEMALE')+sect('U','SEX NOT SET (set M/F in the Students tab)');
+  h+='<tr class="tot"><td></td><td class="nm">COMBINED present per day</td>'+grp.T.perDay.map(n=>'<td>'+n+'</td>').join('')+'<td>'+grp.T.ab+'</td><td>'+grp.T.ta+'</td><td></td></tr></tbody></table>';
+  h+='<p style="font-size:8pt;margin:4px 0">Codes: <b>x</b> = absent (excused absences are counted as absent) · <b>◤</b> = tardy (late; counted as present) · blank = present. Number of school days with attendance this month: <b>'+nd+'</b>.</p>';
+  const v=n=>(n||0)+'';
+  const row=(l,m,fm,t)=>'<tr><td>'+l+'</td><td>'+m+'</td><td>'+fm+'</td><td>'+t+'</td></tr>';
+  const MF=grp.M,FF=grp.F,TT=grp.T,ex=grp.U.reg;
+  const T2=x=>x.toFixed(2),pc=x=>x.toFixed(2)+'%';
+  h+='<table class="sf2s"><thead><tr><th>Summary for the month of '+esc(mn)+'</th><th>Male</th><th>Female</th><th>TOTAL</th></tr></thead><tbody>'
+   +row('Enrolment as of 1st Friday of the school year','','','')
+   +row('Late enrolment during the month (beyond cut-off)','','','')
+   +row('Registered learners as of end of the month',v(MF.reg),v(FF.reg),v(TT.reg))
+   +row('Average Daily Attendance',T2(MF.ada),T2(FF.ada),T2(TT.ada))
+   +row('Percentage of Attendance for the month',pc(MF.pct),pc(FF.pct),pc(TT.pct))
+   +row('Number of students absent for 5 consecutive days',v(MF.five.length),v(FF.five.length),v(TT.five.length))
+   +row('Drop out','','','')+row('Transferred out','','','')+row('Transferred in','','','')+'</tbody></table>';
+  if(ex)h+='<p style="font-size:8pt;margin:4px 0">Note: '+ex+' learner'+(ex>1?'s have':' has')+' no sex set, so Male and Female figures leave them out. Total includes everyone.</p>';
+  h+='<div class="sf2sig"><div><span>'+esc(mt.teacher||'')+'<br>Signature of Teacher over Printed Name<br><i>I certify that this is a true and correct report.</i></span></div><div><span>'+esc(mt.head||'')+'<br>Signature of School Head over Printed Name<br><i>Attested by</i></span></div></div></div>';
+  return h;
+}
+V.sf2=c=>{
+  if(!ui.sfm)ui.sfm=today().slice(0,7);
+  const a=ui.sfm.split('-').map(Number),mt=sf2Meta(c),D=sf2Data(c,ui.sfm);
+  const un=c.students.filter(x=>!sxOf(x));
+  const fi=(k,l,ph)=>'<label class="lb" for="sm_'+k+'">'+l+'</label><input id="sm_'+k+'" type="text" maxlength="90" data-sm="'+k+'" value="'+esc(mt[k])+'" placeholder="'+(ph||'')+'" autocomplete="off">';
+  let h='<section class="card noprint"><h2>📑 SF2 – Daily Attendance Report</h2>'
+   +'<p class="muted">Built from the attendance you already take for <b>'+esc(c.name)+'</b>. Days with no attendance recorded, weekends, and “No classes” days in your Planner are left out.</p>'
+   +'<div class="rowsp"><button class="btn sm" data-act="sfPrev" aria-label="Previous month">◀</button><h3 style="margin:0">'+MONTHS[a[1]-1]+' '+a[0]+'</h3><button class="btn sm" data-act="sfNext" aria-label="Next month">▶</button></div>'
+   +'<div class="row wrap"><button class="btn sm" data-act="sfToday">This month</button><button class="btn pri" data-act="sfPrint"'+(D.days.length?'':' disabled')+'>🖨 Print / Save PDF</button><button class="btn" data-act="sfCsv"'+(D.days.length?'':' disabled')+'>⬇ CSV</button></div>';
+  if(D.skipped.length)h+='<div class="ssts bad">No attendance recorded on weekdays: '+D.skipped.map(n=>MONTHS[a[1]-1].slice(0,3)+' '+n).join(', ')+'. If those were class days, record them in Attendance, otherwise they are treated as no-class days.</div>';
+  if(un.length)h+='<div class="ssts bad"><b>'+un.length+' learner'+(un.length>1?'s have':' has')+' no sex set.</b> SF2 lists boys and girls separately. Tap to set:'+'<div>'+un.map(x=>'<span class="tgw">'+esc(x.name)+' <button class="chip s" data-act="setSex" data-id="'+x.id+'" data-v="M">M</button><button class="chip s" data-act="setSex" data-id="'+x.id+'" data-v="F">F</button></span>').join(' ')+'</div></div>';
+  h+='<h3>Report details</h3><p class="muted">Saved with this class. School details are copied from your other classes automatically.</p>'
+   +'<div class="sfg">'+fi('schoolId','School ID')+fi('school','Name of School')+fi('sy','School Year','e.g. 2026-2027')+fi('grade','Grade Level','e.g. 7')+fi('section','Section')+fi('teacher','Teacher (for signature line)')+fi('head','School Head (for signature line)')+'</div></section>';
+  h+='<section class="card"><div class="tw">'+sf2Html(c,D,mt)+'</div></section>';
+  return h;
+};
+const MDESC={sf2:'School Form 2 daily attendance',overview:'All classes: absences & missing tasks',subs:'Who has handed in what',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
 const tabInfo=id=>TABS.find(t=>t[0]===id);
 const isWide=()=>window.innerWidth>=720;
 const navIds=()=>isWide()?['students','seats','points','attend','picker','groups','sched']:['seats','points','attend','sched'];
@@ -1540,7 +1645,7 @@ function renderModal(){
       +'<p class="muted">In the print window, choose “Save as PDF” to keep a copy.</p>';
   }else if(ui.modal==='more'){
     const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
-    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['overview','notes','summary','subs'])+sec('Planning',['plan'])+sec('Data',['data'])
+    b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['overview','sf2','notes','summary','subs'])+sec('Planning',['plan'])+sec('Data',['data'])
       +'<div class="sec">Other tools</div><div class="mgrid"><button class="mtile" data-act="openLetters"><span class="mi">✉️</span><b>Letters</b><small>Parent grade letters</small></button></div>'
       +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
@@ -1626,7 +1731,7 @@ const act={
     const srcId=$('#ncCopy').value,src=S.classes.find(k=>k.id===srcId);
     const k=newClass(n);S.classes.push(k);
     let msg='Class created';
-    if(src){const r=addStudents(k,src.students.map(s=>s.name));msg='Class created with '+r.added+' students';const cs=$('#ncSeats');if(cs&&cs.checked){copySeating(src,k);msg+=' and the seating plan'}}
+    if(src){const r=addStudents(k,src.students.map(s=>s.name));copySex(src,k);msg='Class created with '+r.added+' students';const cs=$('#ncSeats');if(cs&&cs.checked){copySeating(src,k);msg+=' and the seating plan'}}
     S.activeId=k.id;ui.tab=k.students.length?'seats':'students';ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.modal=null;
     save();renderModal();render();toast(msg);
   },
@@ -1656,7 +1761,7 @@ const act={
   setFs(c,t){S.settings.fs=t.dataset.v;save();applyTheme();renderModal();render()},
   cheer(){const k=CUTE[TK()];if(!k)return;toast(k.msgs[Math.floor(Math.random()*k.msgs.length)]);const m=$('.mas');if(m){m.classList.remove('jump');void m.offsetWidth;m.classList.add('jump')}sparkle()},
   setSeat(c,t){S.settings.seat=t.dataset.v;save();render()},
-  copyFrom(c){const src=S.classes.find(k=>k.id===($('#copySel')||{}).value);if(!src)return;const cs=$('#copySeats'),withSeats=!!(cs&&cs.checked);const r=addStudents(c,src.students.map(s=>s.name));if(withSeats){copySeating(src,c);save()}toast('Copied '+r.added+(r.dup?' ('+r.dup+' already here)':'')+(withSeats?' with the seating plan':''));render()},
+  copyFrom(c){const src=S.classes.find(k=>k.id===($('#copySel')||{}).value);if(!src)return;const cs=$('#copySeats'),withSeats=!!(cs&&cs.checked);const r=addStudents(c,src.students.map(s=>s.name));copySex(src,c);if(withSeats){copySeating(src,c);save()}toast('Copied '+r.added+(r.dup?' ('+r.dup+' already here)':'')+(withSeats?' with the seating plan':''));render()},
   renameClass(c){const n=prompt('New class name?',c.name);if(n&&n.trim()){c.name=n.trim();save();render()}},
   delClass(c){if(!confirm('Delete class "'+c.name+'" and ALL its data? This cannot be undone.'))return;S.deleted[c.id]=Date.now();S.classes=S.classes.filter(k=>k.id!==c.id);if(!S.classes.length)S.classes.push(newClass('My Class'));S.activeId=S.classes[0].id;ui.sel=null;ui.gsel=null;save();render()},
   addOne(c){const i=$('#nameIn');if(!i||!i.value.trim())return;const r=addStudents(c,[i.value]);toast(r.added?'Added':'Already in the list');ui.focus='#nameIn';render()},
@@ -2071,6 +2176,26 @@ const chg={
 
 Object.assign(chg,{subSel(c,t){ui.subId=t.value;render()},ovc(c,t){ui.ovc=t.value;render()}});
 Object.assign(act,{
+  sfPrev(){const a=ui.sfm.split('-').map(Number);ui.sfm=dkey(new Date(a[0],a[1]-2,1)).slice(0,7);render()},
+  sfNext(){const a=ui.sfm.split('-').map(Number);ui.sfm=dkey(new Date(a[0],a[1],1)).slice(0,7);render()},
+  sfToday(){ui.sfm=today().slice(0,7);render()},
+  sfPrint(c){const D=sf2Data(c,ui.sfm);if(!D.days.length){toast('No attendance recorded this month');return}printHtml(sf2Html(c,D,sf2Meta(c)),true)},
+  sfCsv(c){
+    const D=sf2Data(c,ui.sfm);if(!D.days.length)return;const mt=sf2Meta(c),mn=MONTHS[D.mo-1]+' '+D.y;
+    const rows=[['School Form 2 - Daily Attendance Report of Learners'],['School ID',mt.schoolId,'School Year',mt.sy,'Month',mn],['School',mt.school,'Grade',mt.grade,'Section',mt.section],[],
+      ['No.','Learner','Sex'].concat(D.days.map(d=>d.n),['Absent','Tardy','Remarks'])];
+    [['M','MALE'],['F','FEMALE'],['','SEX NOT SET']].forEach(g=>{
+      const list=D.rows.filter(r=>r.g===g[0]);if(!list.length)return;rows.push([g[1]]);
+      list.forEach((r,i)=>rows.push([i+1,r.s.name,r.g].concat(r.marks.map(m=>m==='x'?'x':m==='t'?'T':''),[r.ab,r.ta,r.run>=5?'Absent '+r.run+' days in a row':''])));
+    });
+    const T=sf2Group(D,'*'),M=sf2Group(D,'M'),F=sf2Group(D,'F');
+    rows.push([],['School days',D.days.length],['','','Male','Female','Total'],['Registered learners','',M.reg,F.reg,T.reg],['Average daily attendance','',M.ada.toFixed(2),F.ada.toFixed(2),T.ada.toFixed(2)],['Percentage of attendance','',M.pct.toFixed(2),F.pct.toFixed(2),T.pct.toFixed(2)],['Absent 5 consecutive days','',M.five.length,F.five.length,T.five.length]);
+    download('SF2-'+slug(c.name)+'-'+D.y+'-'+pad(D.mo)+'.csv','﻿'+rows.map(r=>r.map(csvq).join(',')).join('\r\n'),'text/csv');
+  },
+  stuSex(c,t){const x=c.students.find(z=>z.id===t.dataset.id);if(!x)return;x.g=x.g==='M'?'F':x.g==='F'?'':'M';if(!x.g)delete x.g;save();render()},
+  setSex(c,t){const x=c.students.find(z=>z.id===t.dataset.id);if(!x)return;x.g=t.dataset.v;save();render()}
+});
+Object.assign(act,{
   ovDay(c,t){ui.ovd=t.dataset.d;render()},
   ovPrev(){const a=ui.ovm.split('-').map(Number);ui.ovm=dkey(new Date(a[0],a[1]-2,1)).slice(0,7);render()},
   ovNext(){const a=ui.ovm.split('-').map(Number);ui.ovm=dkey(new Date(a[0],a[1],1)).slice(0,7);render()},
@@ -2087,7 +2212,7 @@ document.addEventListener('change',e=>{
   const t=e.target.closest('[data-chg]');if(!t)return;
   const f=chg[t.dataset.chg];if(f)f(cur(),t,e);
 });
-document.addEventListener('input',e=>{const el=e.target;if(el.id==='tagLabel')ui.tagLabel=el.value;else if(el.id==='noteText')ui.ndraft=el.value;else if(el.dataset&&el.dataset.sf&&ui.sf)ui.sf[el.dataset.sf]=el.value;else if(el.dataset&&el.dataset.pf&&ui.pf)ui.pf[el.dataset.pf]=el.value});
+document.addEventListener('input',e=>{const el=e.target;if(el.id==='tagLabel')ui.tagLabel=el.value;else if(el.id==='noteText')ui.ndraft=el.value;else if(el.dataset&&el.dataset.sf&&ui.sf)ui.sf[el.dataset.sf]=el.value;else if(el.dataset&&el.dataset.pf&&ui.pf)ui.pf[el.dataset.pf]=el.value;else if(el.dataset&&el.dataset.sm){const k=cur();k.sf2=k.sf2||{};k.sf2[el.dataset.sm]=el.value;save()}});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&ui.fs){exitFS();return}
   if(e.key==='Escape'&&ui.modal){act.closeModal();return}
