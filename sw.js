@@ -1,6 +1,6 @@
 // Classroom Hub service worker: lets the app open with no internet once it has been loaded once.
 // It only ever touches files from this site. Google sign-in and Drive requests are never intercepted or cached.
-const CACHE = 'classroomhub-v3';
+const CACHE = 'classroomhub-v4';
 const FILES = ['./', './index.html', './letters.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -25,7 +25,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then(res => {
         if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return res;
