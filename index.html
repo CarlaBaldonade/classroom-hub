@@ -1499,7 +1499,7 @@ V.overview=c=>{
 const MDESC={overview:'All classes: absences & missing tasks',subs:'Who has handed in what',students:'Add or edit your class list',picker:'Pick a random student',groups:'Make or choose groups',notes:'Observations & concerns',summary:'Attendance & points overview',plan:'To-do, reminders, class suspensions',data:'Backup, restore & sync',seats:'Seat plan',points:'Give points',attend:'Take attendance',sched:'Your weekly classes'};
 const tabInfo=id=>TABS.find(t=>t[0]===id);
 const isWide=()=>window.innerWidth>=720;
-const navIds=()=>isWide()?['students','seats','points','attend','overview','sched']:['seats','points','attend','sched'];
+const navIds=()=>isWide()?['students','seats','points','attend','picker','groups','sched']:['seats','points','attend','sched'];
 function renderNav(){
   const nb=$('#bnav');if(!nb)return;
   const ids=navIds(),moreOn=!ids.includes(ui.tab)||ui.modal==='more';
