@@ -3259,7 +3259,7 @@ async function paSendNotice(chosen, clear){
     const when = [settings.meetingDate, settings.meetingTime].filter(Boolean).join(', ');
     const banner = clear ? k.fs.deleteField() : {
       id: bkey + '-' + Date.now().toString(36), title: 'Please visit the school',
-      message: 'Please come to school for a short talk about ' + paFirst(rec.name) + "'s progress in " + subject.label + ' (Term ' + currentTermId + ').',
+      message: 'Please come to school for a short talk about ' + paDisplay(rec.name) + "'s progress in " + subject.label + ' (Term ' + currentTermId + ').',
       when, where: settings.meetingPlace || '', who: ((settings.teacher || '').trim() + ' • ' + subject.label).replace(/^ • /, ''), createdAt: new Date().toISOString()
     };
     ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { banners: { [bkey]: banner } }, { merge: true }));
@@ -3307,7 +3307,7 @@ async function paSendCustom(chosen, clear){
   chosen.forEach(({ rec }) => {
     const banner = clear ? k.fs.deleteField() : {
       id: key + '-' + Date.now().toString(36), title: 'Please visit the school',
-      message: String(c.message || '').replace(/\{child\}/gi, paFirst(rec.name)).trim() || 'Please come to school for a short talk.',
+      message: String(c.message || '').replace(/\{child\}/gi, paDisplay(rec.name)).trim() || 'Please come to school for a short talk.',
       when: (c.when || '').trim(), where: (c.where || '').trim(), who: (settings.teacher || '').trim(), createdAt: new Date().toISOString()
     };
     ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), clear ? { banners: { [key]: banner } } : { name: rec.name, section: rec.section, schoolYear: PA_SCHOOL_YEAR, banners: { [key]: banner } }, { merge: true }));
@@ -3450,7 +3450,7 @@ function paCnHtml(){
   (c.blocked || []).forEach(m => { h += '<div class="plg-syncmsg warn">' + escapeHtml(m) + '</div>'; });
   if (!c.groups.length) h += '<div class="plg-empty-note">No section of yours has an official list yet. Ask the adviser or the admin to load it in the Parent App Admin.</div>';
   else {
-    h += '<div class="pa-sec" style="margin-top:8px"><b>Message</b> <span>(write {child} where the learner\'s first name should appear)</span></div><textarea id="pa-cn-msg" rows="3" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;box-sizing:border-box">' + escapeHtml(c.message) + '</textarea>';
+    h += '<div class="pa-sec" style="margin-top:8px"><b>Message</b> <span>(write {child} where the learner\'s full name should appear)</span></div><textarea id="pa-cn-msg" rows="3" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;box-sizing:border-box">' + escapeHtml(c.message) + '</textarea>';
     h += '<div class="pa-row"><label class="pa-sec">When<br><input type="text" id="pa-cn-when" placeholder="e.g. Friday, Oct 17, 3:00 PM" value="' + escapeAttr(c.when) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label><label class="pa-sec">Where<br><input type="text" id="pa-cn-where" placeholder="e.g. Science Room" value="' + escapeAttr(c.where) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label></div>';
     if (c.sel == null || !c.groups[c.sel]) c.sel = 0;
     const ticked = (g) => g.items.filter(it => it.on).length;
