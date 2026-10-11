@@ -841,6 +841,7 @@ function renderNav(){
   for (let i=1;i<=SECTION_COUNT;i++) items.push({id:'section-'+i, label: (sections[i-1]?sections[i-1].name:'Section '+i)});
   items.push({id:'preview', label:'Generate & Print'});
   items.push({id:'individual', label:'Individual Scores'});
+  items.push({id:'parent', label:'Parent App'});
   items.push({id:'sync', label:'Sync'});
   items.push({id:'theme', label:'Theme'});
 
@@ -2928,6 +2929,7 @@ function render(){
   else if (currentView === 'individual') renderIndividual(view);
   else if (currentView === 'theme') renderTheme(view);
   else if (currentView === 'sync') renderSync(view);
+  else if (currentView === 'parent') renderParent(view);
   else if (currentView.startsWith('section-')) renderSection(view, Number(currentView.split('-')[1]));
 }
 
@@ -2941,6 +2943,545 @@ async function init(){
   await loadState();
   render();
 }
+// ============================================================================
+// Parent App publishing (optional). Nothing here runs unless the teacher opens
+// the "Parent App" tab and presses a Publish button. Letters keeps working
+// offline exactly as before.
+// ============================================================================
+const PA_FIREBASE = window.__PA_CONFIG || {
+  apiKey: "AIzaSyAsoUGWeR2fpuuPJ06E95BmmCEXgvqQqIo",
+  authDomain: "ansci-parents.firebaseapp.com",
+  projectId: "ansci-parents",
+  appId: "1:287755597782:web:af19497fa3ca2cf41d1677"
+};
+const PA_CONFIGURED = !String(PA_FIREBASE.apiKey).startsWith('PASTE');
+const PA_FB_VERSION = '10.14.1';
+const PA_SCHOOL_YEAR = 'SY 2026-2027';
+const PA_LAST_KEY = 'pa-last';
+
+// <<pure>>
+// ---- learner / section matching (pure functions) ----
+function paTok(s){
+  return String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(t => t && !['jr','sr','ii','iii','iv'].includes(t));
+}
+function paLev(a, b){
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({length: n + 1}, (_, j) => j);
+  for (let i = 1; i <= m; i++){
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+function paTokSim(a, b){
+  if (a === b) return 1;
+  if (a.length === 1 || b.length === 1) return a[0] === b[0] ? 0.7 : 0;   // "A." vs "Antonio"
+  const r = 1 - paLev(a, b) / Math.max(a.length, b.length);
+  return r >= 0.75 ? r : 0;
+}
+// How alike two names are, ignoring word order, middle names and small typos.
+function paNameSim(n1, n2){
+  let A = paTok(n1), B = paTok(n2);
+  if (A.length > B.length) [A, B] = [B, A];
+  if (!A.length || !B.length) return { score: 0, strong: 0 };
+  const used = new Set(); let total = 0, strong = 0;
+  for (const a of A){
+    let best = 0, bi = -1;
+    B.forEach((b, i) => { if (used.has(i)) return; const s = paTokSim(a, b); if (s > best){ best = s; bi = i; } });
+    if (bi >= 0){ used.add(bi); total += best; if (best >= 0.8 && a.length > 1) strong++; }
+  }
+  return { score: (total / A.length) * (0.85 + 0.15 * (A.length / B.length)), strong };
+}
+// Nearest learner in the same section. status: match | ambiguous | new
+function paDecide(name, learners){
+  const all = learners.map(rec => ({ rec, ...paNameSim(name, rec.name) })).sort((x, y) => y.score - x.score);
+  const need = Math.min(2, Math.max(1, paTok(name).length));
+  const good = all.filter(x => x.score >= 0.8 && x.strong >= need);
+  const near = all.filter(x => x.score >= 0.55).slice(0, 4);
+  if (!good.length) return { status: 'new', cands: near };
+  if (good.length > 1 && good[0].score - good[1].score < 0.08) return { status: 'ambiguous', cands: good.slice(0, 4) };
+  return { status: 'match', rec: good[0].rec, score: good[0].score, cands: good.slice(0, 3) };
+}
+function paSecParts(n){
+  const t = String(n || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+  let num = ''; const words = [];
+  for (const w of t){
+    if (['grade','gr','section','sec','sy'].includes(w)) continue;
+    let m = w.match(/^g?(\d{1,2})$/);
+    if (m){ if (!num) num = m[1]; continue; }
+    m = w.match(/^(\d{1,2})([a-z]+)$/);
+    if (m){ if (!num) num = m[1]; words.push(m[2]); continue; }
+    words.push(w);
+  }
+  return { num, word: words.join('') };
+}
+function paSecMatch(a, b){
+  const x = paSecParts(a), y = paSecParts(b);
+  if (!x.word || !y.word) return false;
+  const same = x.word === y.word || (Math.min(x.word.length, y.word.length) >= 5 && paLev(x.word, y.word) <= 1);
+  return same && (!x.num || !y.num || x.num === y.num);
+}
+const paSecIsUnnamed = (n) => !paSecParts(n).word;
+const paFuller = (oldName, newName) => paTok(newName).length > paTok(oldName).length;
+const PA_ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function paGenCode(){
+  const lim = Math.floor(256 / PA_ALPHA.length) * PA_ALPHA.length;
+  let out = '';
+  while (out.length < 12){
+    const buf = new Uint8Array(32); crypto.getRandomValues(buf);
+    for (const b of buf) if (b < lim && out.length < 12) out += PA_ALPHA[b % PA_ALPHA.length];
+  }
+  return out;
+}
+const paFmtCode = (c) => String(c).replace(/(.{4})(?=.)/g, '$1-');
+// <<end pure>>
+
+// ---- Firebase (loaded only when needed) ----
+const PA = { req: '', kit: null, loading: false, err: '', user: null, ok: false, plan: null, working: false, msg: null, notice: null };
+
+async function paKit(){
+  if (PA.kit) return PA.kit;
+  if (window.__PA_KIT) { PA.kit = await window.__PA_KIT(); return PA.kit; }
+  const base = 'https://www.gstatic.com/firebasejs/' + PA_FB_VERSION + '/';
+  const [a, f, u] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-firestore.js'), import(base + 'firebase-auth.js')]);
+  const app = a.initializeApp(PA_FIREBASE);
+  PA.kit = { db: f.getFirestore(app), fs: f, auth: u.getAuth(app), au: u };
+  return PA.kit;
+}
+function paEnsure(){
+  if (!PA_CONFIGURED || PA.kit || PA.loading) return;
+  PA.loading = true; PA.err = '';
+  paKit().then(k => {
+    PA.loading = false;
+    k.au.onAuthStateChanged(k.auth, async u => {
+      PA.user = u; PA.ok = false;
+      if (u){
+        const em = (u.email || '').toLowerCase();
+        try { PA.ok = (await k.fs.getDoc(k.fs.doc(k.db, 'teachers', em))).exists(); } catch(e) { PA.ok = false; }
+        if (!PA.ok){ try { PA.ok = (await k.fs.getDoc(k.fs.doc(k.db, 'admins', em))).exists(); } catch(e) {} }
+      }
+      paRefresh();
+    });
+    paRefresh();
+  }).catch(e => { PA.loading = false; PA.err = 'Could not load the Parent App connection. Check your internet and try again.'; paRefresh(); });
+}
+async function paSignIn(){
+  try {
+    const k = await paKit();
+    await k.au.signInWithPopup(k.auth, new k.au.GoogleAuthProvider());
+  } catch(e){
+    const c = (e && e.code) || '';
+    PA.msg = { t: 'bad', s: /closed|cancel/.test(c) ? 'The Google window was closed. Tap Sign in to try again.' : /popup-blocked/.test(c) ? 'Your browser blocked the Google window. Allow pop-ups for this page and try again.' : /unauthorized-domain/.test(c) ? 'This web address is not allowed yet in Firebase (Authentication > Settings > Authorized domains).' : 'Could not sign in: ' + (e && e.message || e) };
+    paRefresh();
+  }
+}
+async function paSignOut(){ const k = await paKit(); await k.au.signOut(k.auth); PA.plan = null; PA.notice = null; PA.msg = null; }
+
+// ---- helpers over Letters data ----
+const paSubjKey = () => currentSubjectId + '-t' + currentTermId;
+const paLabel = () => getSubject(currentSubjectId).label + ' · Term ' + currentTermId;
+function paNamedSections(){
+  const out = [];
+  sections.forEach((sec, i) => {
+    const students = sec.students.filter(s => s.name && s.name.trim());
+    if (students.length) out.push({ sec, idx: i + 1, students });
+  });
+  return out;
+}
+const paFirst = (full) => { const s = String(full || '').trim(); if (s.includes(',')) return (s.split(',')[1] || '').trim().split(' ')[0] || s; return s.split(' ')[0]; };
+const paDisplay = (full) => { const s = String(full || '').trim(); if (!s.includes(',')) return s; const p = s.split(','); return (p.slice(1).join(',').trim() + ' ' + p[0].trim()).trim(); };
+
+async function paLoadRoster(){
+  const k = await paKit();
+  const snap = await k.fs.getDocs(k.fs.collection(k.db, 'roster'));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// Build the matching plan: which section and which learner each of this teacher's students is.
+function paPlan(roster, mode){
+  const existing = [...new Set(roster.map(r => r.section))];
+  const plan = { mode, roster, existing, sections: [], blocked: [] };
+  paNamedSections().forEach(({ sec, idx, students }) => {
+    const typed = (sec.name || '').trim();
+    if (paSecIsUnnamed(typed)){ plan.blocked.push('"' + typed + '" has no real name yet. Rename it in Setup (for example "Rizal" or "7 - Rizal"), then publish.'); return; }
+    const hits = existing.filter(n => paSecMatch(n, typed));
+    const sp = { idx, sec, typed, hits, target: hits.length === 1 ? hits[0] : (hits.length ? '' : '__new__'), students: students.map(stu => ({ stu })) };
+    paReplanSection(sp, roster);
+    plan.sections.push(sp);
+  });
+  return plan;
+}
+function paReplanSection(sp, roster){
+  const pool = sp.target && sp.target !== '__new__' ? roster.filter(r => r.section === sp.target) : [];
+  sp.official = pool.some(r => r.official);
+  const taken = new Set();
+  sp.students.forEach(x => {
+    const d = pool.length ? paDecide(x.stu.name, pool) : { status: 'new', cands: [] };
+    x.status = d.status; x.cands = d.cands; x.rec = d.rec || null; x.score = d.score || 0;
+    x.choice = d.status === 'match' ? d.rec.id : (d.status === 'new' && !sp.official) ? '__new__' : '';
+    if (d.status === 'match'){
+      // two of this teacher's students can never be the same learner
+      if (taken.has(d.rec.id)){ x.status = 'ambiguous'; x.choice = ''; } else taken.add(d.rec.id);
+    }
+  });
+}
+// A section can be published only when it has an official list (loaded by the admin or adviser).
+// Un-publishing is always allowed.
+const paOfficialSecs = (roster) => new Set(roster.filter(r => r.official).map(r => r.section));
+function paLive(plan){ return (plan.mode === 'unfinals' || plan.mode === 'unall') ? plan.sections : plan.sections.filter(sp => sp.official); }
+function paUnresolved(plan){
+  let n = 0;
+  plan.sections.forEach(sp => { if (!sp.target) n++; });
+  paLive(plan).forEach(sp => { sp.students.forEach(x => { if (!x.choice) n++; }); });
+  return n + paDupes(plan).length;
+}
+// the same learner picked for two different names of this teacher
+function paDupes(plan){
+  const out = [];
+  paLive(plan).forEach(sp => {
+    const seen = new Map();
+    sp.students.forEach(x => {
+      if (!x.choice || x.choice === '__new__' || x.choice === '__skip__') return;
+      if (seen.has(x.choice)) out.push(seen.get(x.choice) + ' and ' + x.stu.name); else seen.set(x.choice, x.stu.name);
+    });
+  });
+  return out;
+}
+
+// ---- what parents will see for one student ----
+function paEntry(stu, sec, subject, shownName, secLabel, fs){
+  const c = calcStudent(stu, sec, subject);
+  const items = { ww: [], pt: [], sum: [], exam: [] };
+  const add = (arr, title, max, score) => {
+    const m = Number(max); if (!(m > 0)) return;
+    const v = cleanScore(score);
+    arr.push(v === null ? { title, total: m, status: 'missing' } : { title, total: m, score: Number(v) });
+  };
+  sec.wwMax.forEach((m, i) => add(items.ww, 'Written Work ' + (i + 1), m, stu.wwScores[i]));
+  sec.petaMax.forEach((m, i) => add(items.pt, 'Performance Task ' + (i + 1), m, stu.petaScores[i]));
+  sec.summMax.forEach((m, i) => add(items.sum, 'Summative Test ' + (i + 1), m, stu.summScores[i]));
+  add(items.exam, 'Term Exam', sec.teMax, stu.teScore);
+  const ni = c.overallRating === 'imp';
+  const w = c.weights;
+  const row = (label, weight, comp, missing) => ({ label, weight: Math.round(weight * 100), sum: comp.maxSum ? comp.sum : null, max: comp.maxSum || null, missing: missing || [] });
+  const entry = {
+    name: subject.label, teacher: (settings.teacher || '').trim(), term: String(currentTermId),
+    updatedAt: new Date().toISOString(), ww: items.ww, pt: items.pt, sum: items.sum, exam: items.exam,
+    needsImprovement: ni
+  };
+  entry.letter = ni ? {
+    date: settings.date || '', subject: subject.label, term: String(currentTermId), teacher: (settings.teacher || '').trim(),
+    studentName: shownName, section: secLabel,
+    rows: [row('Written Works (WW)', w.ww, c.ww, c.wwMissing), row('Performance Tasks (PETA)', w.peta, c.peta, c.petaMissing), row('Summative Test and Term Exam', w.summ, c.summ, c.summMissing)],
+    visit: { date: settings.meetingDate || '', time: settings.meetingTime || '', place: settings.meetingPlace || '' }
+  } : fs.deleteField();
+  return { entry, calc: c, ni };
+}
+
+// ---- writing ----
+async function paCommit(ops){
+  const k = await paKit();
+  for (let i = 0; i < ops.length; i += 200){
+    const b = k.fs.writeBatch(k.db);
+    ops.slice(i, i + 200).forEach(f => f(b));
+    await b.commit();
+  }
+}
+// Resolve each student to a learner record, creating new learners where needed.
+function paResolve(plan){
+  const k = PA.kit; const ops = []; const out = [];
+  paLive(plan).forEach(sp => {
+    const secLabel = sp.target === '__new__' ? sp.typed : sp.target;
+    sp.students.forEach(x => {
+      if (x.choice === '__skip__') return;
+      let rec;
+      if (x.choice === '__new__'){
+        rec = { id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), name: x.stu.name.trim(), section: secLabel, code: paGenCode(), aliases: [], isNew: true };
+        ops.push(b => b.set(k.fs.doc(k.db, 'roster', rec.id), { name: rec.name, section: rec.section, code: rec.code, aliases: [], createdAt: new Date().toISOString() }));
+      } else {
+        const found = plan.roster.find(r => r.id === x.choice);
+        if (!found) return;
+        rec = { ...found, aliases: [...(found.aliases || [])] };
+        const typed = x.stu.name.trim();
+        if (paFuller(rec.name, typed)){ rec.aliases.push(rec.name); rec.name = typed; rec.renamed = true; }
+        else if (paNameSim(typed, rec.name).score < 0.999 && !rec.aliases.includes(typed) && typed !== rec.name) { rec.aliases.push(typed); rec.aliasAdded = true; }
+        if (rec.renamed || rec.aliasAdded) ops.push(b => b.set(k.fs.doc(k.db, 'roster', rec.id), { name: rec.name, aliases: rec.aliases }, { merge: true }));
+      }
+      out.push({ sp, x, rec, secLabel });
+    });
+  });
+  return { ops, out };
+}
+
+async function paPublishScores(){
+  const plan = PA.plan, k = PA.kit, subject = getSubject(currentSubjectId), key = paSubjKey();
+  const { ops, out } = paResolve(plan);
+  let ni = 0;
+  out.forEach(({ sp, x, rec, secLabel }) => {
+    const { entry, ni: isNi } = paEntry(x.stu, sp.sec, subject, paDisplay(rec.name), secLabel, k.fs);
+    if (isNi) ni++;
+    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { name: rec.name, section: secLabel, schoolYear: PA_SCHOOL_YEAR, subjects: { [key]: entry } }, { merge: true }));
+  });
+  await paCommit(ops);
+  return { count: out.length, created: out.filter(o => o.rec.isNew).length, ni };
+}
+async function paPublishFinals(){
+  const plan = PA.plan, k = PA.kit, subject = getSubject(currentSubjectId), key = paSubjKey();
+  const ops = []; let n = 0, none = 0, skipped = 0;
+  paLive(plan).forEach(sp => sp.students.forEach(x => {
+    const rec = plan.roster.find(r => r.id === x.choice);
+    if (!rec){ skipped++; return; }
+    const c = calcStudent(x.stu, sp.sec, subject);
+    if (c.finalGrade === null){ none++; return; }
+    n++;
+    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { subjects: { [key]: { name: subject.label, teacher: (settings.teacher || '').trim(), term: String(currentTermId), final: { grade: c.finalGrade, rating: ratingLabel(c.overallRating), releasedAt: new Date().toISOString() } } } }, { merge: true }));
+  }));
+  await paCommit(ops);
+  return { n, none, skipped };
+}
+async function paUnpublish(what){
+  const plan = PA.plan, k = PA.kit, key = paSubjKey(); const ops = []; let n = 0;
+  plan.sections.forEach(sp => sp.students.forEach(x => {
+    const rec = plan.roster.find(r => r.id === x.choice); if (!rec) return;
+    n++;
+    ops.push(b => b.update(k.fs.doc(k.db, 'portal', rec.code), what === 'finals' ? new k.fs.FieldPath('subjects', key, 'final') : new k.fs.FieldPath('subjects', key), k.fs.deleteField()));
+  }));
+  await paCommit(ops);
+  return n;
+}
+async function paSendNotice(chosen, clear){
+  const plan = PA.plan, k = PA.kit, subject = getSubject(currentSubjectId), bkey = paSubjKey(); const ops = []; let n = 0;
+  chosen.forEach(({ rec, stu }) => {
+    n++;
+    const when = [settings.meetingDate, settings.meetingTime].filter(Boolean).join(', ');
+    const banner = clear ? k.fs.deleteField() : {
+      id: bkey + '-' + Date.now().toString(36), title: 'Please visit the school',
+      message: 'Please come to school for a short talk about ' + paFirst(rec.name) + "'s progress in " + subject.label + ' (Term ' + currentTermId + ').',
+      when, where: settings.meetingPlace || '', who: ((settings.teacher || '').trim() + ' • ' + subject.label).replace(/^ • /, ''), createdAt: new Date().toISOString()
+    };
+    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { banners: { [bkey]: banner } }, { merge: true }));
+  });
+  await paCommit(ops);
+  return n;
+}
+
+// ---- UI ----
+function paLastInfo(){ try { return JSON.parse(localStorage.getItem(PA_LAST_KEY) || '{}'); } catch(e) { return {}; } }
+function paSetLast(kind, info){ try { const o = paLastInfo(); o[paSubjKey() + ':' + kind] = Object.assign({ t: Date.now() }, info); localStorage.setItem(PA_LAST_KEY, JSON.stringify(o)); } catch(e) {} }
+const paWhen = (ms) => { try { return new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e) { return ''; } };
+
+function paInjectCss(){
+  if (document.getElementById('pa-css')) return;
+  const s = document.createElement('style'); s.id = 'pa-css';
+  s.textContent = `
+  .pa-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+  .pa-box{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--cream,#fff)}
+  .pa-box h3{margin:0 0 6px;font-size:14.5px;color:var(--navy)}
+  .pa-pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--head-bg);color:var(--navy);margin-right:6px}
+  .pa-pill.good{background:var(--green-bg);color:var(--green)} .pa-pill.warn{background:var(--amber-bg);color:var(--amber)} .pa-pill.bad{background:var(--red-bg);color:var(--red)}
+  .pa-issue{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 0;border-top:1px dashed var(--line);font-size:13px}
+  .pa-issue>b{flex:1 1 160px;min-width:0}
+  .pa-card select{font:inherit;font-size:13px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);max-width:100%;background:#fff}
+  .pa-card details{margin-top:6px;font-size:12.5px} .pa-card summary{cursor:pointer;color:var(--navy);font-weight:600}
+  .pa-map{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin-top:6px} .pa-map span{overflow-wrap:anywhere}
+  .pa-actions{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+  .pa-card .plg-btn.danger{background:var(--red);color:#fff}
+  .pa-sec{font-size:12px;color:#666} .pa-ni label{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:13px}
+  @media(max-width:560px){.pa-map{grid-template-columns:1fr}}`;
+  document.head.appendChild(s);
+}
+
+function renderParent(container){
+  paInjectCss();
+  const card = document.createElement('div'); card.className = 'plg-card pa-card'; card.id = 'plg-parent-card';
+  container.appendChild(card);
+  paFill(card);
+  paEnsure();
+}
+function paRefresh(){ const c = document.getElementById('plg-parent-card'); if (c) paFill(c); }
+
+function paFill(card){
+  const subject = getSubject(currentSubjectId);
+  const msg = PA.msg ? '<div class="plg-syncmsg ' + PA.msg.t + '">' + escapeHtml(PA.msg.s) + '</div>' : '';
+  let h = '<h2>Parent App</h2><p class="plg-sub">Show your learners’ scores to their parents in the Parent App. Everything comes from what you already encoded here, so there is nothing to upload again. Parents see nothing until you press Publish, and final grades are published separately. This is optional.</p>';
+  if (!PA_CONFIGURED){
+    card.innerHTML = h + '<div class="plg-syncmsg warn">The Parent App is not connected yet. After the Firebase project is set up, paste its settings into this page (see SETUP.md), then this tab will work.</div>';
+    return;
+  }
+  if (!navigator.onLine) h += '<div class="plg-syncmsg warn">You are offline. Publishing needs internet.</div>';
+  if (PA.err) h += '<div class="plg-syncmsg bad">' + escapeHtml(PA.err) + '</div><div class="plg-syncbtns"><button type="button" class="plg-btn" id="pa-retry">Try again</button></div>';
+  else if (!PA.kit) h += '<div class="plg-syncmsg">Connecting…</div>';
+  else if (!PA.user) h += msg + '<div class="plg-syncbtns"><button type="button" class="plg-btn" id="pa-signin">Sign in with Google</button></div><p class="plg-sub">Choose the Google account you gave the Parent App admin. It can be different from the account you use for Drive sync. If you have not given one yet, sign in with the one you want to use and send an access request.</p>';
+  else if (!PA.ok) h += '<div class="plg-syncmsg bad">' + escapeHtml(PA.user.email) + ' is not allowed to publish yet.' + (PA.req === 'sent' ? ' Your request was sent. Ask the Parent App admin to approve it, then tap Check again.' : PA.req === 'fail' ? ' The request could not be sent. Check your internet and try again.' : ' If this is the account you want to use, send an access request. The Parent App admin approves it in one tap. Wrong account? Sign out and choose another.') + '</div><div class="plg-syncbtns">' + (PA.req === 'sent' ? '' : '<button type="button" class="plg-btn" id="pa-request">Request access</button>') + '<button type="button" class="plg-btn secondary" id="pa-recheck">Check again</button><button type="button" class="plg-btn secondary" id="pa-signout">Sign out</button></div>';
+  else {
+    const secs = paNamedSections();
+    const last = paLastInfo(); const lS = last[paSubjKey() + ':scores'], lF = last[paSubjKey() + ':finals'];
+    h += msg;
+    h += '<div class="pa-row"><span class="pa-pill good">Signed in</span><span class="pa-sec">' + escapeHtml(PA.user.email) + '</span><button type="button" class="plg-linkbtn" id="pa-signout">Sign out</button></div>';
+    h += '<div class="pa-box"><h3>' + escapeHtml(paLabel()) + '</h3>';
+    if (!(settings.teacher || '').trim()) h += '<div class="plg-syncmsg warn">Enter your name in Setup first, so parents see who the teacher is.</div>';
+    h += secs.length ? '<div class="pa-sec">' + secs.map(s => escapeHtml(s.sec.name) + ' (' + s.students.length + ')').join(' · ') + '</div>' : '<div class="plg-syncmsg warn">No learners yet for this subject and term. Add them in a section first.</div>';
+    h += '<div class="pa-sec" style="margin-top:6px">' + (lS ? 'Scores last published ' + escapeHtml(paWhen(lS.t)) + ' (' + (lS.count || 0) + ' learners).' : 'Scores not published yet.') + ' ' + (lF ? 'Final grades last published ' + escapeHtml(paWhen(lF.t)) + '.' : 'Final grades not published.') + '</div>';
+    h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-scores"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish scores</button><button type="button" class="plg-btn gold" id="pa-finals"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish final grades</button><button type="button" class="plg-btn secondary" id="pa-notice"' + (secs.length && !PA.working ? '' : ' disabled') + '>Come-to-school notice</button></div>';
+    h += '<div class="pa-actions"><button type="button" class="plg-linkbtn" id="pa-unfinals">Unpublish final grades</button><button type="button" class="plg-linkbtn danger" id="pa-unall">Remove ' + escapeHtml(paLabel()) + ' from the Parent App</button></div></div>';
+    if (PA.working) h += '<div class="plg-syncmsg">Working…</div>';
+    if (PA.plan) h += paPlanHtml(PA.plan);
+    if (PA.notice) h += paNoticeHtml();
+  }
+  card.innerHTML = h;
+  paBind(card);
+}
+
+function paOptions(plan, sp, x){
+  const pool = plan.roster.filter(r => r.section === sp.target);
+  const cur = x.choice;
+  const opts = [];
+  if (plan.mode === 'scores' && !sp.official) opts.push('<option value="__new__"' + (cur === '__new__' ? ' selected' : '') + '>New learner (new code)</option>');
+  opts.push('<option value="__skip__"' + (cur === '__skip__' ? ' selected' : '') + '>Skip this learner</option>');
+  if (!cur) opts.unshift('<option value="" selected disabled>Choose…</option>');
+  const near = new Set((x.cands || []).map(c => c.rec.id));
+  const ordered = [...pool.filter(r => near.has(r.id)), ...pool.filter(r => !near.has(r.id))];
+  return opts.join('') + ordered.map(r => '<option value="' + escapeAttr(r.id) + '"' + (cur === r.id ? ' selected' : '') + '>' + (near.has(r.id) ? '★ ' : '') + escapeHtml(r.name) + '</option>').join('');
+}
+
+function paPlanHtml(plan){
+  const titles = { scores: 'Check before publishing scores', finals: 'Check before publishing final grades', unfinals: 'Unpublish final grades', unall: 'Remove from the Parent App' };
+  let h = '<div class="pa-box"><h3>' + titles[plan.mode] + '</h3>';
+  if (plan.blocked.length) h += plan.blocked.map(b => '<div class="plg-syncmsg warn">' + escapeHtml(b) + '</div>').join('');
+  let tMatch = 0, tNew = 0, tNo = 0;
+  plan.sections.forEach((sp, si) => {
+    const nm = sp.students.filter(x => x.status === 'match').length, nn = sp.students.filter(x => x.status === 'new').length, na = sp.students.filter(x => x.status === 'ambiguous').length;
+    tMatch += nm; tNew += nn; tNo += na;
+    const gated = !sp.official && plan.mode !== 'unfinals' && plan.mode !== 'unall';
+    h += '<div style="margin-top:10px"><b>' + escapeHtml(sp.typed) + '</b> → <select data-pa-sec="' + si + '">' + (!sp.target ? '<option value="" selected disabled>Which section is this?</option>' : '')
+      + (sp.target === '__new__' ? '<option value="__new__" selected disabled>No matching section on the school list</option>' : '')
+      + plan.existing.map(n => '<option value="' + escapeAttr(n) + '"' + (sp.target === n ? ' selected' : '') + '>' + escapeHtml(n) + (paOfficialSecs(plan.roster).has(n) ? ' (official list)' : ' (no official list yet)') + '</option>').join('') + '</select>'
+      + (gated ? '<div class="pa-sec" style="margin-top:6px;color:#a33"><b>Cannot publish ' + escapeHtml(sp.typed) + ' yet.</b> ' + (sp.target && sp.target !== '__new__' ? 'There is no official list for this section yet. Ask your adviser or the Parent App admin to load it in <b>Parent App Admin</b>, then try again.' : 'This section name does not match any section on the school list. Pick the right one above, or rename the section in Setup.') + '</div>' : '')
+      + (gated ? '' : '<div class="pa-row"><span class="pa-pill good">' + nm + ' matched</span>' + (nn ? '<span class="pa-pill warn">' + nn + (plan.mode === 'scores' ? ' new' : ' not found') + '</span>' : '') + (na ? '<span class="pa-pill bad">' + na + ' to check</span>' : '') + '</div>');
+    if (gated) return;
+    if (sp.official) h += '<div class="pa-sec" style="margin-top:6px"><b>Official list.</b> This section has an official learner list from your school, so names can only be matched to it.</div>';
+    else if (sp.target === '__new__' && plan.roster.some(r => r.official)) h += '<div class="pa-sec" style="margin-top:6px;color:#a33">Your section name does not match any section on the school list. If it should, pick it in the list above (or rename the section in Setup) instead of creating a new one.</div>';
+    sp.students.forEach((x, xi) => {
+      if (x.status === 'match') return;
+      const hint = x.status === 'ambiguous' ? 'Matches more than one learner' : (x.cands && x.cands.length ? 'Looks similar to ★ learners' : (sp.official ? 'Not on the official list. Pick the right learner, or skip' : plan.mode === 'scores' ? 'Not on the list yet' : 'Not found, publish scores first'));
+      h += '<div class="pa-issue"><b>' + escapeHtml(x.stu.name) + '<div class="pa-sec">' + hint + '</div></b><select data-pa-stu="' + si + ':' + xi + '">' + paOptions(plan, sp, x) + '</select></div>';
+    });
+    const fuzzy = sp.students.filter(x => x.status === 'match' && x.score < 0.93 && String(x.stu.name).trim() !== x.rec.name);
+    if (fuzzy.length) h += '<div class="pa-box" style="margin:8px 0"><div class="pa-sec"><b>Matched by nearest name.</b> Please glance at these:</div><div class="pa-map">' + fuzzy.map(x => '<span>' + escapeHtml(x.stu.name) + '</span><span>\u2192 ' + escapeHtml(x.rec.name) + '</span>').join('') + '</div></div>';
+    const matched = sp.students.filter(x => x.status === 'match');
+    if (matched.length) h += '<details><summary>Show the ' + matched.length + ' matched names (tap to change one)</summary>' + matched.map(x => { const xi = sp.students.indexOf(x); return '<div class="pa-issue"><b>' + escapeHtml(x.stu.name) + '</b><select data-pa-stu="' + si + ':' + xi + '">' + paOptions(plan, sp, x) + '</select></div>'; }).join('') + '</details>';
+  });
+  const left = paUnresolved(plan);
+  const verb = { scores: 'Publish scores', finals: 'Publish final grades', unfinals: 'Unpublish final grades', unall: 'Remove' }[plan.mode];
+  if (plan.mode === 'scores') h += '<div class="pa-sec" style="margin-top:8px">Scores can only be published for learners on the official list of the section. Anyone not on it must be matched to a listed learner or skipped.</div>';
+  if (plan.mode === 'finals') h += '<div class="pa-sec" style="margin-top:8px">Final grades are the transmuted grades Letters computes. Learners with no grade yet are skipped.</div>';
+  h += '<div class="pa-actions"><button type="button" class="plg-btn' + (plan.mode === 'unall' || plan.mode === 'unfinals' ? ' danger' : '') + '" id="pa-go"' + (left || PA.working || (!paLive(plan).length) ? ' disabled' : '') + '>' + verb + '</button><button type="button" class="plg-btn secondary" id="pa-cancel">Cancel</button></div>';
+  paDupes(plan).forEach(d => { h += '<div class="pa-sec" style="color:#a33">' + escapeHtml(d) + ' are both set to the same learner. Two names of yours cannot be one learner, so change one (or Skip it).</div>'; });
+  if (left) h += '<div class="pa-sec">Choose an answer for ' + left + ' item' + (left > 1 ? 's' : '') + ' above first.</div>';
+  return h + '</div>';
+}
+
+function paNoticeHtml(){
+  const n = PA.notice;
+  let h = '<div class="pa-box"><h3>Come-to-school notice</h3>';
+  const meet = [settings.meetingDate, settings.meetingTime, settings.meetingPlace].filter(Boolean);
+  h += meet.length ? '<div class="pa-sec">Meeting details from Setup: <b>' + escapeHtml(meet.join(' · ')) + '</b></div>' : '<div class="plg-syncmsg warn">No meeting date, time or place in Setup yet. The notice will just ask parents to visit the school.</div>';
+  if (!n.items.length) h += '<div class="plg-empty-note">No learner in this subject needs improvement right now.</div>';
+  else h += '<div class="pa-sec" style="margin-top:6px">Learners needing improvement. Untick anyone who should not get the notice.</div><div class="pa-ni">' + n.items.map((it, i) => '<label><input type="checkbox" data-pa-ni="' + i + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + ' <span class="pa-sec">' + escapeHtml(it.section) + '</span></label>').join('') + '</div>';
+  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-nsend"' + (n.items.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-nclear"' + (n.items.length ? '' : ' disabled') + '>Remove notice from these learners</button><button type="button" class="plg-btn secondary" id="pa-ncancel">Close</button></div></div>';
+  return h;
+}
+
+async function paStart(mode){
+  PA.msg = null; PA.notice = null; PA.working = true; paRefresh();
+  try {
+    const roster = await paLoadRoster();
+    PA.plan = paPlan(roster, mode);
+    if (mode !== 'scores') PA.plan.sections.forEach(sp => sp.students.forEach(x => { if (x.status === 'new') x.choice = '__skip__'; }));
+  } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+  PA.working = false; paRefresh();
+}
+function paErr(e){
+  const c = (e && e.code) || '';
+  if (/permission/.test(c)) return 'The database refused this. Your Gmail may not be on the teachers list, or the security rules are not published yet.';
+  if (/unavailable|network/.test(c) || !navigator.onLine) return 'No internet connection. Try again when you are online.';
+  return 'Something went wrong: ' + (e && e.message || e);
+}
+
+function paBind(card){
+  const on = (id, fn) => { const el = card.querySelector(id); if (el) el.onclick = fn; };
+  on('#pa-retry', () => { PA.err = ''; paEnsure(); paRefresh(); });
+  on('#pa-signin', paSignIn);
+  on('#pa-signout', async () => { PA.req = ''; await paSignOut(); paRefresh(); });
+  on('#pa-request', async () => {
+    try { const k = PA.kit, em = (PA.user.email || '').toLowerCase(); await k.fs.setDoc(k.fs.doc(k.db, 'requests', em), { email: em, name: PA.user.displayName || '', requestedAt: new Date().toISOString() }); PA.req = 'sent'; }
+    catch(e){ PA.req = 'fail'; }
+    paRefresh();
+  });
+  on('#pa-recheck', () => { PA.kit = null; PA.user = null; PA.loading = false; paEnsure(); paRefresh(); });
+  on('#pa-scores', () => paStart('scores'));
+  on('#pa-finals', () => paStart('finals'));
+  on('#pa-unfinals', () => paStart('unfinals'));
+  on('#pa-unall', () => paStart('unall'));
+  on('#pa-notice', async () => {
+    PA.msg = null; PA.plan = null; PA.working = true; paRefresh();
+    try {
+      const roster = await paLoadRoster(); const plan = paPlan(roster, 'finals'); const subject = getSubject(currentSubjectId);
+      const items = [];
+      paLive(plan).forEach(sp => sp.students.forEach(x => {
+        const rec = x.status === 'match' ? x.rec : null; if (!rec) return;
+        if (calcStudent(x.stu, sp.sec, subject).overallRating === 'imp') items.push({ rec, stu: x.stu, section: rec.section, on: true });
+      }));
+      PA.plan = null; PA.notice = { items, blocked: plan.blocked };
+    } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  });
+  on('#pa-cancel', () => { PA.plan = null; paRefresh(); });
+  on('#pa-ncancel', () => { PA.notice = null; paRefresh(); });
+  card.querySelectorAll('[data-pa-ni]').forEach(el => el.onchange = () => { PA.notice.items[Number(el.dataset.paNi)].on = el.checked; });
+  const nsend = (clear) => async () => {
+    const chosen = PA.notice.items.filter(i => i.on); if (!chosen.length) return;
+    PA.working = true; paRefresh();
+    try { const n = await paSendNotice(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Notice removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; PA.notice = null; showToast(clear ? 'Notice removed' : 'Notice sent'); }
+    catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  };
+  on('#pa-nsend', nsend(false)); on('#pa-nclear', nsend(true));
+  card.querySelectorAll('[data-pa-sec]').forEach(el => el.onchange = () => {
+    const sp = PA.plan.sections[Number(el.dataset.paSec)]; sp.target = el.value; paReplanSection(sp, PA.plan.roster);
+    if (PA.plan.mode !== 'scores') sp.students.forEach(x => { if (x.status === 'new') x.choice = '__skip__'; });
+    paRefresh();
+  });
+  card.querySelectorAll('[data-pa-stu]').forEach(el => el.onchange = () => {
+    const [si, xi] = el.dataset.paStu.split(':').map(Number); PA.plan.sections[si].students[xi].choice = el.value; paRefresh();
+  });
+  on('#pa-go', async () => {
+    const plan = PA.plan; if (!plan || paUnresolved(plan)) return;
+    PA.working = true; paRefresh();
+    try {
+      if (plan.mode === 'scores'){
+        const r = await paPublishScores(); paSetLast('scores', { count: r.count });
+        PA.msg = { t: 'good', s: 'Published ' + paLabel() + ' to ' + r.count + ' learners' + (r.created ? ' (' + r.created + ' new learner' + (r.created > 1 ? 's' : '') + ' added)' : '') + (r.ni ? '. ' + r.ni + ' need improvement and now have a letter in the app.' : '.') };
+        showToast('Scores published');
+      } else if (plan.mode === 'finals'){
+        const r = await paPublishFinals(); paSetLast('finals', { count: r.n });
+        PA.msg = { t: r.n ? 'good' : 'warn', s: r.n ? 'Final grades published for ' + r.n + ' learners.' : 'No final grades were published.' } ;
+        if (r.none) PA.msg.s += ' ' + r.none + ' have no grade yet.'; if (r.skipped) PA.msg.s += ' ' + r.skipped + ' were skipped (not on the Parent App yet).';
+        showToast('Final grades published');
+      } else if (plan.mode === 'unfinals'){
+        const n = await paUnpublish('finals'); PA.msg = { t: 'good', s: 'Final grades unpublished for ' + n + ' learners.' }; showToast('Final grades unpublished');
+      } else {
+        const n = await paUnpublish('all'); PA.msg = { t: 'good', s: paLabel() + ' removed for ' + n + ' learners.' }; showToast('Removed');
+      }
+      PA.plan = null;
+    } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  });
+}
+
 init();
 // Safety net: if the tab is closed or the browser is switched right after
 // typing, make sure the last edit still gets written to storage.
