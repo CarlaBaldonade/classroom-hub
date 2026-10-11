@@ -3268,6 +3268,22 @@ async function paSendNotice(chosen, clear){
   return n;
 }
 
+// ---- Who has a notice, and who tapped Noted ----
+async function paNoticeStatus(recs, key){
+  const k = PA.kit, out = {};
+  for (let i = 0; i < recs.length; i += 20){
+    await Promise.all(recs.slice(i, i + 20).map(async rec => {
+      try {
+        const d = (await k.fs.getDoc(k.fs.doc(k.db, 'portal', rec.code))).data() || {};
+        const b = d.banners && d.banners[key];
+        out[rec.id] = b ? { sent: true, noted: !!(d.parentAck && d.parentAck[key] && d.parentAck[key].id === b.id) } : { sent: false };
+      } catch(e){ out[rec.id] = null; }
+    }));
+  }
+  return out;
+}
+const paStatusPill = (st) => !st ? '' : st.sent ? (st.noted ? '<span class="pa-pill good">✓ Noted by parent</span>' : '<span class="pa-pill warn">Sent · not noted yet</span>') : '';
+
 // ---- Separate notice to parents (not tied to grades) ----
 const paNoticeKey = () => ('notice-' + String((PA.user && PA.user.email) || 'teacher').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).slice(0, 48);
 async function paCnLoad(){
@@ -3280,6 +3296,9 @@ async function paCnLoad(){
     const items = roster.filter(r => r.section === sp.target && r.code).sort((a, b) => String(a.name).localeCompare(String(b.name))).map(rec => ({ rec, on: false }));
     if (items.length) groups.push({ section: sp.target, items });
   });
+  const allRecs = []; groups.forEach(g => g.items.forEach(it => allRecs.push(it.rec)));
+  const st = await paNoticeStatus(allRecs, paNoticeKey());
+  groups.forEach(g => g.items.forEach(it => { it.st = st[it.rec.id]; }));
   const when = [settings.meetingDate, settings.meetingTime].filter(Boolean).join(', ');
   PA.cn = { groups, blocked: plan.blocked, message: 'Please come to school for a short talk about {child}.', when, where: settings.meetingPlace || '' };
 }
@@ -3355,7 +3374,7 @@ function paFill(card){
     h += secs.length ? '<div class="pa-sec">' + secs.map(s => escapeHtml(s.sec.name) + ' (' + s.students.length + ')').join(' · ') + '</div>' : '<div class="plg-syncmsg warn">No learners yet for this subject and term. Add them in a section first.</div>';
     h += '<div class="pa-sec" style="margin-top:6px">' + (lS ? 'Scores last published ' + escapeHtml(paWhen(lS.t)) + ' (' + (lS.count || 0) + ' learners).' : 'Scores not published yet.') + ' ' + (lF ? 'Final grades last published ' + escapeHtml(paWhen(lF.t)) + '.' : 'Final grades not published.') + '</div>';
     h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-scores"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish scores</button><button type="button" class="plg-btn gold" id="pa-finals"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish final grades</button><button type="button" class="plg-btn secondary" id="pa-notice"' + (secs.length && !PA.working ? '' : ' disabled') + '>Come-to-school notice</button><button type="button" class="plg-btn secondary" id="pa-cn"' + (!PA.working ? '' : ' disabled') + '>Notice to parents</button></div>';
-    h += '<div class="pa-actions"><button type="button" class="plg-linkbtn" id="pa-unfinals">Unpublish final grades</button><button type="button" class="plg-linkbtn danger" id="pa-unall">Remove ' + escapeHtml(paLabel()) + ' from the Parent App</button></div></div>';
+    h += '<div class="pa-actions"><button type="button" class="plg-linkbtn" id="pa-unfinals">Unpublish final grades</button><button type="button" class="plg-linkbtn danger" id="pa-unall">Unpublish scores: remove ' + escapeHtml(paLabel()) + ' from the Parent App (scores and final grades)</button></div></div>';
     if (PA.working) h += '<div class="plg-syncmsg">Working…</div>';
     if (PA.plan) h += paPlanHtml(PA.plan);
     if (PA.notice) h += paNoticeHtml();
@@ -3420,8 +3439,8 @@ function paNoticeHtml(){
   const meet = [settings.meetingDate, settings.meetingTime, settings.meetingPlace].filter(Boolean);
   h += meet.length ? '<div class="pa-sec">Meeting details from Setup: <b>' + escapeHtml(meet.join(' · ')) + '</b></div>' : '<div class="plg-syncmsg warn">No meeting date, time or place in Setup yet. The notice will just ask parents to visit the school.</div>';
   if (!n.items.length) h += '<div class="plg-empty-note">No learner in this subject needs improvement right now.</div>';
-  else h += '<div class="pa-sec" style="margin-top:6px">Learners needing improvement. Untick anyone who should not get the notice.</div><div class="pa-ni">' + n.items.map((it, i) => '<label><input type="checkbox" data-pa-ni="' + i + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + ' <span class="pa-sec">' + escapeHtml(it.section) + '</span></label>').join('') + '</div>';
-  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-nsend"' + (n.items.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-nclear"' + (n.items.length ? '' : ' disabled') + '>Remove notice from these learners</button><button type="button" class="plg-btn secondary" id="pa-ncancel">Close</button></div></div>';
+  else h += '<div class="pa-sec" style="margin-top:6px">Learners needing improvement. Untick anyone who should not get the notice.</div><div class="pa-ni">' + n.items.map((it, i) => '<label><input type="checkbox" data-pa-ni="' + i + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + ' <span class="pa-sec">' + escapeHtml(it.section) + '</span> ' + paStatusPill(it.st) + '</label>').join('') + '</div>';
+  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-nsend"' + (n.items.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-nclear"' + (n.items.length ? '' : ' disabled') + '>Remove notice from these learners</button><button type="button" class="plg-btn secondary" id="pa-nrefresh">Refresh who has noted</button><button type="button" class="plg-btn secondary" id="pa-ncancel">Close</button></div></div>';
   return h;
 }
 
@@ -3433,12 +3452,30 @@ function paCnHtml(){
   else {
     h += '<div class="pa-sec" style="margin-top:8px"><b>Message</b> <span>(write {child} where the learner\'s first name should appear)</span></div><textarea id="pa-cn-msg" rows="3" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;box-sizing:border-box">' + escapeHtml(c.message) + '</textarea>';
     h += '<div class="pa-row"><label class="pa-sec">When<br><input type="text" id="pa-cn-when" placeholder="e.g. Friday, Oct 17, 3:00 PM" value="' + escapeAttr(c.when) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label><label class="pa-sec">Where<br><input type="text" id="pa-cn-where" placeholder="e.g. Science Room" value="' + escapeAttr(c.where) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label></div>';
-    c.groups.forEach((g, gi) => {
-      h += '<div class="pa-sec" style="margin-top:10px"><b>' + escapeHtml(g.section) + '</b> (' + g.items.length + ') <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':1">Select all</button> <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':0">None</button></div><div class="pa-ni">' + g.items.map((it, ii) => '<label><input type="checkbox" data-pa-cnitem="' + gi + ':' + ii + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + '</label>').join('') + '</div>';
-    });
+    if (c.sel == null || !c.groups[c.sel]) c.sel = 0;
+    const ticked = (g) => g.items.filter(it => it.on).length;
+    h += '<div class="pa-row" style="margin-top:10px"><label class="pa-sec">Section<br><select id="pa-cn-sec">' + c.groups.map((g, gi) => '<option value="' + gi + '"' + (gi === c.sel ? ' selected' : '') + '>' + escapeHtml(g.section) + ' (' + g.items.length + ')' + (ticked(g) ? ' · ' + ticked(g) + ' ticked' : '') + '</option>').join('') + '</select></label></div>';
+    const gi = c.sel, g = c.groups[gi];
+    h += '<div class="pa-sec" style="margin-top:6px"><button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':1">Select all</button> <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':0">None</button> <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':2">Select those with my notice</button></div><div class="pa-ni">' + g.items.map((it, ii) => '<label><input type="checkbox" data-pa-cnitem="' + gi + ':' + ii + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + ' ' + paStatusPill(it.st) + '</label>').join('') + '</div>';
+    const total = c.groups.reduce((n, x) => n + ticked(x), 0);
+    h += '<div class="pa-sec" style="margin-top:8px"><b>' + total + '</b> learner' + (total === 1 ? '' : 's') + ' ticked in all sections. Ticks stay when you switch sections.</div>';
   }
-  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-cnsend"' + (c.groups.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-cnclear"' + (c.groups.length ? '' : ' disabled') + '>Remove my notice from ticked learners</button><button type="button" class="plg-btn secondary" id="pa-cncancel">Close</button></div></div>';
+  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-cnsend"' + (c.groups.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-cnclear"' + (c.groups.length ? '' : ' disabled') + '>Remove my notice from ticked learners</button><button type="button" class="plg-btn secondary" id="pa-cnrefresh">Refresh who has noted</button><button type="button" class="plg-btn secondary" id="pa-cncancel">Close</button></div></div>';
   return h;
+}
+
+async function paNoticeLoad(){
+  try {
+    const roster = await paLoadRoster(); const plan = paPlan(roster, 'finals'); const subject = getSubject(currentSubjectId);
+    const items = [];
+    paLive(plan).forEach(sp => sp.students.forEach(x => {
+      const rec = x.status === 'match' ? x.rec : null; if (!rec) return;
+      if (calcStudent(x.stu, sp.sec, subject).overallRating === 'imp') items.push({ rec, stu: x.stu, section: rec.section, on: true });
+    }));
+    const st = await paNoticeStatus(items.map(i => i.rec), paSubjKey());
+    items.forEach(i => { i.st = st[i.rec.id]; });
+    PA.plan = null; PA.notice = { items, blocked: plan.blocked };
+  } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
 }
 
 async function paStart(mode){
@@ -3472,20 +3509,7 @@ function paBind(card){
   on('#pa-finals', () => paStart('finals'));
   on('#pa-unfinals', () => paStart('unfinals'));
   on('#pa-unall', () => paStart('unall'));
-  on('#pa-notice', async () => {
-    PA.msg = null; PA.plan = null; PA.working = true; paRefresh();
-    try {
-      const roster = await paLoadRoster(); const plan = paPlan(roster, 'finals'); const subject = getSubject(currentSubjectId);
-      const items = [];
-      paLive(plan).forEach(sp => sp.students.forEach(x => {
-        const rec = x.status === 'match' ? x.rec : null; if (!rec) return;
-        if (calcStudent(x.stu, sp.sec, subject).overallRating === 'imp') items.push({ rec, stu: x.stu, section: rec.section, on: true });
-      }));
-      PA.plan = null; PA.notice = { items, blocked: plan.blocked };
-    } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
-    PA.working = false; paRefresh();
-  });
-  on('#pa-cancel', () => { PA.plan = null; paRefresh(); });
+  on('#pa-notice', async () => { PA.msg = null; PA.plan = null; PA.cn = null; PA.working = true; paRefresh(); await paNoticeLoad(); PA.working = false; paRefresh(); });
   on('#pa-ncancel', () => { PA.notice = null; paRefresh(); });
   on('#pa-cn', async () => {
     PA.msg = null; PA.plan = null; PA.notice = null; PA.working = true; paRefresh();
@@ -3493,30 +3517,37 @@ function paBind(card){
     PA.working = false; paRefresh();
   });
   on('#pa-cncancel', () => { PA.cn = null; paRefresh(); });
+  const cnSec = card.querySelector('#pa-cn-sec'); if (cnSec) cnSec.onchange = () => { PA.cn.sel = Number(cnSec.value); paRefresh(); };
   const cnMsg = card.querySelector('#pa-cn-msg'); if (cnMsg) cnMsg.oninput = () => { PA.cn.message = cnMsg.value; };
   const cnWhen = card.querySelector('#pa-cn-when'); if (cnWhen) cnWhen.oninput = () => { PA.cn.when = cnWhen.value; };
   const cnWhere = card.querySelector('#pa-cn-where'); if (cnWhere) cnWhere.oninput = () => { PA.cn.where = cnWhere.value; };
   card.querySelectorAll('[data-pa-cnitem]').forEach(el => el.onchange = () => { const [g, i] = el.dataset.paCnitem.split(':').map(Number); PA.cn.groups[g].items[i].on = el.checked; });
-  card.querySelectorAll('[data-pa-cnall]').forEach(el => el.onclick = () => { const [g, v] = el.dataset.paCnall.split(':').map(Number); PA.cn.groups[g].items.forEach(it => { it.on = !!v; }); paRefresh(); });
+  card.querySelectorAll('[data-pa-cnall]').forEach(el => el.onclick = () => { const [g, v] = el.dataset.paCnall.split(':').map(Number); PA.cn.groups[g].items.forEach(it => { it.on = v === 2 ? !!(it.st && it.st.sent) : !!v; }); paRefresh(); });
   const cnSend = (clear) => async () => {
     const chosen = []; PA.cn.groups.forEach(g => g.items.forEach(it => { if (it.on) chosen.push(it); }));
     if (!chosen.length){ PA.msg = { t: 'warn', s: 'Tick at least one learner first.' }; paRefresh(); return; }
     if (!clear && !String(PA.cn.message || '').trim()){ PA.msg = { t: 'warn', s: 'Write a short message first.' }; paRefresh(); return; }
     PA.working = true; paRefresh();
-    try { const n = await paSendCustom(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Your notice was removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; PA.cn = null; showToast(clear ? 'Notice removed' : 'Notice sent'); }
+    try { const n = await paSendCustom(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Your notice was removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; const keep = { message: PA.cn.message, when: PA.cn.when, where: PA.cn.where, sel: PA.cn.sel }; await paCnLoad(); Object.assign(PA.cn, keep); showToast(clear ? 'Notice removed' : 'Notice sent'); }
     catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
     PA.working = false; paRefresh();
   };
   on('#pa-cnsend', cnSend(false)); on('#pa-cnclear', cnSend(true));
+  on('#pa-cnrefresh', async () => {
+    const keep = { message: PA.cn.message, when: PA.cn.when, where: PA.cn.where, sel: PA.cn.sel }; PA.working = true; paRefresh();
+    try { await paCnLoad(); Object.assign(PA.cn, keep); } catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  });
   card.querySelectorAll('[data-pa-ni]').forEach(el => el.onchange = () => { PA.notice.items[Number(el.dataset.paNi)].on = el.checked; });
   const nsend = (clear) => async () => {
     const chosen = PA.notice.items.filter(i => i.on); if (!chosen.length) return;
     PA.working = true; paRefresh();
-    try { const n = await paSendNotice(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Notice removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; PA.notice = null; showToast(clear ? 'Notice removed' : 'Notice sent'); }
+    try { const n = await paSendNotice(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Notice removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; await paNoticeLoad(); showToast(clear ? 'Notice removed' : 'Notice sent'); }
     catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
     PA.working = false; paRefresh();
   };
   on('#pa-nsend', nsend(false)); on('#pa-nclear', nsend(true));
+  on('#pa-nrefresh', async () => { PA.working = true; paRefresh(); await paNoticeLoad(); PA.working = false; paRefresh(); });
   card.querySelectorAll('[data-pa-sec]').forEach(el => el.onchange = () => {
     const sp = PA.plan.sections[Number(el.dataset.paSec)]; sp.target = el.value; paReplanSection(sp, PA.plan.roster);
     if (PA.plan.mode !== 'scores') sp.students.forEach(x => { if (x.status === 'new') x.choice = '__skip__'; });
