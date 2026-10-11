@@ -3040,7 +3040,7 @@ const paFmtCode = (c) => String(c).replace(/(.{4})(?=.)/g, '$1-');
 // <<end pure>>
 
 // ---- Firebase (loaded only when needed) ----
-const PA = { req: '', kit: null, loading: false, err: '', user: null, ok: false, plan: null, working: false, msg: null, notice: null };
+const PA = { req: '', kit: null, loading: false, err: '', user: null, ok: false, plan: null, working: false, msg: null, notice: null, cn: null };
 
 async function paKit(){
   if (PA.kit) return PA.kit;
@@ -3078,7 +3078,7 @@ async function paSignIn(){
     paRefresh();
   }
 }
-async function paSignOut(){ const k = await paKit(); await k.au.signOut(k.auth); PA.plan = null; PA.notice = null; PA.msg = null; }
+async function paSignOut(){ const k = await paKit(); await k.au.signOut(k.auth); PA.plan = null; PA.notice = null; PA.cn = null; PA.msg = null; }
 
 // ---- helpers over Letters data ----
 const paSubjKey = () => currentSubjectId + '-t' + currentTermId;
@@ -3268,6 +3268,35 @@ async function paSendNotice(chosen, clear){
   return n;
 }
 
+// ---- Separate notice to parents (not tied to grades) ----
+const paNoticeKey = () => ('notice-' + String((PA.user && PA.user.email) || 'teacher').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).slice(0, 48);
+async function paCnLoad(){
+  const roster = await paLoadRoster();
+  const plan = paPlan(roster, 'finals');
+  const seen = new Set(); const groups = [];
+  paLive(plan).forEach(sp => {
+    if (!sp.target || sp.target === '__new__' || seen.has(sp.target)) return;
+    seen.add(sp.target);
+    const items = roster.filter(r => r.section === sp.target && r.code).sort((a, b) => String(a.name).localeCompare(String(b.name))).map(rec => ({ rec, on: false }));
+    if (items.length) groups.push({ section: sp.target, items });
+  });
+  const when = [settings.meetingDate, settings.meetingTime].filter(Boolean).join(', ');
+  PA.cn = { groups, blocked: plan.blocked, message: 'Please come to school for a short talk about {child}.', when, where: settings.meetingPlace || '' };
+}
+async function paSendCustom(chosen, clear){
+  const k = PA.kit, c = PA.cn, key = paNoticeKey(); const ops = [];
+  chosen.forEach(({ rec }) => {
+    const banner = clear ? k.fs.deleteField() : {
+      id: key + '-' + Date.now().toString(36), title: 'Please visit the school',
+      message: String(c.message || '').replace(/\{child\}/gi, paFirst(rec.name)).trim() || 'Please come to school for a short talk.',
+      when: (c.when || '').trim(), where: (c.where || '').trim(), who: (settings.teacher || '').trim(), createdAt: new Date().toISOString()
+    };
+    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), clear ? { banners: { [key]: banner } } : { name: rec.name, section: rec.section, schoolYear: PA_SCHOOL_YEAR, banners: { [key]: banner } }, { merge: true }));
+  });
+  await paCommit(ops);
+  return chosen.length;
+}
+
 // ---- UI ----
 function paLastInfo(){ try { return JSON.parse(localStorage.getItem(PA_LAST_KEY) || '{}'); } catch(e) { return {}; } }
 function paSetLast(kind, info){ try { const o = paLastInfo(); o[paSubjKey() + ':' + kind] = Object.assign({ t: Date.now() }, info); localStorage.setItem(PA_LAST_KEY, JSON.stringify(o)); } catch(e) {} }
@@ -3325,11 +3354,12 @@ function paFill(card){
     if (!(settings.teacher || '').trim()) h += '<div class="plg-syncmsg warn">Enter your name in Setup first, so parents see who the teacher is.</div>';
     h += secs.length ? '<div class="pa-sec">' + secs.map(s => escapeHtml(s.sec.name) + ' (' + s.students.length + ')').join(' · ') + '</div>' : '<div class="plg-syncmsg warn">No learners yet for this subject and term. Add them in a section first.</div>';
     h += '<div class="pa-sec" style="margin-top:6px">' + (lS ? 'Scores last published ' + escapeHtml(paWhen(lS.t)) + ' (' + (lS.count || 0) + ' learners).' : 'Scores not published yet.') + ' ' + (lF ? 'Final grades last published ' + escapeHtml(paWhen(lF.t)) + '.' : 'Final grades not published.') + '</div>';
-    h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-scores"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish scores</button><button type="button" class="plg-btn gold" id="pa-finals"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish final grades</button><button type="button" class="plg-btn secondary" id="pa-notice"' + (secs.length && !PA.working ? '' : ' disabled') + '>Come-to-school notice</button></div>';
+    h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-scores"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish scores</button><button type="button" class="plg-btn gold" id="pa-finals"' + (secs.length && !PA.working ? '' : ' disabled') + '>Publish final grades</button><button type="button" class="plg-btn secondary" id="pa-notice"' + (secs.length && !PA.working ? '' : ' disabled') + '>Come-to-school notice</button><button type="button" class="plg-btn secondary" id="pa-cn"' + (!PA.working ? '' : ' disabled') + '>Notice to parents</button></div>';
     h += '<div class="pa-actions"><button type="button" class="plg-linkbtn" id="pa-unfinals">Unpublish final grades</button><button type="button" class="plg-linkbtn danger" id="pa-unall">Remove ' + escapeHtml(paLabel()) + ' from the Parent App</button></div></div>';
     if (PA.working) h += '<div class="plg-syncmsg">Working…</div>';
     if (PA.plan) h += paPlanHtml(PA.plan);
     if (PA.notice) h += paNoticeHtml();
+    if (PA.cn) h += paCnHtml();
   }
   card.innerHTML = h;
   paBind(card);
@@ -3395,6 +3425,22 @@ function paNoticeHtml(){
   return h;
 }
 
+function paCnHtml(){
+  const c = PA.cn;
+  let h = '<div class="pa-box"><h3>Notice to parents</h3><div class="pa-sec">Sends a "Please visit the school" notice to the learners you tick. It does not depend on grades. Parents see it with a Noted button. Sending again replaces your earlier notice for the same learner.</div>';
+  (c.blocked || []).forEach(m => { h += '<div class="plg-syncmsg warn">' + escapeHtml(m) + '</div>'; });
+  if (!c.groups.length) h += '<div class="plg-empty-note">No section of yours has an official list yet. Ask the adviser or the admin to load it in the Parent App Admin.</div>';
+  else {
+    h += '<div class="pa-sec" style="margin-top:8px"><b>Message</b> <span>(write {child} where the learner\'s first name should appear)</span></div><textarea id="pa-cn-msg" rows="3" style="width:100%;font:inherit;font-size:13px;padding:8px;border:1px solid var(--line);border-radius:8px;box-sizing:border-box">' + escapeHtml(c.message) + '</textarea>';
+    h += '<div class="pa-row"><label class="pa-sec">When<br><input type="text" id="pa-cn-when" placeholder="e.g. Friday, Oct 17, 3:00 PM" value="' + escapeAttr(c.when) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label><label class="pa-sec">Where<br><input type="text" id="pa-cn-where" placeholder="e.g. Science Room" value="' + escapeAttr(c.where) + '" style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label></div>';
+    c.groups.forEach((g, gi) => {
+      h += '<div class="pa-sec" style="margin-top:10px"><b>' + escapeHtml(g.section) + '</b> (' + g.items.length + ') <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':1">Select all</button> <button type="button" class="plg-linkbtn" data-pa-cnall="' + gi + ':0">None</button></div><div class="pa-ni">' + g.items.map((it, ii) => '<label><input type="checkbox" data-pa-cnitem="' + gi + ':' + ii + '"' + (it.on ? ' checked' : '') + '> ' + escapeHtml(it.rec.name) + '</label>').join('') + '</div>';
+    });
+  }
+  h += '<div class="pa-actions"><button type="button" class="plg-btn" id="pa-cnsend"' + (c.groups.length ? '' : ' disabled') + '>Send notice</button><button type="button" class="plg-btn secondary" id="pa-cnclear"' + (c.groups.length ? '' : ' disabled') + '>Remove my notice from ticked learners</button><button type="button" class="plg-btn secondary" id="pa-cncancel">Close</button></div></div>';
+  return h;
+}
+
 async function paStart(mode){
   PA.msg = null; PA.notice = null; PA.working = true; paRefresh();
   try {
@@ -3441,6 +3487,27 @@ function paBind(card){
   });
   on('#pa-cancel', () => { PA.plan = null; paRefresh(); });
   on('#pa-ncancel', () => { PA.notice = null; paRefresh(); });
+  on('#pa-cn', async () => {
+    PA.msg = null; PA.plan = null; PA.notice = null; PA.working = true; paRefresh();
+    try { await paCnLoad(); } catch(e){ PA.cn = null; PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  });
+  on('#pa-cncancel', () => { PA.cn = null; paRefresh(); });
+  const cnMsg = card.querySelector('#pa-cn-msg'); if (cnMsg) cnMsg.oninput = () => { PA.cn.message = cnMsg.value; };
+  const cnWhen = card.querySelector('#pa-cn-when'); if (cnWhen) cnWhen.oninput = () => { PA.cn.when = cnWhen.value; };
+  const cnWhere = card.querySelector('#pa-cn-where'); if (cnWhere) cnWhere.oninput = () => { PA.cn.where = cnWhere.value; };
+  card.querySelectorAll('[data-pa-cnitem]').forEach(el => el.onchange = () => { const [g, i] = el.dataset.paCnitem.split(':').map(Number); PA.cn.groups[g].items[i].on = el.checked; });
+  card.querySelectorAll('[data-pa-cnall]').forEach(el => el.onclick = () => { const [g, v] = el.dataset.paCnall.split(':').map(Number); PA.cn.groups[g].items.forEach(it => { it.on = !!v; }); paRefresh(); });
+  const cnSend = (clear) => async () => {
+    const chosen = []; PA.cn.groups.forEach(g => g.items.forEach(it => { if (it.on) chosen.push(it); }));
+    if (!chosen.length){ PA.msg = { t: 'warn', s: 'Tick at least one learner first.' }; paRefresh(); return; }
+    if (!clear && !String(PA.cn.message || '').trim()){ PA.msg = { t: 'warn', s: 'Write a short message first.' }; paRefresh(); return; }
+    PA.working = true; paRefresh();
+    try { const n = await paSendCustom(chosen, clear); PA.msg = { t: 'good', s: clear ? 'Your notice was removed from ' + n + ' learner' + (n > 1 ? 's' : '') + '.' : 'Notice sent to the parents of ' + n + ' learner' + (n > 1 ? 's' : '') + '. They will see it when they open the Parent App.' }; PA.cn = null; showToast(clear ? 'Notice removed' : 'Notice sent'); }
+    catch(e){ PA.msg = { t: 'bad', s: paErr(e) }; }
+    PA.working = false; paRefresh();
+  };
+  on('#pa-cnsend', cnSend(false)); on('#pa-cnclear', cnSend(true));
   card.querySelectorAll('[data-pa-ni]').forEach(el => el.onchange = () => { PA.notice.items[Number(el.dataset.paNi)].on = el.checked; });
   const nsend = (clear) => async () => {
     const chosen = PA.notice.items.filter(i => i.on); if (!chosen.length) return;
