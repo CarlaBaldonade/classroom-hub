@@ -3131,10 +3131,10 @@ function paReplanSection(sp, roster){
 // A section can be published only when it has an official list (loaded by the admin or adviser).
 // Un-publishing is always allowed.
 const paOfficialSecs = (roster) => new Set(roster.filter(r => r.official).map(r => r.section));
-function paLive(plan){ return (plan.mode === 'unfinals' || plan.mode === 'unall') ? plan.sections : plan.sections.filter(sp => sp.official); }
+function paLive(plan){ return ((plan.mode === 'unfinals' || plan.mode === 'unall') ? plan.sections : plan.sections.filter(sp => sp.official)).filter(sp => !sp.skip); }
 function paUnresolved(plan){
   let n = 0;
-  plan.sections.forEach(sp => { if (!sp.target) n++; });
+  plan.sections.forEach(sp => { if (!sp.target && !sp.skip) n++; });
   paLive(plan).forEach(sp => { sp.students.forEach(x => { if (!x.choice) n++; }); });
   return n + paDupes(plan).length;
 }
@@ -3244,7 +3244,7 @@ async function paPublishFinals(){
 }
 async function paUnpublish(what){
   const plan = PA.plan, k = PA.kit, key = paSubjKey(); const ops = []; let n = 0;
-  plan.sections.forEach(sp => sp.students.forEach(x => {
+  paLive(plan).forEach(sp => sp.students.forEach(x => {
     const rec = plan.roster.find(r => r.id === x.choice); if (!rec) return;
     n++;
     ops.push(b => b.update(k.fs.doc(k.db, 'portal', rec.code), what === 'finals' ? new k.fs.FieldPath('subjects', key, 'final') : new k.fs.FieldPath('subjects', key), k.fs.deleteField()));
@@ -3399,13 +3399,15 @@ function paOptions(plan, sp, x){
 function paPlanHtml(plan){
   const titles = { scores: 'Check before publishing scores', finals: 'Check before publishing final grades', unfinals: 'Unpublish final grades', unall: 'Remove from the Parent App' };
   let h = '<div class="pa-box"><h3>' + titles[plan.mode] + '</h3>';
+  h += '<div class="pa-sec">Tick only the sections you want to ' + (plan.mode === 'scores' || plan.mode === 'finals' ? 'publish' : 'change') + ' now. Sections you untick are left exactly as they are.</div>';
   if (plan.blocked.length) h += plan.blocked.map(b => '<div class="plg-syncmsg warn">' + escapeHtml(b) + '</div>').join('');
   let tMatch = 0, tNew = 0, tNo = 0;
   plan.sections.forEach((sp, si) => {
+    if (sp.skip){ h += '<div style="margin-top:10px"><label class="pa-sec" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-pa-incl="' + si + '"> <b>' + escapeHtml(sp.typed) + '</b> (not included)</label></div>'; return; }
     const nm = sp.students.filter(x => x.status === 'match').length, nn = sp.students.filter(x => x.status === 'new').length, na = sp.students.filter(x => x.status === 'ambiguous').length;
     tMatch += nm; tNew += nn; tNo += na;
     const gated = !sp.official && plan.mode !== 'unfinals' && plan.mode !== 'unall';
-    h += '<div style="margin-top:10px"><b>' + escapeHtml(sp.typed) + '</b> → <select data-pa-sec="' + si + '">' + (!sp.target ? '<option value="" selected disabled>Which section is this?</option>' : '')
+    h += '<div style="margin-top:10px"><label class="pa-sec" style="display:inline-flex;gap:6px;align-items:center;margin-right:8px"><input type="checkbox" data-pa-incl="' + si + '" checked> Include</label><b>' + escapeHtml(sp.typed) + '</b> → <select data-pa-sec="' + si + '">' + (!sp.target ? '<option value="" selected disabled>Which section is this?</option>' : '')
       + (sp.target === '__new__' ? '<option value="__new__" selected disabled>No matching section on the school list</option>' : '')
       + plan.existing.map(n => '<option value="' + escapeAttr(n) + '"' + (sp.target === n ? ' selected' : '') + '>' + escapeHtml(n) + (paOfficialSecs(plan.roster).has(n) ? ' (official list)' : ' (no official list yet)') + '</option>').join('') + '</select>'
       + (gated ? '<div class="pa-sec" style="margin-top:6px;color:#a33"><b>Cannot publish ' + escapeHtml(sp.typed) + ' yet.</b> ' + (sp.target && sp.target !== '__new__' ? 'There is no official list for this section yet. Ask your adviser or the Parent App admin to load it in <b>Parent App Admin</b>, then try again.' : 'This section name does not match any section on the school list. Pick the right one above, or rename the section in Setup.') + '</div>' : '')
@@ -3548,6 +3550,7 @@ function paBind(card){
   };
   on('#pa-nsend', nsend(false)); on('#pa-nclear', nsend(true));
   on('#pa-nrefresh', async () => { PA.working = true; paRefresh(); await paNoticeLoad(); PA.working = false; paRefresh(); });
+  card.querySelectorAll('[data-pa-incl]').forEach(el => el.onchange = () => { PA.plan.sections[Number(el.dataset.paIncl)].skip = !el.checked; paRefresh(); });
   card.querySelectorAll('[data-pa-sec]').forEach(el => el.onchange = () => {
     const sp = PA.plan.sections[Number(el.dataset.paSec)]; sp.target = el.value; paReplanSection(sp, PA.plan.roster);
     if (PA.plan.mode !== 'scores') sp.students.forEach(x => { if (x.status === 'new') x.choice = '__skip__'; });
