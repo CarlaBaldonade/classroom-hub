@@ -2133,7 +2133,7 @@ function importNames(c,names){
 }
 
 /* Address of the Parent App admin page. Replace YOUR-PROJECT-ID with your Firebase project ID. */
-const PARENT_ADMIN_URL='https://YOUR-PROJECT-ID.web.app/admin.html';
+const PARENT_ADMIN_URL='https://ansci-parents.web.app/admin.html';
 let lettersPrefetched=false;
 function prefetchLetters(){/* warm the browser cache while the More menu is open, so Letters opens faster */
   if(lettersPrefetched||!/^https?:$/.test(location.protocol)||!navigator.onLine)return;lettersPrefetched=true;
