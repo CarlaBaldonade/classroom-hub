@@ -657,6 +657,7 @@ function normClass(c){
   }
   if(o.theme!==undefined&&!THEMES[o.theme])delete o.theme;
   if(o.notes!==undefined)o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(n=>n&&n.id&&typeof n.x==='string'&&/^\d{4}-\d\d-\d\d$/.test(n.d||'')).map(n=>({id:String(n.id),d:n.d,t:+n.t||0,k:NK[n.k]?n.k:'obs',s:(Array.isArray(n.s)?n.s:[]).map(String),x:n.x.slice(0,4000)}));
+  if(o.gsets!==undefined)o.gsets=(Array.isArray(o.gsets)?o.gsets:[]).filter(x=>x&&x.id&&Array.isArray(x.groups)).slice(0,30).map(x=>({id:String(x.id),name:String(x.name||'Saved groups').slice(0,60),t:+x.t||0,groups:x.groups.map(g=>(Array.isArray(g)?g:[]).map(String)),groupNames:(Array.isArray(x.groupNames)?x.groupNames:[]).map(String),groupScores:(Array.isArray(x.groupScores)?x.groupScores:[]).map(v=>+v||0),groupRoles:(Array.isArray(x.groupRoles)?x.groupRoles:[]).map(r=>r&&typeof r==='object'?r:{})}));
   if(o.sdel!==undefined){const d={};if(o.sdel&&typeof o.sdel==='object'&&!Array.isArray(o.sdel))for(const i in o.sdel)if(+o.sdel[i]>0)d[i]=+o.sdel[i];o.sdel=d}
   ensureSeats(o);
   o.aisleCols=cleanIdx(o.aisleCols,o.cols-1);o.aisleRows=cleanIdx(o.aisleRows,o.rows-1);
@@ -807,6 +808,7 @@ function mergeClass(l,r,interactive){
   }
   /* other things the base lacks entirely */
   if(oth.notes&&oth.notes.length){const ids=new Set((o.notes||[]).map(n=>n.id));const add=oth.notes.filter(n=>!ids.has(n.id)&&(!n.s.length||n.s.some(i=>have.has(i))));if(add.length)o.notes=(o.notes||[]).concat(add)}
+  if(oth.gsets&&oth.gsets.length){const ids=new Set((o.gsets||[]).map(x=>x.id));const add=oth.gsets.filter(x=>!ids.has(x.id));if(add.length)o.gsets=(o.gsets||[]).concat(add)}
   o.log.sort((a,b)=>a.t-b.t);if(o.log.length>500)o.log=o.log.slice(-500);
   ensureSeats(o);
   const n=normClass(o);n._h=hashOf(n);
@@ -1230,6 +1232,20 @@ V.picker=c=>{
   +'</section>';
 };
 
+const gKey=(g,n,sc)=>stable([g,n,sc.map(v=>+v||0)]);
+const gSaved=c=>(c.gsets||[]).some(x=>gKey(x.groups,x.groupNames,x.groupScores)===gKey(c.groups,c.groupNames,c.groupScores));
+function savedGroupsHtml(c){
+  const m=smap(c),a=(c.gsets||[]).slice().sort((x,y)=>y.t-x.t);
+  if(!a.length)return '';
+  let h='<section class="card"><h2>Saved groupings</h2><p class="muted">Each one keeps its groups, names and group points. “Open” makes it the current grouping; save the current one first if you want to keep it.</p>';
+  a.forEach(x=>{
+    const tot=x.groupScores.reduce((p,v)=>p+v,0);
+    h+='<details style="margin:6px 0"><summary><b>'+esc(x.name)+'</b> <span class="muted">· '+esc(new Date(x.t).toLocaleDateString())+' · '+x.groups.length+' groups · ⭐ '+tot+'</span></summary>'
+    +'<div class="ggrid">'+x.groups.map((g,gi)=>'<div class="gcard"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(x.groupNames[gi]||'Group '+(gi+1))+'</b><span class="gs">⭐ '+(x.groupScores[gi]||0)+'</span></div><div class="gbody">'+(g.filter(id=>m[id]).map(id=>'<div class="gm"><span class="gn"></span>'+esc(m[id].name)+'</div>').join('')||'<span class="muted">Empty</span>')+'</div></div>').join('')+'</div>'
+    +'<div class="row wrap"><button class="btn pri" data-act="gopen" data-id="'+esc(x.id)+'">📂 Open</button><button class="btn danger" data-act="gdelset" data-id="'+esc(x.id)+'">🗑 Delete</button></div></details>';
+  });
+  return h+'</section>';
+}
 V.groups=c=>{
   const m=smap(c);
   c.groups=c.groups.map(g=>g.filter(id=>m[id]));
@@ -1243,7 +1259,7 @@ V.groups=c=>{
   +'<div class="row wrap"><span>Number of groups</span><div class="stepper"><button class="btn sm" data-act="gcount" data-v="-1">−</button><b>'+c.groupCount+'</b><button class="btn sm" data-act="gcount" data-v="1">＋</button></div></div>'
   +'<label class="chk"><input type="checkbox" data-chg="popt" data-k="gSkip"'+(ui.gSkip?' checked':'')+'> Leave out students marked absent/excused today</label>'
   +'<button class="btn pri big" data-act="makeGroups"'+(c.students.length?'':' disabled')+'>🔀 Make '+c.groupCount+' random groups</button>'
-  +'<div class="row wrap"><button class="btn'+(ui.gman?' pri':'')+'" data-act="gmanual"'+(c.students.length?'':' disabled')+'>'+(ui.gman?'✅ Done choosing':'✋ Choose groups myself')+'</button>'+(ui.gman?'<button class="btn" data-act="gadd">＋ Add group</button>':'')+(c.groups.length?'<button class="btn danger" data-act="resetGroups">🗑 Reset all groups</button>':'')+'</div>'
+  +'<div class="row wrap"><button class="btn'+(ui.gman?' pri':'')+'" data-act="gmanual"'+(c.students.length?'':' disabled')+'>'+(ui.gman?'✅ Done choosing':'✋ Choose groups myself')+'</button>'+(ui.gman?'<button class="btn" data-act="gadd">＋ Add group</button>':'')+(c.groups.length?'<button class="btn" data-act="gsave">💾 Save these groups</button>':'')+(c.groups.length?'<button class="btn danger" data-act="resetGroups">🗑 Reset all groups</button>':'')+'</div>'
   +'<p class="muted">'+(ui.gman?'Choosing groups yourself: tap <b>Add here</b> on a group, then tap students under “Not in a group” to put them in it. Tap a student inside a group to take them out again. Use ＋ Add group for more groups.':ui.gsel?'<b>'+esc(selName)+'</b> selected. Tap another student to swap, or tap “Move here” on a group.':'To swap: tap a student, then tap another student. To make someone the 👑 leader or ✍️ secretary (optional), tap the student, then use the button in their group. To move: tap a student, then “Move here”. On a computer you can also drag a name onto another name (swap) or onto a group box (move).')+'</p></section>';
   if(c.groups.length||ui.gman){
     h+='<div class="ggrid">';
@@ -1258,7 +1274,7 @@ V.groups=c=>{
     if(un.length||ui.gman)h+='<div class="gcard" data-drop="grp" data-g="-1"><div class="ghead" style="background:#6b7a77"><b>Not in a group <span class="cnt">('+un.length+')</span></b></div><div class="gbody">'+un.map((id,n)=>mem(-1,id,n+1)).join('')+(un.length?'':'<span class="muted">Everyone has a group 🎉</span>')+(ui.gsel&&ui.gsel.g>=0?'<button class="btn sm" data-act="gmove" data-g="-1">⬇ Move '+esc(selName)+' here</button>':'')+'</div></div>';
     h+='</div>';
   }
-  return h;
+  return h+savedGroupsHtml(c);
 };
 
 
@@ -1961,7 +1977,7 @@ const act={
   resetRound(c){c.round++;c.picked=[];ui.lastPick=null;save();render();toast('Round '+c.round+' started'+(ui.prio?'. Students not called last round go first':''))},
   clearHistory(c){if(!confirm('Forget who has been called and start over at round 1? (Points and the "times picked" counts are kept.)'))return;c.round=1;c.lastRound={};c.picked=[];ui.lastPick=null;save();render()},
   gcount(c,t){c.groupCount=clamp(c.groupCount+(+t.dataset.v),2,10);save();render()},
-  resetGroups(c){if(!c.groups.length)return;if(!confirm('Remove all groups in "'+c.name+'"? This also clears the group names and group scores.'))return;c.groups=[];c.groupNames=[];c.groupScores=[];c.groupRoles=[];ui.gsel=null;ui.gman=false;ui.gtarget=null;save();render();toast('All groups cleared')},
+  resetGroups(c){if(!c.groups.length)return;if(!confirm('Remove all groups in "'+c.name+'"? This also clears the group names and group scores.'+(gSaved(c)?'':'\n\nThey are not saved. Cancel, then tap “Save these groups” first if you want to keep them.')))return;c.groups=[];c.groupNames=[];c.groupScores=[];c.groupRoles=[];ui.gsel=null;ui.gman=false;ui.gtarget=null;save();render();toast('All groups cleared')},
   nk(c,t){ui.nk=t.dataset.v;render()},
   nwho(){ui.nopen=!ui.nopen;render()},
   nstu(c,t){const s=new Set(ui.nsel||[]),id=t.dataset.id;if(s.has(id))s.delete(id);else s.add(id);ui.nsel=[...s];render()},
@@ -2031,8 +2047,35 @@ const act={
   planCancel(){ui.pf=blankPf(ui.pd);render()},
   planDel(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it||!confirm('Delete "'+(it.title||PK[it.k][1])+'"?'))return;S.planner.items=S.planner.items.filter(x=>x.id!==it.id);S.planner.mod=Date.now();if(ui.pf&&ui.pf.id===it.id)ui.pf=blankPf(ui.pd);save();render()},
   planDone(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it)return;it.done=!it.done;S.planner.mod=Date.now();save();render()},
+  gsave(c){
+    if(!c.groups.length)return;
+    const a=c.gsets=c.gsets||[];
+    const nm=prompt('Name for this grouping? (for example “Lab 1 groups”)','Groups '+prettyDate(today()));
+    if(nm===null||!nm.trim())return;
+    const name=nm.trim().slice(0,60),old=a.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(old&&!confirm('A saved grouping called “'+old.name+'” already exists. Replace it with the current groups?'))return;
+    if(!old&&a.length>=30){toast('You can keep up to 30 saved groupings. Delete an old one first.');return}
+    const rec={id:old?old.id:uid(),name:name,t:Date.now(),groups:JSON.parse(JSON.stringify(c.groups)),groupNames:c.groups.map((g,i)=>c.groupNames[i]||'Group '+(i+1)),groupScores:c.groups.map((g,i)=>c.groupScores[i]||0),groupRoles:JSON.parse(JSON.stringify(c.groupRoles||[]))};
+    if(old)a[a.indexOf(old)]=rec;else a.push(rec);
+    save();render();toast('Saved “'+name+'”');
+  },
+  gopen(c,t){
+    const x=(c.gsets||[]).find(y=>y.id===t.dataset.id);if(!x)return;
+    if(c.groups.length&&!gSaved(c)&&!confirm('Your current groups are not saved and will be replaced. Open “'+x.name+'” anyway?\n\n(Cancel, then tap “Save these groups” first to keep them.)'))return;
+    const m=smap(c);
+    c.groups=x.groups.map(g=>g.filter(id=>m[id]));
+    c.groupNames=x.groups.map((g,i)=>x.groupNames[i]||'Group '+(i+1));
+    c.groupScores=x.groups.map((g,i)=>x.groupScores[i]||0);
+    c.groupRoles=JSON.parse(JSON.stringify(x.groupRoles||[]));
+    c.groupCount=clamp(c.groups.length,2,10);
+    ui.gsel=null;ui.gman=false;ui.gtarget=null;save();render();toast('Opened “'+x.name+'”');
+  },
+  gdelset(c,t){
+    const x=(c.gsets||[]).find(y=>y.id===t.dataset.id);if(!x||!confirm('Delete the saved grouping “'+x.name+'”? Its group points are lost.'))return;
+    c.gsets=c.gsets.filter(y=>y!==x);save();render();
+  },
   makeGroups(c){
-    if(c.groups.length&&!confirm('Make new groups? This replaces the current groups, including any swaps and group scores.'))return;
+    if(c.groups.length&&!confirm('Make new groups? This replaces the current groups, including any swaps and group scores.'+(gSaved(c)?'':'\n\nThe current groups are not saved. Cancel, then tap “Save these groups” first if you want to keep them.')))return;
     const att=c.attendance[today()]||{};
     let pool=c.students.filter(s=>!ui.gSkip||!(att[s.id]==='A'||att[s.id]==='E'));
     if(!pool.length){toast('No students available');return}
