@@ -638,6 +638,22 @@ function ensureSeats(c){
   while(un.length){c.rows++;for(let k=0;k<c.cols;k++)seats.push(un.length?un.shift():null)}
   c.seats=seats;
 }
+function cleanSets(a){return (Array.isArray(a)?a:[]).filter(x=>x&&x.id&&Array.isArray(x.groups)).slice(0,30).map(x=>({id:String(x.id),name:String(x.name||'Saved groups').slice(0,60),t:+x.t||0,groups:x.groups.map(g=>(Array.isArray(g)?g:[]).map(String)),groupNames:(Array.isArray(x.groupNames)?x.groupNames:[]).map(String),groupScores:(Array.isArray(x.groupScores)?x.groupScores:[]).map(v=>+v||0),groupRoles:(Array.isArray(x.groupRoles)?x.groupRoles:[]).map(r=>r&&typeof r==='object'?r:{})}))}
+/* Groups, Pairs and Trios: the one on screen lives in c.groups etc.; the other two are kept in c.alt */
+const GF=['groups','groupNames','groupScores','groupRoles','groupCount','gsets'];
+const gw=c=>({p:'Pair',t:'Trio'}[c&&c.gkind]||'Group');
+const gws=c=>gw(c)+'s';
+function gN(c,len){const z=c.gkind==='p'?2:c.gkind==='t'?3:0;return z?Math.max(1,z===2?Math.floor(len/2):Math.ceil(len/3)):c.groupCount}
+function gKind(c,to){
+  const cur=c.gkind||'g';if(cur===to)return;
+  c.alt=c.alt||{};const st={};GF.forEach(f=>{if(c[f]!==undefined)st[f]=c[f];delete c[f]});c.alt[cur]=st;
+  const nx=c.alt[to]||{};delete c.alt[to];
+  c.groups=nx.groups||[];c.groupNames=nx.groupNames||[];c.groupScores=nx.groupScores||[];c.groupRoles=nx.groupRoles||[];c.groupCount=nx.groupCount||4;
+  if(nx.gsets)c.gsets=nx.gsets;
+  if(to==='g')delete c.gkind;else c.gkind=to;
+  if(!Object.keys(c.alt).length)delete c.alt;
+}
+function gCanon(k){if(!k.gkind)return k;const o=JSON.parse(JSON.stringify(k));gKind(o,'g');return o}
 function normClass(c){
   const o=Object.assign(newClass(c&&c.name),c||{});
   o.id=o.id||uid();
@@ -648,7 +664,7 @@ function normClass(c){
   if(!Array.isArray(o.seats))o.seats=[];
   o.subs=o.subs.filter(x=>x&&x.id&&typeof x.name==='string').map(x=>({id:String(x.id),name:x.name.slice(0,80),date:isD(x.date)?x.date:today()}));
   for(const t in o.subStatus){const m=o.subStatus[t];if(!m||typeof m!=='object'||Array.isArray(m)||!o.subs.some(x=>x.id===t)){delete o.subStatus[t];continue}for(const k in m)if(!SB[m[k]])delete m[k]}
-  o.groupCount=clamp(+o.groupCount||4,2,10);
+  o.groupCount=clamp(+o.groupCount||4,2,40);
   o.round=Math.max(1,parseInt(o.round,10)||1);
   for(const d in o.dayTags){
     const a=o.dayTags[d];
@@ -657,7 +673,9 @@ function normClass(c){
   }
   if(o.theme!==undefined&&!THEMES[o.theme])delete o.theme;
   if(o.notes!==undefined)o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(n=>n&&n.id&&typeof n.x==='string'&&/^\d{4}-\d\d-\d\d$/.test(n.d||'')).map(n=>({id:String(n.id),d:n.d,t:+n.t||0,k:NK[n.k]?n.k:'obs',s:(Array.isArray(n.s)?n.s:[]).map(String),x:n.x.slice(0,4000)}));
-  if(o.gsets!==undefined)o.gsets=(Array.isArray(o.gsets)?o.gsets:[]).filter(x=>x&&x.id&&Array.isArray(x.groups)).slice(0,30).map(x=>({id:String(x.id),name:String(x.name||'Saved groups').slice(0,60),t:+x.t||0,groups:x.groups.map(g=>(Array.isArray(g)?g:[]).map(String)),groupNames:(Array.isArray(x.groupNames)?x.groupNames:[]).map(String),groupScores:(Array.isArray(x.groupScores)?x.groupScores:[]).map(v=>+v||0),groupRoles:(Array.isArray(x.groupRoles)?x.groupRoles:[]).map(r=>r&&typeof r==='object'?r:{})}));
+  if(o.gsets!==undefined)o.gsets=cleanSets(o.gsets);
+  if(o.gkind!==undefined&&o.gkind!=='p'&&o.gkind!=='t')delete o.gkind;
+  if(o.alt!==undefined){const al={};if(o.alt&&typeof o.alt==='object'&&!Array.isArray(o.alt))['g','p','t'].forEach(k=>{const x=o.alt[k];if(x&&typeof x==='object'&&Array.isArray(x.groups)){const y={groups:x.groups.map(g=>(Array.isArray(g)?g:[]).map(String)),groupNames:(Array.isArray(x.groupNames)?x.groupNames:[]).map(String),groupScores:(Array.isArray(x.groupScores)?x.groupScores:[]).map(v=>+v||0),groupRoles:(Array.isArray(x.groupRoles)?x.groupRoles:[]).map(r=>r&&typeof r==='object'?r:{}),groupCount:clamp(+x.groupCount||4,2,40)};if(x.gsets!==undefined)y.gsets=cleanSets(x.gsets);al[k]=y}});o.alt=al}
   if(o.sdel!==undefined){const d={};if(o.sdel&&typeof o.sdel==='object'&&!Array.isArray(o.sdel))for(const i in o.sdel)if(+o.sdel[i]>0)d[i]=+o.sdel[i];o.sdel=d}
   ensureSeats(o);
   o.aisleCols=cleanIdx(o.aisleCols,o.cols-1);o.aisleRows=cleanIdx(o.aisleRows,o.rows-1);
@@ -786,6 +804,7 @@ function mergeClass(l,r,interactive){
   let base=(+r.mod||0)>(+l.mod||0)?r:l,oth=base===r?l:r;
   /* a blank copy never wins over one that has students */
   if(!live(base)&&live(oth)&&wt(base)<wt(oth))[base,oth]=[oth,base];
+  const base0=base;base=gCanon(base);oth=gCanon(oth);
   const o=JSON.parse(JSON.stringify(base));
   if(Object.keys(sd).length)o.sdel=sd;
   const have=new Set(o.students.map(x=>x.id));
@@ -808,17 +827,18 @@ function mergeClass(l,r,interactive){
   }
   /* other things the base lacks entirely */
   if(oth.notes&&oth.notes.length){const ids=new Set((o.notes||[]).map(n=>n.id));const add=oth.notes.filter(n=>!ids.has(n.id)&&(!n.s.length||n.s.some(i=>have.has(i))));if(add.length)o.notes=(o.notes||[]).concat(add)}
+  if(oth.alt)for(const k in oth.alt)if(!(o.alt&&o.alt[k])){(o.alt=o.alt||{})[k]=oth.alt[k]}
   if(oth.gsets&&oth.gsets.length){const ids=new Set((o.gsets||[]).map(x=>x.id));const add=oth.gsets.filter(x=>!ids.has(x.id));if(add.length)o.gsets=(o.gsets||[]).concat(add)}
   o.log.sort((a,b)=>a.t-b.t);if(o.log.length>500)o.log=o.log.slice(-500);
   ensureSeats(o);
-  const n=normClass(o);n._h=hashOf(n);
+  const n=normClass(o);if(base0.gkind)gKind(n,base0.gkind);n._h=hashOf(n);
   /* if the combined result is far smaller than one of the copies, ask (or keep the fuller one) */
   const big=wt(l)>=wt(r)?l:r;
   if(wt(big)>=6&&wt(n)<wt(big)*0.5){
     const keep=interactive&&confirm('“'+n.name+'” would end up much smaller after this sync ('+n.students.length+' students instead of '+big.students.length+').\n\nOK = accept the smaller version\nCancel = keep the fuller one');
     if(!keep)return big;
   }
-  if(n._h===base._h){n.mod=+base.mod||0;return n}
+  if(n._h===base0._h){n.mod=+base0.mod||0;return n}
   n.mod=Math.max(Date.now(),(+l.mod||0)+1,(+r.mod||0)+1);
   return n;
 }
@@ -1241,7 +1261,7 @@ function savedGroupsHtml(c){
   a.forEach(x=>{
     const tot=x.groupScores.reduce((p,v)=>p+v,0);
     h+='<details style="margin:6px 0"><summary><b>'+esc(x.name)+'</b> <span class="muted">· '+esc(new Date(x.t).toLocaleDateString())+' · '+x.groups.length+' groups · ⭐ '+tot+'</span></summary>'
-    +'<div class="ggrid">'+x.groups.map((g,gi)=>'<div class="gcard"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(x.groupNames[gi]||'Group '+(gi+1))+'</b><span class="gs">⭐ '+(x.groupScores[gi]||0)+'</span></div><div class="gbody">'+(g.filter(id=>m[id]).map(id=>'<div class="gm"><span class="gn"></span>'+esc(m[id].name)+'</div>').join('')||'<span class="muted">Empty</span>')+'</div></div>').join('')+'</div>'
+    +'<div class="ggrid">'+x.groups.map((g,gi)=>'<div class="gcard"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(x.groupNames[gi]||gw(c)+' '+(gi+1))+'</b><span class="gs">⭐ '+(x.groupScores[gi]||0)+'</span></div><div class="gbody">'+(g.filter(id=>m[id]).map(id=>'<div class="gm"><span class="gn"></span>'+esc(m[id].name)+'</div>').join('')||'<span class="muted">Empty</span>')+'</div></div>').join('')+'</div>'
     +'<div class="row wrap"><button class="btn pri" data-act="gopen" data-id="'+esc(x.id)+'">📂 Open</button><button class="btn danger" data-act="gdelset" data-id="'+esc(x.id)+'">🗑 Delete</button></div></details>';
   });
   return h+'</section>';
@@ -1255,16 +1275,16 @@ V.groups=c=>{
   grClean(c);
   const selName=ui.gsel?m[ui.gsel.id].name:'';
   const mem=(g,id,n)=>'<div role="button" tabindex="0" class="gm'+(ui.gsel&&ui.gsel.id===id?' sel':'')+'" draggable="true" data-dk="gm" data-drop="gm" data-act="gm" data-g="'+g+'" data-id="'+id+'"><span class="gn">'+n+'</span>'+esc(m[id].name)+grBadge(c,g,id)+'</div>';
-  let h='<section class="card"><h2>Group maker</h2>'
-  +'<div class="row wrap"><span>Number of groups</span><div class="stepper"><button class="btn sm" data-act="gcount" data-v="-1">−</button><b>'+c.groupCount+'</b><button class="btn sm" data-act="gcount" data-v="1">＋</button></div></div>'
+  let h='<section class="card"><div class="row wrap" style="margin-bottom:8px">'+[['g','👥 Groups'],['p','🤝 Pairs'],['t','👬 Trios']].map(x=>'<button class="btn'+((c.gkind||'g')===x[0]?' pri':'')+'" data-act="gkind" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div><h2>'+gw(c)+' maker</h2>'
+  +(c.gkind?'<p class="muted">'+(c.gkind==='p'?'Pairs: everyone is paired up. With an odd number of students, one group becomes a trio.':'Trios: groups of three. If students do not divide evenly, a few groups will have two.')+'</p>':'<div class="row wrap"><span>Number of groups</span><div class="stepper"><button class="btn sm" data-act="gcount" data-v="-1">−</button><b>'+c.groupCount+'</b><button class="btn sm" data-act="gcount" data-v="1">＋</button></div></div>')
   +'<label class="chk"><input type="checkbox" data-chg="popt" data-k="gSkip"'+(ui.gSkip?' checked':'')+'> Leave out students marked absent/excused today</label>'
-  +'<button class="btn pri big" data-act="makeGroups"'+(c.students.length?'':' disabled')+'>🔀 Make '+c.groupCount+' random groups</button>'
+  +'<button class="btn pri big" data-act="makeGroups"'+(c.students.length?'':' disabled')+'>🔀 Make '+(c.gkind?'random '+gws(c).toLowerCase():c.groupCount+' random groups')+'</button>'
   +'<div class="row wrap"><button class="btn'+(ui.gman?' pri':'')+'" data-act="gmanual"'+(c.students.length?'':' disabled')+'>'+(ui.gman?'✅ Done choosing':'✋ Choose groups myself')+'</button>'+(ui.gman?'<button class="btn" data-act="gadd">＋ Add group</button>':'')+(c.groups.length?'<button class="btn" data-act="gsave">💾 Save these groups</button>':'')+(c.groups.length?'<button class="btn danger" data-act="resetGroups">🗑 Reset all groups</button>':'')+'</div>'
   +'<p class="muted">'+(ui.gman?'Choosing groups yourself: tap <b>Add here</b> on a group, then tap students under “Not in a group” to put them in it. Tap a student inside a group to take them out again. Use ＋ Add group for more groups.':ui.gsel?'<b>'+esc(selName)+'</b> selected. Tap another student to swap, or tap “Move here” on a group.':'To swap: tap a student, then tap another student. To make someone the 👑 leader or ✍️ secretary (optional), tap the student, then use the button in their group. To move: tap a student, then “Move here”. On a computer you can also drag a name onto another name (swap) or onto a group box (move).')+'</p></section>';
   if(c.groups.length||ui.gman){
     h+='<div class="ggrid">';
     c.groups.forEach((g,gi)=>{
-      h+='<div class="gcard'+(ui.gman&&ui.gtarget===gi?' tgt':'')+'" data-drop="grp" data-g="'+gi+'"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||'Group '+(gi+1))+' <span class="cnt">('+g.length+')</span></b>'
+      h+='<div class="gcard'+(ui.gman&&ui.gtarget===gi?' tgt':'')+'" data-drop="grp" data-g="'+gi+'"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||gw(c)+' '+(gi+1))+' <span class="cnt">('+g.length+')</span></b>'
       +'<button class="gh" data-act="grename" data-g="'+gi+'" title="Rename group">✎</button>'
       +(ui.gman?'<button class="gh gt" data-act="gtarget" data-g="'+gi+'">'+(ui.gtarget===gi?'✔ Adding here':'Add here')+'</button><button class="gh" data-act="gdel" data-g="'+gi+'" title="Remove this group">✕</button>':'')
       +'<button class="gh" data-act="gscore" data-g="'+gi+'" data-v="-1">−</button><span class="gs">⭐ '+(c.groupScores[gi]||0)+'</span><button class="gh" data-act="gscore" data-g="'+gi+'" data-v="1">＋</button></div>'
@@ -1530,7 +1550,7 @@ V.summary=c=>{
   +'</tbody></table></div><p class="muted">⭐ points · 🎲 times picked · P present · L late · A absent · E excused · Rate = (present + late) ÷ all recorded days · 📌 open missing tasks.</p></section>';
   h+='<section class="card"><h2>Seat plan</h2>'+(c.students.length?seatGrid(c,'view'):'<p class="muted">No students.</p>')+'<p class="muted">Badges show points; colours show attendance for '+prettyDate(ui.date)+'.</p></section>';
   if(c.groups.length){
-    h+='<section class="card"><h2>Groups</h2><div class="ggrid">'+c.groups.map((g,gi)=>'<div class="gcard"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||'Group '+(gi+1))+'</b><span class="gs">⭐ '+(c.groupScores[gi]||0)+'</span></div><div class="gbody">'+g.filter(id=>m[id]).map(id=>'<div class="gm" style="cursor:default">'+esc(m[id].name)+grBadge(c,gi,id)+'</div>').join('')+'</div></div>').join('')+'</div></section>';
+    h+='<section class="card"><h2>'+gws(c)+'</h2><div class="ggrid">'+c.groups.map((g,gi)=>'<div class="gcard"><div class="ghead" style="background:'+GCOL[gi%GCOL.length]+'"><b>'+esc(c.groupNames[gi]||gw(c)+' '+(gi+1))+'</b><span class="gs">⭐ '+(c.groupScores[gi]||0)+'</span></div><div class="gbody">'+g.filter(id=>m[id]).map(id=>'<div class="gm" style="cursor:default">'+esc(m[id].name)+grBadge(c,gi,id)+'</div>').join('')+'</div></div>').join('')+'</div></section>';
   }
   return h;
 };
@@ -2047,15 +2067,16 @@ const act={
   planCancel(){ui.pf=blankPf(ui.pd);render()},
   planDel(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it||!confirm('Delete "'+(it.title||PK[it.k][1])+'"?'))return;S.planner.items=S.planner.items.filter(x=>x.id!==it.id);S.planner.mod=Date.now();if(ui.pf&&ui.pf.id===it.id)ui.pf=blankPf(ui.pd);save();render()},
   planDone(c,t){const it=S.planner.items.find(x=>x.id===t.dataset.id);if(!it)return;it.done=!it.done;S.planner.mod=Date.now();save();render()},
+  gkind(c,t){gKind(c,t.dataset.v);ui.gsel=null;ui.gman=false;ui.gtarget=null;save();render()},
   gsave(c){
     if(!c.groups.length)return;
     const a=c.gsets=c.gsets||[];
-    const nm=prompt('Name for this grouping? (for example “Lab 1 groups”)','Groups '+prettyDate(today()));
+    const nm=prompt('Name for this grouping? (for example “Lab 1 groups”)',gws(c)+' '+prettyDate(today()));
     if(nm===null||!nm.trim())return;
     const name=nm.trim().slice(0,60),old=a.find(x=>x.name.toLowerCase()===name.toLowerCase());
     if(old&&!confirm('A saved grouping called “'+old.name+'” already exists. Replace it with the current groups?'))return;
     if(!old&&a.length>=30){toast('You can keep up to 30 saved groupings. Delete an old one first.');return}
-    const rec={id:old?old.id:uid(),name:name,t:Date.now(),groups:JSON.parse(JSON.stringify(c.groups)),groupNames:c.groups.map((g,i)=>c.groupNames[i]||'Group '+(i+1)),groupScores:c.groups.map((g,i)=>c.groupScores[i]||0),groupRoles:JSON.parse(JSON.stringify(c.groupRoles||[]))};
+    const rec={id:old?old.id:uid(),name:name,t:Date.now(),groups:JSON.parse(JSON.stringify(c.groups)),groupNames:c.groups.map((g,i)=>c.groupNames[i]||gw(c)+' '+(i+1)),groupScores:c.groups.map((g,i)=>c.groupScores[i]||0),groupRoles:JSON.parse(JSON.stringify(c.groupRoles||[]))};
     if(old)a[a.indexOf(old)]=rec;else a.push(rec);
     save();render();toast('Saved “'+name+'”');
   },
@@ -2064,7 +2085,7 @@ const act={
     if(c.groups.length&&!gSaved(c)&&!confirm('Your current groups are not saved and will be replaced. Open “'+x.name+'” anyway?\n\n(Cancel, then tap “Save these groups” first to keep them.)'))return;
     const m=smap(c);
     c.groups=x.groups.map(g=>g.filter(id=>m[id]));
-    c.groupNames=x.groups.map((g,i)=>x.groupNames[i]||'Group '+(i+1));
+    c.groupNames=x.groups.map((g,i)=>x.groupNames[i]||gw(c)+' '+(i+1));
     c.groupScores=x.groups.map((g,i)=>x.groupScores[i]||0);
     c.groupRoles=JSON.parse(JSON.stringify(x.groupRoles||[]));
     c.groupCount=clamp(c.groups.length,2,10);
@@ -2079,23 +2100,23 @@ const act={
     const att=c.attendance[today()]||{};
     let pool=c.students.filter(s=>!ui.gSkip||!(att[s.id]==='A'||att[s.id]==='E'));
     if(!pool.length){toast('No students available');return}
-    const n=c.groupCount,ids=shuffle(pool.map(s=>s.id)),g=Array.from({length:n},()=>[]);
+    const n=gN(c,pool.length),ids=shuffle(pool.map(s=>s.id)),g=Array.from({length:n},()=>[]);
     ids.forEach((id,i)=>g[i%n].push(id));
-    c.groups=g;c.groupNames=g.map((x,i)=>'Group '+(i+1));c.groupScores=g.map(()=>0);c.groupRoles=[];ui.gsel=null;save();render();
+    c.groups=g;c.groupNames=g.map((x,i)=>gw(c)+' '+(i+1));c.groupScores=g.map(()=>0);c.groupRoles=[];ui.gsel=null;save();render();
   },
   gmanual(c){
     ui.gman=!ui.gman;ui.gsel=null;
     if(ui.gman){
-      if(!c.groups.length){for(let i=0;i<c.groupCount;i++){c.groups.push([]);c.groupNames[i]='Group '+(i+1);c.groupScores[i]=0}save()}
+      if(!c.groups.length){for(let i=0,n=gN(c,c.students.length);i<n;i++){c.groups.push([]);c.groupNames[i]=gw(c)+' '+(i+1);c.groupScores[i]=0}save()}
       ui.gtarget=0;
     }
     render();
   },
   gtarget(c,t){ui.gtarget=+t.dataset.g;render()},
-  gadd(c){if(c.groups.length>=12){toast('That is the maximum of 12 groups');return}c.groups.push([]);const i=c.groups.length-1;c.groupNames[i]='Group '+(i+1);c.groupScores[i]=0;ui.gtarget=i;save();render()},
+  gadd(c){if(c.groups.length>=(c.gkind?40:12)){toast('That is the maximum number of '+gws(c).toLowerCase());return}c.groups.push([]);const i=c.groups.length-1;c.groupNames[i]=gw(c)+' '+(i+1);c.groupScores[i]=0;ui.gtarget=i;save();render()},
   gdel(c,t){
     const g=+t.dataset.g;if(!c.groups[g])return;
-    if(c.groups[g].length&&!confirm('Remove "'+(c.groupNames[g]||'Group '+(g+1))+'"? Its students go back to "Not in a group".'))return;
+    if(c.groups[g].length&&!confirm('Remove "'+(c.groupNames[g]||gw(c)+' '+(g+1))+'"? Its students go back to "Not in a group".'))return;
     c.groups.splice(g,1);c.groupNames.splice(g,1);c.groupScores.splice(g,1);c.groupRoles.splice(g,1);
     if(ui.gtarget>=c.groups.length)ui.gtarget=c.groups.length-1;save();render();
   },
@@ -2125,14 +2146,14 @@ const act={
     ui.gsel=null;save();render();
   },
   gscore(c,t){const g=+t.dataset.g;c.groupScores[g]=(c.groupScores[g]||0)+(+t.dataset.v);save();render()},
-  grename(c,t){const g=+t.dataset.g;const n=prompt('Group name?',c.groupNames[g]||'Group '+(g+1));if(n&&n.trim()){c.groupNames[g]=n.trim().slice(0,40);save();render()}},
+  grename(c,t){const g=+t.dataset.g;const n=prompt('Group name?',c.groupNames[g]||gw(c)+' '+(g+1));if(n&&n.trim()){c.groupNames[g]=n.trim().slice(0,40);save();render()}},
   csv(c){download('classroom-summary-'+slug(c.name)+'-'+today()+'.csv',summaryCSV(c),'text/csv;charset=utf-8')},
   print(){window.print()},
   exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,planner:S.planner,classes:S.classes},null,1),'application/json');render()},
   exportClass(c){S.lastBackup=Date.now();save();download('classroom-hub-'+slug(c.name)+'-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:c.id,classes:[c]},null,1),'application/json');render()},
   impMode(c,t){ui.importMode=t.dataset.v},
   snapRestore(c,t){snapRestore(+t.dataset.v)},
-  resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);save();render();toast('Points reset')},
+  resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);for(const k in c.alt||{})if(c.alt[k].groupScores)c.alt[k].groupScores=c.alt[k].groupScores.map(()=>0);save();render();toast('Points reset')},
   clearAtt(c){if(!confirm('Clear ALL attendance records for "'+c.name+'"?'))return;c.attendance={};save();render();toast('Attendance cleared')},
   wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();snapClear();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
 };
@@ -2211,7 +2232,7 @@ Object.assign(act,{
       download('points-'+slug(c.name)+'-'+today()+'.csv','﻿'+rows.map(r=>r.map(csvq).join(',')).join('\r\n'),'text/csv');
     }
     c.points={};c.log=[];
-    if(on('trGrp'))c.groupScores=c.groupScores.map(()=>0);
+    if(on('trGrp'))c.groupScores=c.groupScores.map(()=>0);for(const k in c.alt||{})if(c.alt[k].groupScores)c.alt[k].groupScores=c.alt[k].groupScores.map(()=>0);
     if(on('trAtt'))c.attendance={};
     if(on('trSub'))c.subStatus={};
     if(on('trTags')){c.dayTags={};c.taskMiss={};c.taskDone={}}
