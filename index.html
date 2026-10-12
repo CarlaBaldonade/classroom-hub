@@ -541,7 +541,7 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 function prettyDate(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}
 function shortDate(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{month:'short',day:'numeric'})}
 function shiftDate(n){const [y,m,d]=ui.date.split('-').map(Number);ui.date=dkey(new Date(y,m-1,d+n))}
-let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200)}
+let tt;function toast(m,ms){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),ms||2200)}
 function download(name,text,type){const b=new Blob([text],{type:type||'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'class';
 function taskName(t){const T=TYPES[t.type],l=(t.label||'').trim();if(!l)return T;if(/^\d+$/.test(l))return T+' '+l;if(l.toLowerCase().indexOf(T.toLowerCase())===0)return l;return T+' – '+l}
@@ -657,6 +657,7 @@ function normClass(c){
   }
   if(o.theme!==undefined&&!THEMES[o.theme])delete o.theme;
   if(o.notes!==undefined)o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(n=>n&&n.id&&typeof n.x==='string'&&/^\d{4}-\d\d-\d\d$/.test(n.d||'')).map(n=>({id:String(n.id),d:n.d,t:+n.t||0,k:NK[n.k]?n.k:'obs',s:(Array.isArray(n.s)?n.s:[]).map(String),x:n.x.slice(0,4000)}));
+  if(o.sdel!==undefined){const d={};if(o.sdel&&typeof o.sdel==='object'&&!Array.isArray(o.sdel))for(const i in o.sdel)if(+o.sdel[i]>0)d[i]=+o.sdel[i];o.sdel=d}
   ensureSeats(o);
   o.aisleCols=cleanIdx(o.aisleCols,o.cols-1);o.aisleRows=cleanIdx(o.aisleRows,o.rows-1);
   return o;
@@ -679,7 +680,7 @@ if(!S.planner||typeof S.planner!=='object'||!Array.isArray(S.planner.items))S.pl
 S.planner.mod=+S.planner.mod||0;S.planner.items=S.planner.items.map(normPlan).filter(Boolean);
 S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
 if(!S.deleted||typeof S.deleted!=='object'||Array.isArray(S.deleted))S.deleted={};
-S.classes=S.classes.map(normClass);
+S.classes=S.classes.map(k=>{const same=k&&k._h!==undefined&&k._h===hashOf(k);const n=normClass(k);if(same)n._h=hashOf(n);return n});
 if(!S.classes.length)S.classes.push(newClass('My Class'));
 if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
 const cur=()=>S.classes.find(k=>k.id===S.activeId)||S.classes[0];
@@ -688,7 +689,7 @@ const cur=()=>S.classes.find(k=>k.id===S.activeId)||S.classes[0];
 function cyrb53(str){let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36)}
 function stable(v){if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v)}
 function stripC(k){const o=Object.assign({},k);delete o.mod;delete o._h;return o}
-const hashOf=k=>cyrb53(stable(stripC(k)));
+function hashOf(k){return cyrb53(stable(stripC(k)))}
 /* a class's "mod" time only moves when its content really changed */
 function stamp(){S.classes.forEach(k=>{const h=hashOf(k);if(k._h===undefined)k._h=h;else if(k._h!==h){k._h=h;k.mod=Date.now()}})}
 const sig=(cl,del)=>stable([(cl||[]).map(k=>[String(k.id),+k.mod||0]).sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0),Object.keys(del||{}).sort().map(i=>[i,+del[i]||0])]);
@@ -773,8 +774,53 @@ async function upload(fid,payload){
 }
 const syncPayload=()=>({app:'classroomhub',v:1,uid:S.sync.uid,savedAt:Date.now(),classes:S.classes,deleted:S.deleted,schedule:S.schedule,planner:S.planner});
 function isPristine(k){return !k.students.length&&!k.log.length&&!Object.keys(k.attendance).length&&!Object.keys(k.dayTags).length&&!k.groups.length&&k.name==='My Class'}
-/* union of both sides; for the same class the newer edit wins; deletions are remembered so they spread */
-function mergeRemote(rem,first){
+/* union of both sides; for the same class the newer edit wins as the base, then students from both devices are combined.
+   A blank or much smaller copy never silently replaces a fuller one. Deletions are remembered so they spread. */
+const wt=k=>k.students.length*2+Object.keys(k.attendance).length+(k.notes?k.notes.length:0);
+function mergeClass(l,r,interactive){
+  if(l._h===r._h)return l;
+  const sd=Object.assign({},l.sdel);
+  for(const i in r.sdel)if((+r.sdel[i]||0)>(sd[i]||0))sd[i]=+r.sdel[i];
+  const live=k=>k.students.filter(x=>!sd[x.id]).length;
+  let base=(+r.mod||0)>(+l.mod||0)?r:l,oth=base===r?l:r;
+  /* a blank copy never wins over one that has students */
+  if(!live(base)&&live(oth)&&wt(base)<wt(oth))[base,oth]=[oth,base];
+  const o=JSON.parse(JSON.stringify(base));
+  if(Object.keys(sd).length)o.sdel=sd;
+  const have=new Set(o.students.map(x=>x.id));
+  /* students (and their records) that only the other device has */
+  oth.students.forEach(st=>{
+    if(have.has(st.id)||sd[st.id])return;
+    o.students.push(Object.assign({},st));have.add(st.id);const id=st.id;
+    ['points','pickCount','lastRound'].forEach(m=>{if(oth[m]&&oth[m][id]!==undefined)o[m][id]=oth[m][id]});
+    oth.log.forEach(e=>{if(e.sid===id)o.log.push(Object.assign({},e))});
+    for(const t in oth.subStatus)if(oth.subStatus[t][id]&&o.subs.some(x=>x.id===t)){(o.subStatus[t]=o.subStatus[t]||{})[id]=oth.subStatus[t][id]}
+    [['taskMiss'],['taskDone']].forEach(a=>{const m=a[0];for(const t in oth[m])if(oth[m][t]&&oth[m][t][id]!==undefined){(o[m][t]=o[m][t]||{})[id]=oth[m][t][id]}});
+  });
+  /* students deleted on the other device */
+  o.students.filter(x=>sd[x.id]).forEach(x=>dropStudent(o,x.id));
+  /* attendance marks: combine, the base wins any clash */
+  for(const d in oth.attendance){
+    const a=oth.attendance[d],b=o.attendance[d]||(o.attendance[d]={});
+    for(const id in a)if(b[id]===undefined&&have.has(id)&&!sd[id])b[id]=a[id];
+    if(!Object.keys(b).length)delete o.attendance[d];
+  }
+  /* other things the base lacks entirely */
+  if(oth.notes&&oth.notes.length){const ids=new Set((o.notes||[]).map(n=>n.id));const add=oth.notes.filter(n=>!ids.has(n.id)&&(!n.s.length||n.s.some(i=>have.has(i))));if(add.length)o.notes=(o.notes||[]).concat(add)}
+  o.log.sort((a,b)=>a.t-b.t);if(o.log.length>500)o.log=o.log.slice(-500);
+  ensureSeats(o);
+  const n=normClass(o);n._h=hashOf(n);
+  /* if the combined result is far smaller than one of the copies, ask (or keep the fuller one) */
+  const big=wt(l)>=wt(r)?l:r;
+  if(wt(big)>=6&&wt(n)<wt(big)*0.5){
+    const keep=interactive&&confirm('“'+n.name+'” would end up much smaller after this sync ('+n.students.length+' students instead of '+big.students.length+').\n\nOK = accept the smaller version\nCancel = keep the fuller one');
+    if(!keep)return big;
+  }
+  if(n._h===base._h){n.mod=+base.mod||0;return n}
+  n.mod=Math.max(Date.now(),(+l.mod||0)+1,(+r.mod||0)+1);
+  return n;
+}
+function mergeRemote(rem,first,interactive){
   const rcs=rem.classes.filter(k=>k&&k.id).map(k=>{const n=normClass(k);n._h=hashOf(n);n.mod=+k.mod||0;return n});
   const rd=rem.deleted&&typeof rem.deleted==='object'&&!Array.isArray(rem.deleted)?rem.deleted:{};
   const del=Object.assign({},S.deleted);
@@ -786,7 +832,7 @@ function mergeRemote(rem,first){
   const out=[];
   ids.forEach(id=>{
     const l=lm.get(id),r=rm.get(id);
-    const w=l&&r?((+r.mod||0)>(+l.mod||0)?r:l):(l||r);
+    const w=l&&r?mergeClass(l,r,interactive):(l||r);
     const d=del[id];
     if(d&&d>=(+w.mod||0))return;
     if(d)delete del[id];
@@ -799,6 +845,34 @@ function mergeRemote(rem,first){
   if(rem.schedule&&Array.isArray(rem.schedule.items)&&(+rem.schedule.mod||0)>S.schedule.mod)S.schedule={mod:+rem.schedule.mod,items:rem.schedule.items.map(normSched).filter(Boolean)};
   if(!S.classes.length)S.classes.push(newClass('My Class'));
   if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
+}
+/* ---- automatic "before sync" copies (kept on this device for about a week) ---- */
+const SNAPKEY='classroomhub.snap.v1',SNAPDAYS=7,SNAPMAX=5;
+function snapRead(){try{const a=JSON.parse(localStorage.getItem(SNAPKEY)||'[]');const cut=Date.now()-SNAPDAYS*864e5;return Array.isArray(a)?a.filter(x=>x&&x.t>cut&&Array.isArray(x.classes)):[]}catch(e){return[]}}
+function snapSave(classes,why){
+  if(!classes.length)return true;
+  try{
+    const a=snapRead();a.push({t:Date.now(),why:why,classes:classes});
+    while(a.length>SNAPMAX)a.shift();
+    const txt=JSON.stringify(a);
+    if(storeInfo().used+txt.length>4000000){toast('Storage is almost full, so no “before sync” copy was saved. Export a backup soon.');return false}
+    localStorage.setItem(SNAPKEY,txt);return true;
+  }catch(e){toast('Could not save a “before sync” copy (storage is full). Export a backup soon.');return false}
+}
+function snapClear(){try{localStorage.removeItem(SNAPKEY)}catch(e){}}
+function snapRestore(i){
+  const a=snapRead(),sn=a[i];if(!sn)return;
+  const now=Date.now(),names=sn.classes.map(k=>k.name).join(', ');
+  if(!confirm('Put back '+sn.classes.length+' class'+(sn.classes.length>1?'es':'')+' ('+names+') as they were before the sync on '+new Date(sn.t).toLocaleString()+'?\n\nThe current version of these classes is saved first, so you can undo this.'))return;
+  const cur0=S.classes.filter(k=>sn.classes.some(x=>x.id===k.id));
+  if(cur0.length)snapSave(JSON.parse(JSON.stringify(cur0)),'before restore');
+  sn.classes.forEach(x=>{
+    const n=normClass(x);n._h=hashOf(n);n.mod=now;delete S.deleted[n.id];
+    const j=S.classes.findIndex(k=>k.id===n.id);
+    if(j>=0)S.classes[j]=n;else S.classes.push(n);
+  });
+  if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
+  ui.sel=null;ui.gsel=null;save();render();toast('Previous version restored');
 }
 function afterRemoteChange(){ui.sel=null;ui.gsel=null;if(!cur().students.length&&ui.tab==='seats')ui.tab='students';render();if(ui.fs)renderFS()}
 function friendlyErr(e){
@@ -839,7 +913,12 @@ async function syncNow(interactive,link){
         first=true;
       }
       myUid=ru||myUid||newUid();
-      mergeRemote(rem,first);merged=true;
+      stamp();
+      const preStr=JSON.stringify(S.classes),preH=new Map(S.classes.map(k=>[k.id,k._h]));
+      mergeRemote(rem,first,interactive);merged=true;
+      const post=new Map(S.classes.map(k=>[k.id,k]));
+      const ch=[];preH.forEach((h,id)=>{const p=post.get(id);if(!p||p._h!==h)ch.push(id)});
+      if(ch.length){const old=JSON.parse(preStr).filter(k=>ch.includes(k.id));snapSave(old,'before sync');toast('Sync changed '+ch.length+' class'+(ch.length>1?'es':'')+'. You can undo it in More → Backup.')}
     }else{
       if(myUid&&!(interactive&&confirm('Google Drive has no saved copy any more (it may have been deleted).\n\nUpload this device\'s data as a new copy?'))){
         S.sync.err='The saved copy in Google Drive is missing. Tap Sync now to upload this device\'s data again.';persist();setSync('err');return;
@@ -869,7 +948,7 @@ function unlink(clear){
   const t=tok;tok=null;tokExp=0;
   if(clear&&t&&gisReady()){try{google.accounts.oauth2.revoke(t,()=>{})}catch(e){}}
   S.sync.on=false;S.sync.dirty=false;S.sync.err='';S.sync.last=0;
-  if(clear){S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.planner={mod:0,items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
+  if(clear){snapClear();S.sync.uid='';S.deleted={};S.schedule={mod:0,items:[]};S.planner={mod:0,items:[]};S.classes=[newClass('My Class')];S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null}
   stamp();persist();setSync('');render();
 }
 function syncModalHtml(){
@@ -925,8 +1004,9 @@ function addStudents(c,names){
   names.forEach(n=>{n=cleanName(n);if(!n)return;const k=n.toLowerCase();if(have.has(k)){dup++;return}have.add(k);c.students.push({id:uid(),name:n});added++});
   ensureSeats(c);save();return{added,dup};
 }
-function wipeStudents(c){c.students=[];c.seats=[];c.points={};c.log=[];c.attendance={};c.dayTags={};c.taskMiss={};c.taskDone={};c.picked=[];c.pickCount={};c.round=1;c.lastRound={};c.groups=[];c.groupNames=[];c.groupScores=[];c.groupRoles=[];c.subs=[];c.subStatus={};ui.sel=null;ui.gsel=null;ui.lastPick=null}
-function removeStudent(c,id){
+function wipeStudents(c){const nw=Date.now();c.sdel=c.sdel||{};c.students.forEach(s=>{c.sdel[s.id]=nw});c.students=[];c.seats=[];c.points={};c.log=[];c.attendance={};c.dayTags={};c.taskMiss={};c.taskDone={};c.picked=[];c.pickCount={};c.round=1;c.lastRound={};c.groups=[];c.groupNames=[];c.groupScores=[];c.groupRoles=[];c.subs=[];c.subStatus={};ui.sel=null;ui.gsel=null;ui.lastPick=null}
+function removeStudent(c,id){dropStudent(c,id);(c.sdel=c.sdel||{})[id]=Date.now();ui.sel=null;ui.gsel=null;save()}
+function dropStudent(c,id){
   c.students=c.students.filter(s=>s.id!==id);
   delete c.points[id];delete c.pickCount[id];delete c.lastRound[id];
   c.log=c.log.filter(e=>e.sid!==id);
@@ -935,7 +1015,7 @@ function removeStudent(c,id){
   for(const d in c.attendance){delete c.attendance[d][id];if(!Object.keys(c.attendance[d]).length)delete c.attendance[d]}
   for(const t in c.subStatus)delete c.subStatus[t][id];
   [c.taskMiss,c.taskDone].forEach(m=>{for(const t in m){delete m[t][id];if(!Object.keys(m[t]).length)delete m[t]}});
-  ensureSeats(c);ui.sel=null;ui.gsel=null;save();
+  ensureSeats(c);
 }
 function resizeGrid(c,rows,cols){
   const old=c.seats,oc=c.cols,ns=Array(rows*cols).fill(null);
@@ -1439,9 +1519,19 @@ V.summary=c=>{
   return h;
 };
 
+function snapCard(){
+  const a=snapRead();
+  let h='<section class="card"><h2>Restore a previous version</h2>';
+  if(!a.length)return h+'<p class="muted">Before a sync changes any of your classes, the Hub keeps a copy of them here for about a week. None right now.</p></section>';
+  h+='<p class="muted">Copies saved automatically just before a sync changed something. They stay on this device for about a week and are lost if you clear this browser\'s site data or erase everything.</p>';
+  for(let i=a.length-1;i>=0;i--){const sn=a[i];
+    h+='<div class="row wrap" style="align-items:center"><div style="flex:1;min-width:200px"><b>'+esc(new Date(sn.t).toLocaleString())+'</b> <span class="muted">· '+esc(sn.why||'')+'<br>'+sn.classes.map(k=>esc(k.name)+' ('+k.students.length+')').join(', ')+'</span></div><button class="btn'+(i===a.length-1?' pri':'')+'" data-act="snapRestore" data-v="'+i+'">'+(i===a.length-1?'↩ Undo last sync':'Restore')+'</button></div>';
+  }
+  return h+'</section>';
+}
 V.data=c=>{
   const lb=S.lastBackup?new Date(S.lastBackup).toLocaleString():'never';
-  return '<section class="card"><h2>Save everything</h2><p class="muted">Your data is saved automatically on this device. Download a backup file to keep it safe or move it to another phone/computer. Last backup: <b>'+lb+'</b></p>'
+  return '<section class="card"><h2>Save everything</h2><p class="muted">Your data is saved automatically on this device. Download a backup file to keep it safe or move it to another phone/computer. Last backup: <b>'+lb+'</b>. The Hub reminds you if a week passes without one.</p>'
   +'<div class="row wrap"><button class="btn pri" data-act="exportAll">💾 Export ALL classes</button><button class="btn" data-act="exportClass">Export this class only</button></div></section>'
   +'<section class="card"><h2>Restore from a backup file</h2><div class="row wrap">'
   +'<label class="btn" data-act="impMode" data-v="merge">⬆ Import (add / update classes)<input type="file" hidden accept=".json,application/json" data-chg="impfile"></label>'
@@ -1449,7 +1539,7 @@ V.data=c=>{
   +'<section class="card"><h2>Reset tools — '+esc(c.name)+'</h2><div class="row wrap"><button class="btn danger" data-act="resetPoints">Reset all points</button><button class="btn danger" data-act="clearAtt">Clear all attendance</button></div>'
   +'<div class="row wrap"><button class="btn danger" data-act="wipeAll">Erase ALL data on this device</button></div></section>'
   +'<section class="card"><h2>Google Drive sync</h2><p class="muted">'+(S.sync.on?'Sync is <b>on</b>'+(S.sync.last?' (last synced '+esc(new Date(S.sync.last).toLocaleString())+')':'')+'.':'Optional: sign in with Google to keep your phone and laptop in step.')+'</p><div class="row wrap"><button class="btn" data-act="openSync">☁️ '+(S.sync.on?'Sync settings':'Set up sync')+'</button></div></section>'
-  +storageCard()+'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
+  +snapCard()+storageCard()+'<section class="card"><h2>Offline use</h2><p class="muted">The app works with no internet. Your data stays on this device unless you turn on Google sync. Clearing your browser data can erase it, so export a backup regularly.</p></section>';
 };
 
 
@@ -1998,9 +2088,10 @@ const act={
   exportAll(){S.lastBackup=Date.now();save();download('classroom-hub-backup-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:S.activeId,settings:S.settings,schedule:S.schedule,planner:S.planner,classes:S.classes},null,1),'application/json');render()},
   exportClass(c){S.lastBackup=Date.now();save();download('classroom-hub-'+slug(c.name)+'-'+today()+'.json',JSON.stringify({app:'classroomhub',version:2,exported:new Date().toISOString(),activeId:c.id,classes:[c]},null,1),'application/json');render()},
   impMode(c,t){ui.importMode=t.dataset.v},
+  snapRestore(c,t){snapRestore(+t.dataset.v)},
   resetPoints(c){if(!confirm('Reset ALL points (students and groups) for "'+c.name+'"?'))return;c.points={};c.log=[];c.pickCount={};c.groupScores=c.groupScores.map(()=>0);save();render();toast('Points reset')},
   clearAtt(c){if(!confirm('Clear ALL attendance records for "'+c.name+'"?'))return;c.attendance={};save();render();toast('Attendance cleared')},
-  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
+  wipeAll(){if(!confirm('Erase ALL classes and data on this device? Export a backup first if unsure.'+(S.sync.on?'\n\nGoogle sync is ON, so this will also erase them from Google Drive and your other devices.':'')))return;if(!confirm('Really erase everything?'))return;const now=Date.now();snapClear();S.classes.forEach(k=>{S.deleted[k.id]=now});S={classes:[newClass('My Class')],settings:S.settings,sync:S.sync,deleted:S.deleted,schedule:{mod:Date.now(),items:[]},planner:{mod:Date.now(),items:[]}};S.activeId=S.classes[0].id;ui.tab='students';ui.sel=null;ui.gsel=null;ui.lastPick=null;save();render()}
 };
 
 /* ---------- storage meter ---------- */
@@ -2284,6 +2375,17 @@ setInterval(()=>{if(S.sync.on&&canSync()&&document.visibilityState==='visible'&&
 stamp();persist();
 applyTheme();
 render();
+/* weekly backup reminder: at most once a day, only when there is data and the last backup is over 7 days old */
+(function(){
+  const now=Date.now(),DAY=864e5;
+  if(!S.firstRun)S.firstRun=now;
+  const since=S.lastBackup||S.firstRun,has=S.classes.some(k=>k.students.length);
+  if(has&&now-since>7*DAY&&now-(+S.bkNag||0)>DAY){
+    S.bkNag=now;
+    setTimeout(()=>toast('💾 Backup reminder: '+(S.lastBackup?'it has been '+Math.floor((now-since)/DAY)+' days since your last backup.':'you have not made a backup yet.')+' Go to More → Backup → Export ALL classes.',7000),1500);
+  }
+  persist();
+})();
 if(S.sync.on&&canSync()){setSync('needs');loadGIS().catch(()=>{});toast('☁️ Tap the cloud, then “Sync now”, to update from Google Drive')}
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(function(){})}
 })();
