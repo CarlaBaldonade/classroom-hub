@@ -1,0 +1,1 @@
+{"name":"Scanora","short_name":"Scanora","description":"Scan and check answer sheets, even offline","start_url":"./scanora.html","scope":"./","display":"standalone","background_color":"#f3faf8","theme_color":"#19a58a","icons":[{"src":"scanora-icon.png","sizes":"512x512","type":"image/png","purpose":"any"}]}

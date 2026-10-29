@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Scanora</title>
+<meta name="theme-color" content="#19a58a">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Scanora"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="scanora-manifest.json"><link rel="apple-touch-icon" href="scanora-icon.png"><link rel="icon" href="scanora-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3faf8;--card:#fff;--ink:#23403a;--muted:#6f8a84;--pri:#19a58a;--pri2:#5fd4b8;--soft:#dff5ef;--line:#d4e8e2;--good:#1f9d55;--warn:#e69a1a;--bad:#d64545;--r:16px;--fh:'Fredoka','Nunito',system-ui,sans-serif;--fb:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;--pat:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:14px/1.45 var(--fb);color:var(--ink);background:var(--bg);background-image:var(--pat);overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{max-width:880px;margin:0 auto;min-height:100%;padding:0 12px 92px}
+#top{position:sticky;top:0;z-index:5;margin:0 -12px 10px;padding:10px 14px 8px;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;display:flex;align-items:center;gap:10px;border-radius:0 0 22px 22px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+#top .brand{font:600 21px var(--fh);letter-spacing:.3px;display:flex;align-items:center;gap:7px}
+#top .sub{font-size:11.5px;opacity:.92;margin-left:auto;text-align:right}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.25);font-size:11px;font-weight:700}
+h2{font:600 17px var(--fh);margin:14px 2px 8px}h3{font:600 15px var(--fh);margin:10px 0 6px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 13px;margin:0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.04);position:relative}
+.card.deco::after{content:var(--emo);position:absolute;right:10px;top:6px;font-size:18px;opacity:.55}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row.sp{justify-content:space-between}.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}.small{font-size:12px}.b{font-weight:800}.c{text-align:center}
+.btn{border:0;border-radius:12px;padding:8px 13px;background:var(--soft);color:var(--ink);font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{transform:scale(.97)}.btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff}.btn.bad{background:var(--erbg);color:var(--erfg)}.btn.ghost{background:transparent;border:1.5px solid var(--line)}
+.btn.big{padding:14px 16px;font-size:15px;border-radius:15px}.btn[disabled]{opacity:.45;pointer-events:none}.btn.sm{padding:5px 10px;font-size:12px;border-radius:9px}
+input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:8px 10px;background:var(--card);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+label.f{display:block;font-size:11.5px;font-weight:800;color:var(--muted);margin:8px 0 3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.pill{border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:5px 12px;font-weight:800;cursor:pointer;font-size:13px;color:var(--ink)}
+.pill.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.pill.ok.on,.pill.wn.on{color:#fff}
+.pill.ok{background:var(--okbg);border-color:var(--okbd);color:var(--okfg)}.pill.wn{background:var(--wnbg);border-color:var(--wnbd);color:var(--wnfg)}.pill.er{background:var(--erbg);border-color:var(--erbd);color:var(--erfg)}.pill.bl{background:var(--blbg);color:var(--muted)}
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;padding:6px 10px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 70%,transparent)}
+#nav .in{display:flex;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:5px;box-shadow:0 4px 16px rgba(0,0,0,.12);width:100%;max-width:520px}
+#nav button{flex:1;border:0;background:transparent;border-radius:17px;padding:6px 2px;font-weight:800;font-size:11px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+#nav button span{font-size:20px;line-height:1.1}#nav button.on{background:var(--soft);color:var(--pri)}
+.modal{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+.modal.sheet{background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.modal.sheet>.in{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:12px 14px 22px}
+.modal>.in{max-width:760px;margin:0 auto;padding:0 12px 120px}
+.mbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg);border-bottom:1.5px solid var(--line);margin:0 -12px 8px}
+.mbar .t{font:600 16px var(--fh);flex:1}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:4;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1.5px solid var(--line);display:flex;gap:8px;justify-content:center}
+.foot .btn{flex:1;max-width:340px;justify-content:center}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:40;background:#23403a;color:#fff;padding:9px 16px;border-radius:99px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.banner{border-radius:13px;padding:9px 12px;margin:0 0 8px;font-weight:700;font-size:13px}
+.banner.wn{background:var(--wnbg);color:var(--wnfg);border:1.5px solid var(--wnbd)}.banner.er{background:var(--erbg);color:var(--erfg);border:1.5px solid var(--erbd)}.banner.ok{background:var(--okbg);color:var(--okfg);border:1.5px solid var(--okbd)}.banner.in{background:var(--soft);color:var(--ink)}
+.item{border:1.5px solid var(--line);border-radius:14px;padding:8px;margin:0 0 8px;background:var(--card)}
+.item.fl{border-color:var(--wnbd);background:var(--card)}.item.mu{border-color:var(--erbd);background:var(--card)}.item.rs{border-color:var(--okbd);background:var(--card)}
+.item canvas{width:100%;display:block;border-radius:8px;background:#fff;border:1px solid var(--line)}
+.bars{display:flex;gap:4px;margin:5px 0}.bars div{flex:1;text-align:center;font-size:10.5px;color:var(--muted)}
+.bars i{display:block;height:5px;border-radius:3px;background:var(--pri);margin:2px 0}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:5px}
+.agrid button{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:4px 0;font-weight:800;cursor:pointer;font-size:12.5px}
+.agrid button small{display:block;font-size:9.5px;color:var(--muted);font-weight:700}
+.agrid .ok{background:var(--okbg);border-color:var(--okbd)}.agrid .wn{background:var(--wnbg);border-color:var(--wnbd)}.agrid .er{background:var(--erbg);border-color:var(--erbd)}.agrid .bl{background:var(--blbg)}.agrid .rs{background:var(--rsbg);border-color:var(--rsbd)}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}.tbl th,.tbl td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}.tbl th{font-size:11px;color:var(--muted)}
+.bar{height:8px;border-radius:5px;background:var(--soft);overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--pri)}
+.stat{flex:1;min-width:80px;background:var(--soft);border-radius:13px;padding:8px;text-align:center}.stat b{display:block;font:600 19px var(--fh)}.stat span{font-size:11px;color:var(--muted);font-weight:700}
+.theme{border:2px solid var(--line);border-radius:14px;padding:9px 6px;text-align:center;cursor:pointer;background:var(--card);font-weight:800;font-size:12px}.theme.on{border-color:var(--pri);box-shadow:0 0 0 2px var(--soft)}.theme .sw{height:22px;border-radius:8px;margin-bottom:5px}
+#cam{position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column}
+#cam video{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
+#cam canvas.ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+#cam .hud{position:absolute;left:0;right:0;top:0;padding:10px 12px;display:flex;gap:8px;align-items:center;color:#fff;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent)}
+#cam .msg{position:absolute;left:0;right:0;bottom:116px;text-align:center;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;padding:0 14px}
+#cam .ctl{position:absolute;left:0;right:0;bottom:0;padding:12px 14px calc(14px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:22px;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent)}
+#cam .shut{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);cursor:pointer}
+#cam .rb{border:0;border-radius:99px;padding:9px 14px;background:rgba(255,255,255,.22);color:#fff;font-weight:800}
+#cam .rb.on{background:#fff;color:#000}
+.spin{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
+.spin div{background:#23403a;padding:16px 24px;border-radius:18px}
+#printRoot{display:none}
+@media print{body>*:not(#printRoot){display:none!important}#printRoot{display:block}@page{size:A4;margin:0}html,body{background:#fff!important}}
+.zoomwrap{overflow:auto;border:1.5px solid var(--line);border-radius:12px;background:#fff;max-height:70vh}
+.help{font-size:12.5px;color:var(--muted)}.help li{margin:3px 0}
+@media(min-width:700px){body{font-size:15px}}
+
+.chk{display:flex;gap:8px;align-items:flex-start}.chk input{width:auto;flex:none;margin:3px 0 0}
+
+.nmimg{aspect-ratio:94/40;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#fff;margin:4px 0}.nmimg img{width:100%;display:block}
+
+</style></head>
+<body>
+<div id="app"><header id="top"><div class="brand"><span>📑</span> Scanora</div><div class="sub"><span class="chip" id="syncchip">●</span></div></header><main id="view"></main></div>
+<nav id="nav"><div class="in"><button data-tab="exams"><span>📝</span>Exams</button><button data-tab="scan"><span>📷</span>Scan</button><button data-tab="results"><span>📊</span>Results</button><button data-tab="settings"><span>⚙️</span>Settings</button></div></nav>
+<div id="mroot"></div><div id="toast"></div><div id="printRoot"></div>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden><input type="file" id="fileGal" accept="image/*" multiple hidden><input type="file" id="fileHub" accept=".json,application/json" hidden><input type="file" id="fileBak" accept=".json,application/json" hidden>
+<script>
+/* ===== SCANORA CORE: sheet geometry, sheet drawing, scanning ===== */
+const SC=(()=>{
+'use strict';
+const CPX=6, PW=210, PH=297;                       // canonical pixels per mm, A4 size in mm
+const MK={tl:{x:14,y:14,s:11},tr:{x:196,y:14,s:8},bl:{x:14,y:283,s:8},br:{x:196,y:283,s:8}};
+const CODE={x0:142,y:11.2,pitch:4.2,size:3.4,n:11};
+const IDG={x0:121,pitch:7.6,ys:[38.8,46.8],a:3.0,b:2.5,fs:3.4};
+const HEAD={x:16,y:27.5,w:94,h:40};                // handwriting block (mm)
+const AR=2.4;
+const LET='ABCDE';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- layout (shared by printing and scanning) ---------- */
+function layout(n,ch){
+  n=Math.max(1,Math.min(100,n|0)); ch=ch===5?5:4;
+  const cols=Math.ceil(n/25), rows=Math.ceil(n/cols), colW=178/cols;
+  const numW=8, p=Math.min(14,(colW-numW-1)/ch), w=Math.min(10.5,p-1.8), h=Math.min(5.8,w);
+  const a=w/2-.25, b=h/2-.25, fs=Math.min(3.4,h*.58), blockW=numW+p*ch;
+  const heads=[], items=[];
+  for(let c=0;c<cols;c++){
+    const bx=16+c*colW+(colW-blockW)/2, cx=[];
+    for(let k=0;k<ch;k++) cx.push(bx+numW+p*(k+.5));
+    heads.push({c,bx,cx,y:80});
+  }
+  const rp=rows>=25?7.5:Math.max(7.5,Math.min(9.2,189/((rows-1)+Math.floor((rows-1)/5)*.24)));
+  for(let i=0;i<n;i++){
+    const c=Math.floor(i/rows), r=i%rows, hd=heads[c];
+    items.push({i,c,r,y:83+r*rp+Math.floor(r/5)*rp*.24,cx:hd.cx,numX:hd.bx+numW-1.5});
+  }
+  return {n,ch,cols,rows,p,w,h,d:h,a,b,fs,ex:w<7?0:fs*.42,dense:w<7,items,heads};
+}
+
+/* ---------- sheet-type code (10 cells, top right) ---------- */
+function codeBits(n,ch){
+  const b=[1]; for(let i=6;i>=0;i--) b.push((n>>i)&1);
+  b.push(ch===5?1:0); let par=0; for(let i=1;i<=8;i++) par^=b[i]; b.push(par); b.push(1); return b;
+}
+function decodeBits(b){
+  if(b[0]!==1) return null; let par=0; for(let i=1;i<=8;i++) par^=b[i];
+  if(par!==b[9]) return null; let n=0; for(let i=1;i<=7;i++) n=(n<<1)|b[i];
+  if(n<1||n>100) return null; return {n,ch:b[8]?5:4,id:b[10]===1};
+}
+
+/* ---------- printable answer sheet (SVG in millimetres) ---------- */
+function sheetSVG(o){
+  const L=layout(o.n,o.ch), out=[];
+  const T=(x,y,s,txt,ex)=>out.push(`<text x="${x}" y="${y}" font-size="${s}" ${ex||''}>${esc(txt)}</text>`);
+  const line=(x1,y,x2,w)=>out.push(`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#000" stroke-width="${w||.3}"/>`);
+  out.push(`<rect width="210" height="297" fill="#fff"/>`);
+  for(const k in MK){const m=MK[k];out.push(`<rect x="${m.x-m.s/2}" y="${m.y-m.s/2}" width="${m.s}" height="${m.s}" fill="#000"/>`);}
+  T(24,17.4,6.2,'SCANORA','font-weight="700" letter-spacing=".5"');
+  T(24,22.2,3,`Answer Sheet  ·  ${o.n} items  ·  choices ${LET.slice(0,o.ch).split('').join(' ')}`,'fill="#333"');
+  const bits=codeBits(o.n,o.ch);
+  bits.forEach((b,i)=>{const x=CODE.x0+i*CODE.pitch; out.push(`<rect x="${x}" y="${CODE.y}" width="${CODE.size}" height="${CODE.size}" fill="${b?'#000':'none'}" stroke="#000" stroke-width=".2"/>`);});
+  T(CODE.x0,19.8,1.9,'SHEET CODE - DO NOT MARK','fill="#555"');
+  const fv=()=>'';
+  const fld=(label,lx,x1,x2,y,val)=>{T(lx,y,3.4,label,'font-weight="700"');line(x1,y+.6,x2,.3); if(val)T(x1+1,y-.4,3.8,val,'fill="#111"');};
+  fld('Name:',16,29,108,35.5,'');
+  fld('Subject:',16,33,108,45.5,fv(o.subject));
+  fld('Grade:',16,28,50,55.5,fv(o.grade));
+  fld('Section:',54,69,108,55.5,fv(o.section));
+  fld('Date:',16,27,70,65,fv(o.date));
+  T(112,30.6,3.2,'STUDENT NO.','font-weight="700"'); T(138,30.6,2.4,'(shade your 2-digit number)','fill="#444"');
+  IDG.ys.forEach((y,r)=>{T(111.6,y+.9,2.4,r?'2nd':'1st','fill="#444"');for(let k=0;k<10;k++){const x=IDG.x0+k*IDG.pitch;out.push(`<ellipse cx="${x.toFixed(2)}" cy="${y}" rx="${IDG.a}" ry="${IDG.b}" fill="none" stroke="#000" stroke-width=".5"/>`);T(x.toFixed(2),y+IDG.fs*.36,IDG.fs,String(k),'text-anchor="middle" font-weight="600" fill="#444"');}});
+  T(112,55,2.5,'Example: No. 07 = shade 0 in the 1st row, 7 in the 2nd row.','fill="#222"');
+  T(112,58.6,2.5,'Use a dark pen or soft pencil. Shade the circle completely.','fill="#222"');
+  T(112,62.2,2.5,'Erase fully to change an answer.','fill="#222"');
+  T(112,65.8,2.5,'Do not fold, tear or write on the black squares.','fill="#222"');
+  line(16,68,194,.4);
+  if(o.title) T(16,74.2,4.2,o.title,'font-weight="700"');
+  for(const it of L.items){
+    T(it.numX,it.y+1.15,3.2,String(it.i+1),'text-anchor="end"');
+    it.cx.forEach((x,k)=>{out.push(`<ellipse cx="${x.toFixed(2)}" cy="${it.y.toFixed(2)}" rx="${L.a.toFixed(2)}" ry="${L.b.toFixed(2)}" fill="none" stroke="#000" stroke-width=".5"/>`);T(x.toFixed(2),(it.y+L.fs*.36).toFixed(2),L.fs,LET[k],`text-anchor="middle" font-weight="${L.dense?400:600}" fill="${L.dense?'#777':'#444'}"`);});
+  }
+  T(16,292,2.4,'Scanora · keep sheet flat when scanning','fill="#777"');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" width="210mm" height="297mm" font-family="Arial, Helvetica, sans-serif">${out.join('')}</svg>`;
+}
+
+/* ---------- image helpers ---------- */
+function gray(rgba,w,h){const g=new Uint8Array(w*h);for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(rgba[j]*77+rgba[j+1]*150+rgba[j+2]*29)>>8;return g;}
+
+function binarize(g,w,h){
+  const W1=w+1, I=new Float64Array(W1*(h+1));
+  for(let y=0;y<h;y++){let row=0;for(let x=0;x<w;x++){row+=g[y*w+x];I[(y+1)*W1+x+1]=I[y*W1+x+1]+row;}}
+  const s=Math.max(15,Math.round(Math.max(w,h)/10))|1, r=s>>1, bin=new Uint8Array(w*h);
+  for(let y=0;y<h;y++){
+    const y0=Math.max(0,y-r), y1=Math.min(h,y+r+1);
+    for(let x=0;x<w;x++){
+      const x0=Math.max(0,x-r), x1=Math.min(w,x+r+1);
+      const mean=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0));
+      const v=g[y*w+x]; bin[y*w+x]=(v<mean*0.78&&v<165)?1:0;
+    }
+  }
+  return bin;
+}
+
+function components(bin,w,h,minA,maxA){
+  const seen=new Uint8Array(w*h), stack=new Int32Array(w*h), out=[];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const s0=y*w+x; if(!bin[s0]||seen[s0])continue;
+    let sp=0; stack[sp++]=s0; seen[s0]=1;
+    let a=0,sx=0,sy=0,sxx=0,syy=0,sxy=0,x0=x,x1=x,y0=y,y1=y;
+    while(sp){
+      const p=stack[--sp], px=p%w, py=(p-px)/w;
+      a++; sx+=px; sy+=py; sxx+=px*px; syy+=py*py; sxy+=px*py;
+      if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py;
+      if(px>0){const q=p-1; if(bin[q]&&!seen[q]){seen[q]=1;stack[sp++]=q;}}
+      if(px<w-1){const q=p+1; if(bin[q]&&!seen[q]){seen[q]=1;stack[sp++]=q;}}
+      if(py>0){const q=p-w; if(bin[q]&&!seen[q]){seen[q]=1;stack[sp++]=q;}}
+      if(py<h-1){const q=p+w; if(bin[q]&&!seen[q]){seen[q]=1;stack[sp++]=q;}}
+    }
+    if(a<minA||a>maxA)continue;
+    const mx=sx/a, my=sy/a, cxx=sxx/a-mx*mx+1/12, cyy=syy/a-my*my+1/12, cxy=sxy/a-mx*my;
+    const tr=cxx+cyy, det=cxx*cyy-cxy*cxy, disc=Math.sqrt(Math.max(0,tr*tr/4-det));
+    const l1=tr/2+disc, l2=Math.max(1e-6,tr/2-disc);
+    out.push({x:mx,y:my,area:a,l1,l2,bw:x1-x0+1,bh:y1-y0+1});
+  }
+  return out;
+}
+
+/* ---------- find the 4 corner squares (any rotation / orientation) ---------- */
+function detect(g,w,h){
+  const L=Math.max(w,h), bin=binarize(g,w,h);
+  const blobs=components(bin,w,h,Math.max(20,Math.floor(0.9e-4*L*L)),Math.floor(0.0064*L*L));
+  const cand=blobs.filter(b=>{
+    if(b.bw<5||b.bh<5)return false;
+    if(b.l1/b.l2>1.8)return false;
+    const sq=b.area/(12*Math.sqrt(b.l1*b.l2)); return sq>0.72&&sq<1.28;
+  }).sort((a,b)=>b.area-a.area).slice(0,14);
+  if(cand.length<4)return null;
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  let best=null;
+  const M=cand.length;
+  for(let a=0;a<M;a++)for(let b=a+1;b<M;b++)for(let c=b+1;c<M;c++)for(let d=c+1;d<M;d++){
+    const set=[cand[a],cand[b],cand[c],cand[d]];           // already sorted by area desc
+    const A=set[0], o=[set[1],set[2],set[3]];
+    const mo=(o[0].area+o[1].area+o[2].area)/3, ar=A.area/mo;
+    if(ar<1.2||ar>3)continue;
+    if(o[0].area/o[2].area>1.8)continue;
+    o.sort((p,q)=>dist(A,q)-dist(A,p));                    // farthest first
+    const D=o[0], B=o[1], T=o[2];                           // D=diagonal, B=far adjacent(BL), T=near adjacent(TR)
+    const dT=dist(A,T), dB=dist(A,B), rat=dT/dB;
+    if(rat<0.45||rat>0.92)continue;
+    const px=T.x+B.x-A.x, py=T.y+B.y-A.y, err=Math.hypot(D.x-px,D.y-py)/dist(A,D);
+    if(err>0.16)continue;
+    const cross=(T.x-A.x)*(B.y-A.y)-(T.y-A.y)*(B.x-A.x);
+    if(cross<=0)continue;                                   // mirrored
+    const score=err+Math.abs(rat-0.676)*0.5+Math.abs(ar-1.89)/1.89*0.1;
+    if(!best||score<best.score)best={score,tl:A,tr:T,bl:B,br:D};
+  }
+  if(!best)return null;
+  const q=best, pxmm=(dist(q.tl,q.tr)/182+dist(q.bl,q.br)/182+dist(q.tl,q.bl)/269+dist(q.tr,q.br)/269)/4;
+  const P=p=>({x:p.x,y:p.y,area:p.area});
+  return {tl:P(q.tl),tr:P(q.tr),bl:P(q.bl),br:P(q.br),pxmm,score:q.score};
+}
+
+/* ---------- homography + warp to a flat 6 px/mm picture ---------- */
+function solve(A,b){
+  const n=b.length; for(let i=0;i<n;i++)A[i].push(b[i]);
+  for(let i=0;i<n;i++){
+    let m=i; for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;
+    [A[i],A[m]]=[A[m],A[i]]; const pv=A[i][i]; if(Math.abs(pv)<1e-12)return null;
+    for(let c=i;c<=n;c++)A[i][c]/=pv;
+    for(let r=0;r<n;r++)if(r!==i){const f=A[r][i]; if(f)for(let c=i;c<=n;c++)A[r][c]-=f*A[i][c];}
+  }
+  return A.map(r=>r[n]);
+}
+function homography(det){
+  const src=[[MK.tl.x,MK.tl.y],[MK.tr.x,MK.tr.y],[MK.br.x,MK.br.y],[MK.bl.x,MK.bl.y]];
+  const dst=[det.tl,det.tr,det.br,det.bl].map(p=>[p.x,p.y]);
+  const A=[],b=[];
+  for(let i=0;i<4;i++){const [X,Y]=src[i],[x,y]=dst[i];
+    A.push([X,Y,1,0,0,0,-x*X,-x*Y]);b.push(x);
+    A.push([0,0,0,X,Y,1,-y*X,-y*Y]);b.push(y);}
+  return solve(A,b);
+}
+function warp(g,w,h,det,scale){
+  scale=scale||CPX; const H=homography(det); if(!H)return null;
+  const CW=Math.round(PW*scale), CH=Math.round(PH*scale), out=new Uint8Array(CW*CH);
+  for(let j=0;j<CH;j++){
+    const Y=(j+.5)/scale;
+    for(let i=0;i<CW;i++){
+      const X=(i+.5)/scale, den=H[6]*X+H[7]*Y+1;
+      const x=(H[0]*X+H[1]*Y+H[2])/den, y=(H[3]*X+H[4]*Y+H[5])/den;
+      if(x<0||y<0||x>=w-1||y>=h-1){out[j*CW+i]=255;continue;}
+      const xi=x|0, yi=y|0, fx=x-xi, fy=y-yi, k=yi*w+xi;
+      out[j*CW+i]=(g[k]*(1-fx)+g[k+1]*fx)*(1-fy)+(g[k+w]*(1-fx)+g[k+w+1]*fx)*fy;
+    }
+  }
+  return {data:out,w:CW,h:CH,scale};
+}
+
+/* ---------- read bubbles ---------- */
+const SENS={lenient:{mark:.32,empty:.13,faint:.08},normal:{mark:.40,empty:.16,faint:.10},strict:{mark:.50,empty:.20,faint:.12}};
+const ANG=[];for(let a=0;a<16;a++)ANG.push([Math.cos(a*Math.PI/8),Math.sin(a*Math.PI/8)]);
+const pctl=(arr,p)=>{const c=Uint8Array.from(arr);c.sort();return c[Math.min(c.length-1,Math.floor(c.length*p))];};
+const med=a=>{if(!a.length)return 0;const c=a.slice().sort((x,y)=>x-y);return c[c.length>>1];};
+
+function analyze(canon,o){
+  const G=canon.data, CW=canon.w, CH=canon.h, S=canon.scale, sens=SENS[o.sens]||SENS.normal;
+  const at=(x,y)=>{const i=Math.round(x*S-.5), j=Math.round(y*S-.5);return (i<0||j<0||i>=CW||j>=CH)?255:G[j*CW+i];};
+  const boxMean=(cx,cy,hw)=>{let s=0,n=0;for(let y=Math.floor((cy-hw)*S);y<=Math.ceil((cy+hw)*S);y++)for(let x=Math.floor((cx-hw)*S);x<=Math.ceil((cx+hw)*S);x++){if(x<0||y<0||x>=CW||y>=CH)continue;s+=G[y*CW+x];n++;}return n?s/n:255;};
+  // darkness (0..1) inside an ellipse, skipping the printed letter in the middle
+  const inkFill=(cx,cy,ra,rb,ex,Wb)=>{let s=0,n=0;
+    for(let y=Math.floor((cy-rb)*S);y<=Math.ceil((cy+rb)*S);y++)for(let x=Math.floor((cx-ra)*S);x<=Math.ceil((cx+ra)*S);x++){
+      const ux=(x+.5)/S-cx, uy=(y+.5)/S-cy; if((ux*ux)/(ra*ra)+(uy*uy)/(rb*rb)>1||Math.abs(ux)<ex||x<0||y<0||x>=CW||y>=CH)continue;
+      const d=(Wb-G[y*CW+x])/(Wb-B); s+=d<0?0:d>1?1:d; n++;}
+    return n?s/n:0;};
+  // global paper / ink calibration
+  const sample=[];for(let k=0;k<G.length;k+=7)sample.push(G[k]);
+  const Wg=pctl(sample,.92);
+  const mks=Object.values(MK).map(m=>boxMean(m.x,m.y,m.s/2-2));
+  const B=mks.reduce((a,b)=>a+b,0)/4;
+  const contrast=Wg-B;
+  if(Math.max(...mks)>Wg*0.55||contrast<55) return {error:'contrast',contrast};
+  // sheet-type code (calibrated locally so shadows across the page do not matter)
+  const wl=[];for(let y=Math.floor(6*S);y<Math.ceil(24*S);y+=2)for(let x=Math.floor(136*S);x<Math.ceil(188*S);x+=2)wl.push(G[y*CW+x]);
+  const Wl=pctl(wl,.8);
+  let dec=null, offs0=[[0,0]];for(const r of [.7,1.4,2.1])for(let k=0;k<8;k++)offs0.push([r*Math.cos(k*Math.PI/4),r*Math.sin(k*Math.PI/4)]);
+  const votes={};
+  for(const [ox,oy] of offs0){
+    const cv=[];for(let i=0;i<CODE.n;i++)cv.push(boxMean(CODE.x0+i*CODE.pitch+CODE.size/2+ox,CODE.y+CODE.size/2+oy,.8));
+    const Bl=cv[0]; if(Wl-Bl<40)continue; const thr=(Wl+Bl)/2;
+    const d=decodeBits(cv.map(v=>v<thr?1:0)); if(d){const k=d.n+'_'+d.ch+'_'+d.id;(votes[k]=votes[k]||{d,c:0}).c++;}
+  }
+  for(const k in votes)if(votes[k].c>=3&&(!dec||votes[k].c>dec.c))dec=Object.assign({c:votes[k].c},votes[k].d);
+  if(!dec) return {error:'nocode'};
+  if(dec.n!==o.n||dec.ch!==o.ch) return {error:'format',found:dec};
+  // student number grid (2 digits, 0-9 each)
+  let idr=null;
+  if(dec.id){
+    const ia=IDG.a, ib=IDG.b, iex=IDG.fs*.42, rowsI=[];
+    const cxs=[];for(let k=0;k<10;k++)cxs.push(IDG.x0+k*IDG.pitch);
+    for(const y0 of IDG.ys){
+      const E=(dx,dy)=>{let e=0;for(const cx of cxs)for(const a of ANG)e+=at(cx+dx+(ia+.9)*a[0],y0+dy+(ib+.9)*a[1])-at(cx+dx+ia*a[0],y0+dy+ib*a[1]);return e;};
+      let best=-1e18,bx=0,by=0;
+      for(let dy=-2;dy<=2.001;dy+=.25)for(let dx=-2;dx<=2.001;dx+=.25){const e=E(dx,dy)-150*(dx*dx+dy*dy);if(e>best){best=e;bx=dx;by=dy;}}
+      const f=[],rq=[];
+      for(const cx0 of cxs){
+        const cx=cx0+bx, cy=y0+by;
+        const wv=[];for(const k of [.7,1.0,1.3])for(let a=0;a<8;a++)wv.push(at(cx+(ia+k)*Math.cos(a*Math.PI/4+.4),cy+(ib+k)*Math.sin(a*Math.PI/4+.4)));
+        wv.sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-B<40)Wb=Wg;
+        f.push(inkFill(cx,cy,.74*ia,.74*ib,iex,Wb));
+        let q=0;for(const a of ANG)q+=at(cx+(ia+.9)*a[0],cy+(ib+.9)*a[1])-at(cx+ia*a[0],cy+ib*a[1]);
+        rq.push(q/16/(Wb-B));
+      }
+      const rowQ=rq.reduce((a,b)=>a+b,0)/rq.length;
+      const idx=f.map((v,k)=>k).sort((a,b)=>f[b]-f[a]), m1=f[idx[0]], m2=f[idx[1]];
+      const marks=f.map((v,k)=>v>=sens.mark?k:-1).filter(k=>k>=0);
+      let status,val=null;
+      if(marks.length>=2) status='multi';
+      else if(marks.length===1){ if(m2<=0.5*m1&&(m1>=sens.mark+sens.faint||m2<=0.08)){status='ok';val=idx[0];} else status='unclear'; }
+      else if(m1<sens.empty) status='blank'; else status='unclear';
+      if(rowQ<0.30&&status==='ok'){status='unclear';val=null;}
+      rowsI.push({f,status,val,guess:m1>0.12?idx[0]:null});
+    }
+    const st=rowsI.map(r=>r.status);
+    let state='bad', num=null;
+    if(st[0]==='blank'&&st[1]==='blank') state='none';
+    else if(st[0]==='ok'&&st[1]==='ok'){ num=rowsI[0].val*10+rowsI[1].val; state=num>0?'ok':'bad'; if(!num)num=null; }
+    idr={rows:rowsI,state,num};
+  }
+  // rows
+  const L=layout(o.n,o.ch), rows=[];
+  const Erow=(it,dx,dy)=>{let e=0;for(const cx of it.cx){for(const a of ANG){e+=at(cx+dx+(L.a+.9)*a[0],it.y+dy+(L.b+.9)*a[1])-at(cx+dx+L.a*a[0],it.y+dy+L.b*a[1]);}}return e;};
+  for(const it of L.items){
+    let best=-1e18,bx=0,by=0;
+    for(let dy=-AR;dy<=AR+.001;dy+=.4)for(let dx=-AR;dx<=AR+.001;dx+=.4){const e=Erow(it,dx,dy)-150*(dx*dx+dy*dy);if(e>best){best=e;bx=dx;by=dy;}}
+    const cx0=bx,cy0=by;
+    for(let dy=cy0-.4;dy<=cy0+.401;dy+=.1)for(let dx=cx0-.4;dx<=cx0+.401;dx+=.1){const e=Erow(it,dx,dy)-150*(dx*dx+dy*dy);if(e>best){best=e;bx=dx;by=dy;}}
+    rows.push({it,dx:bx,dy:by});
+  }
+  // smooth offsets down each column (median of 3)
+  for(let c=0;c<L.cols;c++){
+    const col=rows.filter(r=>r.it.c===c), dxs=col.map(r=>r.dx), dys=col.map(r=>r.dy);
+    col.forEach((r,i)=>{const a=Math.max(0,i-1),b=Math.min(col.length-1,i+1);r.dx=med(dxs.slice(a,b+1));r.dy=med(dys.slice(a,b+1));});
+  }
+  const items=[], ringQ=[], offs=[], rowQs=[];
+  const WA=[];for(const k of [.8,1.15,1.5])for(let a=0;a<8;a++)WA.push([(L.a+k)*Math.cos(a*Math.PI/4+.4),(L.b+k)*Math.sin(a*Math.PI/4+.4)]);
+  let base=0;
+  if(L.dense){const all=[];for(const r of rows)for(const cx0 of r.it.cx){const cx=cx0+r.dx,cy=r.it.y+r.dy;const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y);let Wb=wv[(wv.length*.6)|0];if(Wb-B<40)Wb=Wg;all.push(inkFill(cx,cy,.74*L.a,.74*L.b,0,Wb));}base=Math.min(.12,med(all));}
+  for(const r of rows){
+    const it=r.it, f=[], rq=[];
+    for(const cx0 of it.cx){
+      const cx=cx0+r.dx, cy=it.y+r.dy;
+      const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-B<40)Wb=Wg;
+      const fv=Math.max(0,(inkFill(cx,cy,.74*L.a,.74*L.b,L.ex,Wb)-base)/(1-base)); f.push(fv);
+      let q=0;for(const a of ANG)q+=at(cx+(L.a+.9)*a[0],cy+(L.b+.9)*a[1])-at(cx+L.a*a[0],cy+L.b*a[1]);
+      q=q/16/(Wb-B); rq.push(q); if(fv<0.2)ringQ.push(q);
+    }
+    const rowQ=rq.reduce((a,b)=>a+b,0)/rq.length; rowQs.push(rowQ);
+    offs.push(Math.hypot(r.dx,r.dy));
+    const idx=f.map((v,k)=>k).sort((a,b)=>f[b]-f[a]), m1=f[idx[0]], m2=f[idx[1]];
+    const marks=f.map((v,k)=>v>=sens.mark?k:-1).filter(k=>k>=0);
+    let status,ans='';
+    if(marks.length>=2){status='multi';ans=LET[idx[0]];}
+    else if(marks.length===1){
+      if(m2<=0.5*m1 && (m1>=sens.mark+sens.faint || m2<=0.08)){status='ok';ans=LET[idx[0]];}
+      else {status='unclear';ans=LET[idx[0]];}
+    } else if(m1<sens.empty){status='blank';}
+    else {status='unclear';ans=LET[idx[0]];}
+    let why='';
+    if(rowQ<0.30 && status!=='multi'){ if(status!=='unclear'){status='unclear'; ans=m1>0.12?LET[idx[0]]:'';} why='align'; }
+    items.push({i:it.i,f,status,ans,why});
+  }
+  const badRows=items.filter(x=>x.why==='align').length;
+  if(badRows>items.length*0.3) return {error:'align',badRows};
+  // warnings about whole blank sections
+  const warn=[], nb=items.filter(x=>x.status==='blank').length;
+  if(nb===items.length) warn.push({type:'allblank'});
+  else{
+    let i=0;while(i<items.length){
+      if(items[i].status==='blank'){let j=i;while(j+1<items.length&&items[j+1].status==='blank')j++; if(j-i+1>=4)warn.push({type:'blankrun',from:i+1,to:j+1}); i=j+1;} else i++;
+    }
+  }
+  const nflag=items.filter(x=>x.status==='unclear'||x.status==='multi').length;
+  if(nflag>=Math.max(5,items.length*.2)) warn.push({type:'manyunclear',count:nflag});
+  const rq=med(ringQ.length?ringQ:rowQs), offMean=offs.reduce((a,b)=>a+b,0)/offs.length;
+  return {items,warn,quality:{ringQ:rq,contrast,offMean,Wg,B},n:o.n,ch:o.ch,id:idr,hasId:!!dec.id};
+}
+
+/* ---------- one-call pipeline on an RGBA image ---------- */
+function scan(rgba,w,h,o){
+  const g=gray(rgba,w,h), det=detect(g,w,h);
+  if(!det) return {error:'nomarkers'};
+  if(det.pxmm<2.6) return {error:'lowres',pxmm:det.pxmm};
+  const canon=warp(g,w,h,det); if(!canon) return {error:'nomarkers'};
+  const res=analyze(canon,o); res.pxmm=det.pxmm; res.canon=canon; res.det=det;
+  if(!res.error){
+    if(res.quality.ringQ<0.12) return Object.assign(res,{error:'blur',items:undefined,warn:undefined});
+  }
+  return res;
+}
+
+return {CPX,PW,PH,MK,CODE,IDG,HEAD,LET,layout,sheetSVG,gray,detect,warp,analyze,scan,SENS,codeBits,decodeBits};
+})();
+
+
+/* ===== SCANORA APP — part 1: state, themes, helpers, exams, printing ===== */
+const $=(s,r)=>(r||document).querySelector(s), $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const live=a=>a.filter(x=>!x.del);
+const LETS=ch=>'ABCDE'.slice(0,ch).split('');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const prettyDate=s=>{if(!s)return '';const d=new Date(s+'T00:00:00');return isNaN(d)?s:d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'});};
+const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim();
+
+/* ---------- storage ---------- */
+const LSK='scanora.v1';
+function blankState(){return {v:1,exams:[],results:[],rosters:{},secs:{},set:{theme:'mint',sens:'normal',keepImg:true,auto:true,sound:true,clientId:'',syncOn:false,lastSync:0,lastExam:'',lastSec:''},u:0};}
+function loadState(){let j=null;try{j=JSON.parse(localStorage.getItem(LSK));}catch(e){}const b=blankState();if(!j)return b;return Object.assign(b,j,{set:Object.assign(b.set,j.set||{})});}
+let S=loadState();
+if(!S.secs)S.secs={};
+for(const k in S.rosters){const r=S.rosters[k];if(!r||r.del||!(r.names||[]).length)continue;const id='r_'+k;if(!S.secs[id])S.secs[id]={id,name:[r.grade&&('Grade '+r.grade),r.section].filter(Boolean).join(' – ')||'Section',stu:r.names.slice(0,99).map((n,i)=>({id:'m'+i,no:i+1,name:n})),u:r.u||1};}
+function save(touch){if(touch!==false)S.u=Date.now();clearTimeout(save.t);save.t=setTimeout(()=>{try{localStorage.setItem(LSK,JSON.stringify(S));}catch(e){toast('⚠️ Storage is full. Export a backup in Settings.');}},120);}
+function stamp(o){o.u=Date.now();return o;}
+const IDB={db:null,open(){return new Promise(res=>{try{const r=indexedDB.open('scanora',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>{IDB.db=r.result;res(IDB.db);};r.onerror=()=>res(null);}catch(e){res(null);}});},
+ async put(k,v){const db=IDB.db||await IDB.open();if(!db)return 0;return new Promise(r=>{try{const t=db.transaction('img','readwrite');t.objectStore('img').put(v,k);t.oncomplete=()=>r(1);t.onerror=()=>r(0);}catch(e){r(0);}});},
+ async get(k){const db=IDB.db||await IDB.open();if(!db)return null;return new Promise(r=>{try{const q=db.transaction('img').objectStore('img').get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);}catch(e){r(null);}});},
+ async del(k){const db=IDB.db||await IDB.open();if(!db)return;return new Promise(r=>{try{const t=db.transaction('img','readwrite');t.objectStore('img').delete(k);t.oncomplete=()=>r(1);t.onerror=()=>r(0);}catch(e){r(0);}});}};
+
+/* ---------- themes ---------- */
+const THEMES=[
+ {id:'mint',name:'Mint Fresh',emo:'🌿',pri:'#19a58a',pri2:'#5fd4b8',bg:'#f3faf8',soft:'#dff5ef',line:'#d4e8e2',ink:'#23403a',muted:'#6f8a84'},
+ {id:'blossom',name:'Pink Blossom',emo:'🌸',pri:'#ec6a9b',pri2:'#f7a8c6',bg:'#fff5f8',soft:'#ffe3ee',line:'#f6d3e0',ink:'#4a2a38',muted:'#9a7587'},
+ {id:'lavender',name:'Lavender Dream',emo:'🦋',pri:'#8b6fe0',pri2:'#bda8f5',bg:'#f8f5ff',soft:'#ebe3ff',line:'#e0d6f7',ink:'#34294f',muted:'#867aa6'},
+ {id:'peach',name:'Peach Sunset',emo:'🍑',pri:'#f0825a',pri2:'#ffb690',bg:'#fff6f1',soft:'#ffe5d8',line:'#f7d9c9',ink:'#4a3025',muted:'#a07c6c'},
+ {id:'ocean',name:'Ocean Breeze',emo:'🐚',pri:'#2b8fd6',pri2:'#7cc4f2',bg:'#f1f8ff',soft:'#dcedfb',line:'#cfe3f4',ink:'#223a50',muted:'#6d8aa2'},
+ {id:'matcha',name:'Matcha Latte',emo:'🍵',pri:'#7a9a3a',pri2:'#b2cf72',bg:'#f7f9ee',soft:'#e8f0d0',line:'#dde7c0',ink:'#38441f',muted:'#7f8c62'},
+ {id:'candy',name:'Cotton Candy',emo:'🐰',pri:'#d86bd0',pri2:'#8fc4ff',bg:'#fff2fc',soft:'#fbe0f8',line:'#f2cdee',ink:'#4b2a4a',muted:'#9b7699'},
+ {id:'cherry',name:'Cherry Cocoa',emo:'🍒',pri:'#c4505a',pri2:'#e8929a',bg:'#fff4f2',soft:'#fde1de',line:'#f3d0cc',ink:'#4a2a2c',muted:'#a07a7c'},
+ {id:'sunny',name:'Sunny Day',emo:'🌻',pri:'#e8a317',pri2:'#ffd466',bg:'#fffbea',soft:'#fff0bf',line:'#f3e4ae',ink:'#493a14',muted:'#9a8750'},
+ {id:'night',name:'Midnight Stars',emo:'⭐',pri:'#7c8cff',pri2:'#b49bff',bg:'#151a2b',soft:'#252c48',line:'#2f3858',ink:'#e8ecff',muted:'#98a2cc',dark:true}
+];
+function applyTheme(id){
+  const t=THEMES.find(x=>x.id===id)||THEMES[0], r=document.documentElement.style, d=!!t.dark;
+  const v={'--pri':t.pri,'--pri2':t.pri2,'--bg':t.bg,'--soft':t.soft,'--line':t.line,'--ink':t.ink,'--muted':t.muted,'--card':d?'#1d2340':'#ffffff',
+   '--okbg':d?'#1d3a2b':'#e4f6ea','--okbd':d?'#2f6b4a':'#b6e3c5','--okfg':d?'#7ee0a4':'#176b3a','--wnbg':d?'#40351a':'#fff3dc','--wnbd':d?'#76601f':'#f3d79a','--wnfg':d?'#ffd070':'#8a5a00',
+   '--erbg':d?'#44212a':'#fde8e8','--erbd':d?'#7a3b46':'#f3b9b9','--erfg':d?'#ff9aa8':'#a52a2a','--blbg':d?'#262d4a':'#eef1f2','--rsbg':d?'#1d3350':'#e3f0ff','--rsbd':d?'#35639a':'#b4d3f5','--emo':"'"+t.emo+"'"};
+  for(const k in v)r.setProperty(k,v[k]);
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><text x='14' y='34' font-size='20' opacity='.16'>${t.emo}</text><text x='78' y='88' font-size='16' opacity='.12'>${t.emo}</text></svg>`;
+  r.setProperty('--pat',`url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+  let m=$('meta[name=theme-color]');if(m)m.content=t.pri;
+}
+
+/* ---------- small UI helpers ---------- */
+function toast(msg,ms){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms||2200);}
+function beep(kind){if(!S.set.sound)return;try{const c=beep.c||(beep.c=new(window.AudioContext||window.webkitAudioContext)());const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=kind==='warn'?300:kind==='err'?200:880;g.gain.setValueAtTime(.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+(kind==='ok'?.14:.3));o.start();o.stop(c.currentTime+.32);if(navigator.vibrate)navigator.vibrate(kind==='ok'?30:[60,40,60]);}catch(e){}}
+function spinner(msg){const d=document.createElement('div');d.className='spin';d.innerHTML=`<div>${esc(msg||'Working…')}</div>`;document.body.appendChild(d);return ()=>d.remove();}
+const tick=()=>new Promise(r=>setTimeout(r,30));
+function openModal(html,sheet){const m=document.createElement('div');m.className='modal'+(sheet?' sheet':'');m.innerHTML=`<div class="in">${html}</div>`;$('#mroot').appendChild(m);if(sheet)m.addEventListener('click',e=>{if(e.target===m)m.remove();});return m;}
+function ask(title,body,buttons){return new Promise(res=>{const m=openModal(`<h3>${esc(title)}</h3><p>${body}</p><div class="row" style="justify-content:flex-end;margin-top:10px">${buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-i="${i}">${esc(b.t)}</button>`).join('')}</div>`,true);m.style.zIndex=60;m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b){m.remove();res(buttons[+b.dataset.i].v);}else if(e.target===m){m.remove();res(null);}});});}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+const csvCell=v=>{v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+
+/* ---------- scoring ---------- */
+const examOf=id=>S.exams.find(e=>e.id===id&&!e.del);
+function scoreOf(ex,ans){let s=0;for(let i=0;i<ex.n;i++){const k=ex.key[i];if(k&&ans[i]&&ans[i]!=='*'&&k.includes(ans[i]))s++;}return s;}
+function resultsOf(exId){return live(S.results).filter(r=>r.examId===exId);}
+function rosterKey(g,s){return norm(g)+'|'+norm(s);}
+function rosterNames(g,s){return (S.rosters[rosterKey(g,s)]||{names:[]}).names||[];}
+
+/* ---------- sections: class lists with 2-digit student numbers ---------- */
+const pad2=n=>String(n).padStart(2,'0');
+const secOf=id=>{const s=id&&S.secs[id];return s&&!s.del?s:null;};
+const liveSecs=()=>Object.values(S.secs).filter(s=>!s.del).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+const secStu=s=>s.stu.filter(x=>!x.gone).sort((a,b)=>a.no-b.no);
+const stuByNo=(s,n)=>s.stu.find(x=>x.no===n&&!x.gone)||null;
+function hubRead(){try{const o=JSON.parse(localStorage.getItem('classroomhub.v1'));if(o&&Array.isArray(o.classes))return hubClean(o.classes);}catch(e){}return null;}
+function hubClean(cl){return cl.filter(c=>c&&c.id&&Array.isArray(c.students)).map(c=>({id:String(c.id),name:String(c.name||'Class'),students:c.students.filter(s=>s&&s.id&&String(s.name||'').trim()).map(s=>({id:String(s.id),name:String(s.name).trim()}))}));}
+/* give new students the next free numbers (first time: alphabetical). returns how many did not fit in 1-99 */
+function numberNew(s,fresh){
+  if(!s.stu.length)fresh=fresh.slice().sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
+  const used=new Set(s.stu.map(x=>x.no));let over=0;
+  fresh.forEach(h=>{let n=Math.max(0,...used)+1;if(n>99){n=1;while(n<=99&&used.has(n))n++;}
+    if(n>99){over++;return;}used.add(n);s.stu.push(Object.assign({no:n},h));});
+  return over;
+}
+function applyHub(hc){
+  const old=Object.values(S.secs).find(x=>x.hubId===hc.id);
+  const s=old||(S.secs['h_'+hc.id]={id:'h_'+hc.id,hubId:hc.id,name:hc.name,stu:[]});
+  s.del=false;s.name=hc.name;
+  const byH=new Map(s.stu.filter(x=>x.hid).map(x=>[x.hid,x])),seen=new Set(),fresh=[];
+  hc.students.forEach(h=>{seen.add(h.id);const x=byH.get(h.id);if(x){x.name=h.name;x.gone=false;}else fresh.push({hid:h.id,id:'s'+h.id,name:h.name});});
+  s.stu.forEach(x=>{if(x.hid&&!seen.has(x.hid))x.gone=true;});
+  const over=numberNew(s,fresh);stamp(s);return {s,over,added:fresh.length-over};
+}
+
+/* ---------- navigation / shell ---------- */
+const UI={tab:'exams',resExam:'',resSec:'',analysis:false};
+function go(tab){UI.tab=tab;render();window.scrollTo(0,0);}
+function render(){
+  $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===UI.tab));
+  const v={exams:viewExams,scan:viewScan,results:viewResults,settings:viewSettings}[UI.tab]();
+  $('#view').innerHTML=v;
+  $('#syncchip').textContent=(navigator.onLine?'● online':'○ offline');
+  if(UI.tab==='scan')bindScanView();
+}
+
+/* ---------- EXAMS ---------- */
+function viewExams(){
+  const ex=live(S.exams).sort((a,b)=>(b.u||0)-(a.u||0));
+  return `<div class="row sp"><h2>My exams</h2><button class="btn pri" data-a="newExam">＋ New exam</button></div>`+
+  (ex.length?ex.map(examCard).join(''):`<div class="card c"><div style="font-size:34px">📝</div><div class="b">No exams yet</div><div class="small muted" style="margin:4px 0 10px">Make an exam, enter the answer key, print the sheets, then scan them.</div><button class="btn pri" data-a="newExam">＋ Create your first exam</button></div>`)+
+  `<div class="card"><div class="row sp"><div><div class="b">👩‍🎓 Sections &amp; student numbers</div><div class="small muted">Import sections from your Classroom Hub. Each student gets a number to shade</div></div><button class="btn" data-a="sections">Open</button></div></div>`;
+}
+function examCard(e){
+  const n=resultsOf(e.id).length, kd=e.key.filter(Boolean).length;
+  return `<div class="card deco"><div style="font:600 16px var(--fh)">${esc(e.title)}</div>
+  <div class="small muted">${esc(e.subject||'No subject')}${e.grade?' · Grade '+esc(e.grade):''}${e.section?' · '+esc(e.section):''} · ${e.n} items (${LETS(e.ch).join('')}) · ${n} scanned</div>
+  ${kd<e.n?`<div class="small" style="color:var(--wnfg);font-weight:800;margin-top:3px">⚠️ Answer key incomplete (${kd}/${e.n})</div>`:''}
+  <div class="row" style="margin-top:9px"><button class="btn pri sm" data-a="scanExam" data-id="${e.id}">📷 Scan</button><button class="btn sm" data-a="printExam" data-id="${e.id}">🖨️ Sheet</button><button class="btn sm" data-a="openRes" data-id="${e.id}">📊 Results</button><button class="btn sm" data-a="editExam" data-id="${e.id}">✏️ Edit</button></div></div>`;
+}
+
+let ED=null, EDM=null;
+function newExamState(){const last=live(S.exams).sort((a,b)=>(b.u||0)-(a.u||0))[0];return {id:'',title:'',subject:last?last.subject:'',grade:last?last.grade:'',section:'',date:today(),n:50,ch:4,key:Array(50).fill(''),multi:false,customN:false};}
+function editorHtml(){
+  const E=ED, presets=[25,50,60], isCustom=E.customN||!presets.includes(E.n);
+  const keyHtml=Array.from({length:E.n},(_,i)=>`<div style="border:1.5px solid var(--line);border-radius:11px;padding:4px 6px;background:var(--card);display:flex;align-items:center;gap:4px"><b style="width:24px;font-size:12px">${i+1}</b><div class="chips" style="gap:3px">${LETS(E.ch).map(L=>`<button class="pill ${(E.key[i]||'').includes(L)?'on':''}" style="padding:2px 8px;font-size:12px" data-a="edKey" data-i="${i}" data-l="${L}">${L}</button>`).join('')}</div></div>`).join('');
+  const filled=E.key.slice(0,E.n).filter(Boolean).length;
+  return `<div class="mbar"><button class="btn sm" data-a="edClose">✕</button><div class="t">${E.id?'Edit exam':'New exam'}</div><button class="btn pri sm" data-a="edSave">Save</button></div>
+  <label class="f">Exam title</label><input data-ed="title" value="${esc(E.title)}" placeholder="e.g. Quiz 1 – Matter">
+  <div class="grid2"><div><label class="f">Subject</label><input data-ed="subject" value="${esc(E.subject)}" placeholder="Science 7"></div><div><label class="f">Date</label><input type="date" data-ed="date" value="${esc(E.date)}"></div></div>
+  <div class="grid2"><div><label class="f">Grade / year level</label><input data-ed="grade" value="${esc(E.grade)}" placeholder="7"></div><div><label class="f">Section (optional)</label><input data-ed="section" value="${esc(E.section)}" placeholder="optional"></div></div>
+  <label class="f">Number of items</label>
+  <div class="chips">${presets.map(p=>`<button class="pill ${!isCustom&&E.n===p?'on':''}" data-a="edN" data-v="${p}">${p} items</button>`).join('')}<button class="pill ${isCustom?'on':''}" data-a="edCustom">Custom</button></div>
+  ${isCustom?`<div class="row" style="margin-top:6px"><input type="number" min="1" max="100" style="width:110px" data-ed="n" value="${E.n}"> <span class="small muted">1 to 100 items</span></div>`:''}
+  <label class="f">Choices per item</label>
+  <div class="chips"><button class="pill ${E.ch===4?'on':''}" data-a="edCh" data-v="4">A – D</button><button class="pill ${E.ch===5?'on':''}" data-a="edCh" data-v="5">A – E</button></div>
+  <h3>Answer key <span class="small muted">(${filled}/${E.n} set)</span></h3>
+  <label class="f">Quick entry: type or paste the key (e.g. ABCDDACB…)</label>
+  <div class="row"><input data-ed="paste" placeholder="ABCD…" style="flex:1"><button class="btn sm" data-a="edPaste">Apply</button></div>
+  <label class="chk small" style="margin:8px 0"><input type="checkbox" style="width:auto" data-ed="multi" ${E.multi?'checked':''}> Allow more than one correct answer on an item</label>
+  <div class="row" style="margin-bottom:8px">${E.id?`<button class="btn sm" data-a="edScanKey">📷 Set key by scanning a filled sheet</button>`:`<span class="small muted">Tip: after saving, you can also set the key by scanning one filled-in sheet.</span>`}<button class="btn sm ghost" data-a="edClearKey">Clear key</button></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:6px">${keyHtml}</div>
+  ${E.id?`<div class="row" style="margin-top:14px"><button class="btn sm" data-a="edDup">Duplicate exam</button><button class="btn bad sm" data-a="edDel">Delete exam</button></div>`:''}`;
+}
+function openEditor(ex){
+  ED=ex?JSON.parse(JSON.stringify(ex)):newExamState();
+  ED.customN=false; while(ED.key.length<ED.n)ED.key.push('');
+  EDM=openModal(editorHtml());
+}
+function edRedraw(){const sc=EDM.scrollTop;EDM.querySelector('.in').innerHTML=editorHtml();EDM.scrollTop=sc;}
+function edResize(n){n=Math.max(1,Math.min(100,n|0||1));ED.n=n;ED.key=ED.key.slice(0,n);while(ED.key.length<n)ED.key.push('');}
+async function edSave(){
+  if(!ED.title.trim()){toast('Please type an exam title');return;}
+  edResize(ED.n);
+  const L=LETS(ED.ch);ED.key=ED.key.map(k=>(k||'').split('').filter(c=>L.includes(c)).join(''));
+  const o={id:ED.id||uid(),title:ED.title.trim(),subject:ED.subject.trim(),grade:ED.grade.trim(),section:ED.section.trim(),date:ED.date,n:ED.n,ch:ED.ch,key:ED.key,multi:!!ED.multi};
+  const old=examOf(o.id);
+  if(old&&(old.n!==o.n||old.ch!==o.ch)&&resultsOf(o.id).length){
+    const c=await ask('Change sheet type?',`This exam already has ${resultsOf(o.id).length} scanned sheets. Changing the number of items or choices means <b>new printed sheets are needed</b>, and old results may not match. Continue?`,[{t:'Cancel',v:0},{t:'Continue',v:1,cls:'pri'}]);if(!c)return;
+  }
+  stamp(o);if(old)Object.assign(old,o);else S.exams.push(o);
+  S.set.lastExam=o.id;save();EDM.remove();EDM=null;ED=null;render();toast('Exam saved ✓');
+}
+
+/* ---------- PRINT ---------- */
+function openPrint(id){
+  const e=examOf(id);if(!e)return;
+  const can2=e.n<=60, two=()=>can2&&S.set.twoUp!==false;
+  const one=w=>SC.sheetSVG({n:e.n,ch:e.ch,title:e.title}).replace('width="210mm" height="297mm"',w);
+  const half=(inner,pad,bl)=>`<div style="flex:1;display:flex;align-items:center;justify-content:center;box-sizing:border-box;${bl}">${inner}</div>`;
+  const drawPrev=()=>{
+    if(!two())return one('style="width:100%;height:auto;display:block;border:1.5px solid var(--line);border-radius:8px;background:#fff"');
+    const s=one('style="width:100%;height:auto;display:block"');
+    return `<div style="width:100%;aspect-ratio:330.2/215.9;display:flex;background:#fff;border:1.5px solid var(--line);border-radius:8px;overflow:hidden">${half(`<div style="width:89%">${s}</div>`,0,'')}${half(`<div style="width:89%">${s}</div>`,0,'border-left:1.5px dashed #666')}</div>`;};
+  const drawPrint=()=>{
+    if(!two())return one('style="width:210mm;height:297mm;display:block"');
+    const s=one('style="width:147mm;height:207.9mm;display:block"');
+    return `<div style="width:330.2mm;height:215.9mm;display:flex;background:#fff;overflow:hidden">${half(s,0,'')}${half(s,0,'border-left:.35mm dashed #666')}</div>`;};
+  const m=openModal('');
+  const paint=()=>{m.querySelector('.in').innerHTML=`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">Print answer sheets</div><button class="btn pri sm" data-a="doPrint">🖨️ Print / Save PDF</button></div>
+   ${can2?`<div class="chips" style="margin:6px 0"><button class="pill ${two()?'':'on'}" data-a="prTwo" data-v="0">1 sheet per page (A4)</button><button class="pill ${two()?'on':''}" data-a="prTwo" data-v="1">2 sheets per page (long bond)</button></div>`:`<div class="small muted" style="margin:6px 0">Exams with more than 60 items print one sheet per page.</div>`}
+   <div class="banner in">${two()?`Prints <b>2 identical blank sheets on one long bond page (landscape)</b>. Cut along the dashed line. In the print window: set paper to <b>long bond / 8.5 × 13 in</b> (or pick “Save as PDF”), <b>margins: None</b>, <b>scale: 100%</b> (not “fit to page”). Make sure all four black squares on each sheet are fully printed.`:`Print on <b>A4 white paper</b> in black &amp; white. Set <b>scale to 100%</b> (not “fit to page”) and margins to None. Make sure the four black squares are fully printed.`} Name, subject, grade, section and date are left blank for the students to write. To get a PDF file, choose <b>Save as PDF</b> as the printer.</div>
+   <div style="max-width:${two()?'640':'420'}px;margin:8px auto 0">${drawPrev()}</div>`;};
+  m._paint=paint;paint();
+  m._print=()=>{let pg=$('#pgStyle');if(!pg){pg=document.createElement('style');pg.id='pgStyle';document.head.appendChild(pg);}
+    pg.textContent=two()?'@media print{@page{size:330.2mm 215.9mm;margin:0}}':'@media print{@page{size:210mm 297mm;margin:0}}';
+    $('#printRoot').innerHTML=drawPrint();setTimeout(()=>window.print(),80);};
+  m.dataset.print='1';
+}
+
+/* ===== SCANORA APP — part 2: scan screen, camera, review ===== */
+const SCAN={examId:'',grade:'',section:'',secId:'',date:today(),mode:'student'};
+const layoutCache={};
+const layoutOf=e=>layoutCache[e.n+'_'+e.ch]||(layoutCache[e.n+'_'+e.ch]=SC.layout(e.n,e.ch));
+function scanDefaults(e){SCAN.grade=e.grade||SCAN.grade||'';SCAN.section=e.section||'';SCAN.date=e.date||today();}
+function viewScan(){
+  const ex=live(S.exams);
+  if(!ex.length)return `<h2>Scan</h2><div class="card c"><div style="font-size:34px">📷</div><div class="b">Create an exam first</div><div class="small muted" style="margin:4px 0 10px">Scanora needs an exam so it knows the answer key and sheet type.</div><button class="btn pri" data-a="newExam">＋ New exam</button></div>`;
+  if(!examOf(SCAN.examId)){SCAN.examId=examOf(S.set.lastExam)?S.set.lastExam:ex[0].id;scanDefaults(examOf(SCAN.examId));}
+  const e=examOf(SCAN.examId), kd=e.key.filter(Boolean).length;
+  const secList=liveSecs();if(SCAN.secId&&!secOf(SCAN.secId))SCAN.secId='';
+  if(!SCAN.secId&&!SCAN._init){SCAN._init=1;if(secOf(S.set.lastSec))SCAN.secId=S.set.lastSec;}
+  const sec=secOf(SCAN.secId), done=sec?resultsOf(e.id).filter(r=>r.sid===sec.id).length:resultsOf(e.id).filter(r=>norm(r.section)===norm(SCAN.section)&&norm(r.grade)===norm(SCAN.grade)).length;
+  const modes=[['student','Student sheets'],['key','Answer key sheet'],['practice','Practice (not saved)']];
+  return `<h2>Scan sheets</h2>
+  <div class="card"><label class="f" style="margin-top:0">Exam</label><select data-sc="examId">${ex.map(x=>`<option value="${x.id}" ${x.id===e.id?'selected':''}>${esc(x.title)} · ${x.n} items</option>`).join('')}</select>
+  <div class="chips" style="margin-top:8px">${modes.map(m=>`<button class="pill ${SCAN.mode===m[0]?'on':''}" data-a="scMode" data-v="${m[0]}">${m[1]}</button>`).join('')}</div>
+  ${SCAN.mode==='student'?`<div class="grid2"><div><label class="f">Section</label><select data-sc="secId"><option value="">No section list (type names)</option>${secList.map(x=>`<option value="${esc(x.id)}" ${x.id===SCAN.secId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div><div><label class="f">Date</label><input type="date" data-sc="date" value="${esc(SCAN.date)}"></div></div>
+  ${sec?`<div class="small muted" style="margin-top:6px">${secStu(sec).length} students · ${done} scanned so far. Scanora reads the shaded Student No. and fills in the name.</div>`
+   :`<div class="grid2" style="margin-top:6px"><div><label class="f">Grade</label><input data-sc="grade" value="${esc(SCAN.grade)}"></div><div><label class="f">Section</label><input data-sc="section" value="${esc(SCAN.section)}" placeholder="e.g. Rizal"></div></div>
+   <div class="small muted" style="margin-top:6px">${secList.length?'Pick a section above so student numbers can fill in the names.':'Import your sections from the Classroom Hub to use student numbers.'} <a href="#" data-a="sections" style="color:var(--pri);font-weight:800">Sections &amp; student numbers</a></div>`}`:''}
+  ${SCAN.mode==='key'?`<div class="banner in" style="margin-top:8px">Scan <b>one filled-in sheet</b> that has the correct answers. Scanora will copy them into this exam's answer key.</div>`:''}
+  ${SCAN.mode==='practice'?`<div class="banner in" style="margin-top:8px">Practice mode shows what Scanora reads from a sheet but <b>saves nothing</b>. Good for testing with sheets you already checked by hand.</div>`:''}
+  ${SCAN.mode==='student'&&kd<e.n?`<div class="banner wn" style="margin-top:8px">The answer key is incomplete (${kd}/${e.n}). You can still scan; scores appear once the key is finished.</div>`:''}
+  </div>
+  <div class="card"><div class="grid2"><button class="btn pri big" data-a="liveScan">📷 Live scan</button><button class="btn big" data-a="takePhoto">📸 Take a photo</button></div>
+  <button class="btn ghost" style="width:100%;margin-top:8px;justify-content:center" data-a="choosePhotos">🖼️ Choose photos from gallery (many at once)</button></div>
+  <div class="card"><div class="b" style="margin-bottom:4px">Tips for accurate scans</div><ul class="help" style="margin:0;padding-left:18px"><li>Lay the sheet flat. All <b>4 black squares</b> must be in view.</li><li>Good light, no shadow across the page. Hold the phone upright and steady.</li><li>If Scanora flags something, it is asking you to check. It never guesses silently.</li><li>Tablet camera in landscape is lower resolution; “Take a photo” gives sharper results.</li></ul></div>`;
+}
+function bindScanView(){}
+
+/* ---------- image → canvas → scan ---------- */
+function imgToCanvas(src,w,h){const k=Math.min(1,2400/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);return c;}
+function fileToCanvas(f){return new Promise((res,rej)=>{const url=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{res(imgToCanvas(im,im.naturalWidth,im.naturalHeight));}catch(e){rej(e);}URL.revokeObjectURL(url);};im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('img'));};im.src=url;});}
+function runScan(cv,e){const x=cv.getContext('2d',{willReadFrequently:true}),id=x.getImageData(0,0,cv.width,cv.height);return SC.scan(id.data,cv.width,cv.height,{n:e.n,ch:e.ch,sens:S.set.sens});}
+function errText(out,e){
+  const t={nomarkers:'Could not find all 4 black corner squares. Make sure the whole sheet is in view, flat, and that no finger covers a square.',
+   lowres:'The sheet is too small in the picture. Move closer, or use “Take a photo”.',
+   contrast:'The picture is too dark or washed out. Add light and avoid glare.',
+   nocode:'Could not read the sheet code at the top. Check the lighting and that the top of the sheet is sharp and visible.',
+   blur:'The picture is blurry. Hold steady, let the camera focus, and try again.',
+   align:'The sheet looks blurry, bent or too close, so bubbles cannot be located reliably. Flatten the paper, step back a little and retake.',
+   badimage:'That picture could not be opened.'};
+  if(out.error==='format')return `This is a ${out.found.n}-item sheet (${LETS(out.found.ch).join('')}), but the selected exam uses ${e.n} items (${LETS(e.ch).join('')}). Pick the matching exam, or print the correct sheet.`;
+  return t[out.error]||'Could not read this sheet.';
+}
+async function handleFiles(files){
+  const e=examOf(SCAN.examId);if(!e||!files.length)return;files=[...files];
+  for(let i=0;i<files.length;i++){
+    const done=spinner(`Reading sheet ${i+1} of ${files.length}…`);await tick();
+    let out;try{out=runScan(await fileToCanvas(files[i]),e);}catch(err){out={error:'badimage'};}
+    done();
+    if(out.error){beep('err');const more=i<files.length-1;const a=await ask('Could not read sheet',esc(errText(out,e)),more?[{t:'Stop',v:'stop'},{t:'Skip this one',v:'skip',cls:'pri'}]:[{t:'OK',v:'skip',cls:'pri'}]);if(a==='stop')break;continue;}
+    const r=await reviewSheet(e,out);if(r==='stop')break;
+  }
+  render();
+}
+
+/* ---------- live camera ---------- */
+let CAM=null;
+async function openCamera(){
+  const e=examOf(SCAN.examId);if(!e)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Live camera is not available here. Use “Take a photo”.',3200);return;}
+  const el=document.createElement('div');el.id='cam';
+  el.innerHTML=`<video playsinline muted autoplay></video><canvas class="ov"></canvas><div class="hud"><button class="rb" data-a="camClose">✕ Close</button><div class="grow small b" id="camInfo"></div><button class="rb" id="camTorch" data-a="camTorch" hidden>🔦</button></div><div class="msg" id="camMsg">Starting camera…</div><div class="ctl"><button class="rb ${S.set.auto?'on':''}" data-a="camAuto" id="camAutoB">Auto</button><button class="shut" data-a="camShot" aria-label="Scan"></button><div style="width:66px"></div></div>`;
+  document.body.appendChild(el);
+  CAM={el,video:$('video',el),ov:$('canvas.ov',el),stream:null,timer:null,stable:0,last:null,busy:false,rearm:false,gone:0,auto:S.set.auto,e,small:document.createElement('canvas'),msgUntil:0,torch:false,lock:null,miss:0};
+  try{CAM.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}},audio:false});}
+  catch(err){closeCamera();toast('Camera is blocked. Allow camera access in your browser, or use “Take a photo”.',4000);return;}
+  CAM.video.srcObject=CAM.stream;try{await CAM.video.play();}catch(e2){}
+  try{const tr=CAM.stream.getVideoTracks()[0],cap=tr.getCapabilities&&tr.getCapabilities();if(cap&&cap.torch)$('#camTorch').hidden=false;}catch(e3){}
+  try{if(navigator.wakeLock)CAM.lock=await navigator.wakeLock.request('screen');}catch(e4){}
+  camInfo();CAM.timer=setInterval(camLoop,300);
+}
+function camInfo(){if(!CAM)return;const n=resultsOf(CAM.e.id).length;$('#camInfo').textContent=`${CAM.e.title} · ${SCAN.mode==='student'?n+' saved':SCAN.mode==='key'?'scan the key sheet':'practice'}`;}
+function closeCamera(){if(!CAM)return;clearInterval(CAM.timer);try{CAM.stream&&CAM.stream.getTracks().forEach(t=>t.stop());}catch(e){}try{CAM.lock&&CAM.lock.release();}catch(e){}CAM.el.remove();CAM=null;render();}
+function camMsg(t){const m=$('#camMsg');if(m)m.textContent=t;}
+function camLoop(){
+  if(!CAM||CAM.busy||!CAM.video.videoWidth)return;
+  const v=CAM.video,vw=v.videoWidth,vh=v.videoHeight,k=640/Math.max(vw,vh),w=Math.round(vw*k),h=Math.round(vh*k),c=CAM.small;
+  c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(v,0,0,w,h);
+  const det=SC.detect(SC.gray(x.getImageData(0,0,w,h).data,w,h),w,h);
+  const ov=CAM.ov,cw=CAM.el.clientWidth,ch=CAM.el.clientHeight,dpr=window.devicePixelRatio||1;ov.width=cw*dpr;ov.height=ch*dpr;
+  const g=ov.getContext('2d');g.scale(dpr,dpr);const sc=Math.min(cw/vw,ch/vh),ox=(cw-vw*sc)/2,oy=(ch-vh*sc)/2,P=p=>[ox+p.x/k*sc,oy+p.y/k*sc];
+  if(CAM.rearm){ if(det){CAM.gone=0;camMsg('Scanned ✓  Swap in the next sheet');return;} if(++CAM.gone<2){return;} CAM.rearm=false; }
+  if(Date.now()<CAM.msgUntil&&!det){return;}
+  if(!det){CAM.stable=0;CAM.last=null;camMsg('Point at the answer sheet. All 4 black squares must be visible.');return;}
+  const pxmm=det.pxmm/k, good=pxmm>=3.4;
+  g.lineWidth=4;g.strokeStyle=good?'#3ddc84':'#ffb020';g.fillStyle=good?'rgba(61,220,132,.12)':'rgba(255,176,32,.12)';g.beginPath();
+  [det.tl,det.tr,det.br,det.bl].forEach((p,i)=>{const q=P(p);i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);});g.closePath();g.fill();g.stroke();
+  const cx=(det.tl.x+det.br.x)/2,cy=(det.tl.y+det.br.y)/2,mv=CAM.last?Math.hypot(cx-CAM.last[0],cy-CAM.last[1]):99;CAM.last=[cx,cy];
+  if(!good){CAM.stable=0;camMsg('Move a little closer');return;}
+  if(mv<0.02*Math.max(w,h))CAM.stable++;else CAM.stable=0;
+  if(CAM.auto){camMsg(CAM.stable>=3?'Scanning…':'Hold steady…');if(CAM.stable>=3){CAM.stable=0;camCapture();}}else camMsg('Sheet found. Tap the white button to scan.');
+}
+async function camCapture(){
+  if(!CAM||CAM.busy)return;CAM.busy=true;const e=CAM.e,v=CAM.video;
+  const cv=imgToCanvas(v,v.videoWidth,v.videoHeight);camMsg('Reading…');await tick();
+  const out=runScan(cv,e);
+  if(!CAM)return;
+  if(out.error){beep('err');CAM.busy=false;CAM.stable=0;CAM.msgUntil=Date.now()+3500;camMsg('⚠️ '+errText(out,e));return;}
+  const flagged=out.items.some(i=>i.status==='unclear'||i.status==='multi');beep(flagged||out.warn.length?'warn':'ok');
+  const r=await reviewSheet(e,out);
+  if(!CAM)return;CAM.busy=false;CAM.rearm=true;CAM.gone=0;CAM.stable=0;camInfo();
+  if(r==='stop'){closeCamera();}
+}
+
+/* ---------- review of a scanned sheet ---------- */
+let RV=null;
+const hdrBlobCanvas=(canon)=>{const S6=canon.scale,H=SC.HEAD,x0=Math.round(H.x*S6),y0=Math.round(H.y*S6),w=Math.round(H.w*S6),h=Math.round(H.h*S6),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),id=x.createImageData(w,h);for(let j=0;j<h;j++)for(let i=0;i<w;i++){const v=canon.data[(y0+j)*canon.w+x0+i],o=(j*w+i)*4;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255;}x.putImageData(id,0,0);return c;};
+function drawRow(cv,i){
+  const R=RV,e=R.exam,L=layoutOf(e),it=L.items[i],canon=R.res.canon,S6=canon.scale;
+  const x0=it.cx[0]-(it.cx[0]-it.numX)-3,x1=it.cx[it.cx.length-1]+L.a+1.5,y0=it.y-3.3,y1=it.y+3.3,w=Math.round((x1-x0)*S6),h0=Math.round((y1-y0)*S6),band=16,h=h0+band*2;
+  cv.width=w;cv.height=h;const x=cv.getContext('2d'),id=x.createImageData(w,h0),X0=Math.round(x0*S6),Y0=Math.round(y0*S6);
+  for(let j=0;j<h0;j++)for(let k=0;k<w;k++){const gx=X0+k,gy=Y0+j,v=(gx<0||gy<0||gx>=canon.w||gy>=canon.h)?255:canon.data[gy*canon.w+gx],o=(j*w+k)*4;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255;}
+  x.fillStyle='#fff';x.fillRect(0,0,w,h);x.putImageData(id,0,band);x.font='bold 12px sans-serif';x.textAlign='center';
+  const f=R.res.items[i].f,showRing=R.rs[i]||R.st[i]==='ok';
+  it.cx.forEach((cx,k)=>{const px=(cx-x0)*S6;x.fillStyle='#333';x.fillText(SC.LET[k],px,12);x.fillStyle=f[k]>=SC.SENS[S.set.sens].mark?'#c0392b':'#667';x.fillText(Math.round(f[k]*100)+'%',px,h-4);
+    if(showRing&&R.ans[i]===SC.LET[k]){x.strokeStyle='#1f9d55';x.lineWidth=3;x.beginPath();x.ellipse(px,(it.y-y0)*S6+band,L.a*S6+3,L.b*S6+3,0,0,7);x.stroke();}});
+  x.fillStyle='#333';x.textAlign='right';x.font='bold 13px sans-serif';x.fillText(String(i+1),(it.numX-x0+1)*S6,(it.y-y0)*S6+band+5);
+}
+function itemCard(i){
+  const R=RV,st=R.st[i],rs=R.rs[i],e=R.exam,cls=rs?'rs':st==='multi'?'mu':st==='ok'?'':'fl';
+  const why=st==='multi'?'More than one mark':st==='blank'?'Looks blank':R.res.items[i].why==='align'?'Could not align this row':'Unclear or faint mark';
+  const cur=R.ans[i];
+  return `<div class="item ${cls}" data-i="${i}"><div class="row sp"><b>Item ${i+1}</b><span class="pill ${rs?'ok':st==='multi'?'er':st==='ok'?'ok':'wn'}" style="cursor:default;padding:2px 9px;font-size:11.5px">${rs?'✓ You set: '+(cur===''?'blank':cur==='*'?'wrong':cur):why}</span></div>
+  <canvas data-row="${i}"></canvas>
+  <div class="chips" style="margin-top:6px">${LETS(e.ch).map(L=>`<button class="pill ${rs&&cur===L?'on':''}" data-a="rvSet" data-i="${i}" data-l="${L}">${L}</button>`).join('')}<button class="pill ${rs&&cur===''?'on':''}" data-a="rvSet" data-i="${i}" data-l="">Blank</button>${RV.mode==='student'?`<button class="pill ${rs&&cur==='*'?'on':''}" data-a="rvSet" data-i="${i}" data-l="*">✕ Wrong</button>`:''}</div></div>`;
+}
+function rvCounts(){
+  const R=RV,n=R.exam.n;let ok=0,bl=0,fl=0,rsv=0;
+  for(let i=0;i<n;i++){if(R.rs[i])rsv++;else if(R.st[i]==='ok')ok++;else if(R.st[i]==='blank')bl++;else fl++;}
+  const keyBl=R.mode==='key'?bl:0, need=fl+keyBl, blanks=R.mode==='key'?0:bl;
+  return {ok,bl,fl,rsv,need,blanks};
+}
+function rvDyn(){
+  const R=RV,c=rvCounts(),e=R.exam;let h='';const dd=$('#rvdyn details');if(dd)R.open=dd.open;
+  h+=`<div class="chips" style="margin:6px 0 10px"><span class="pill ok">✅ ${c.ok+c.rsv} read</span><span class="pill bl">⚪ ${c.bl} blank</span><span class="pill ${c.fl?'wn':'ok'}">⚠️ ${c.fl} need your check</span></div>`;
+  for(const w of R.res.warn){
+    if(w.type==='allblank')h+=`<div class="banner er">⚠️ No answers were detected on this sheet. Is it really blank, or was it not scanned properly? Consider rescanning.</div>`;
+    if(w.type==='blankrun')h+=`<div class="banner wn">⚠️ Items ${w.from}–${w.to} are all blank (${w.to-w.from+1} in a row). Check the sheet: did the student skip this section, or was it missed?</div>`;
+    if(w.type==='manyunclear')h+=`<div class="banner wn">⚠️ Many marks look unclear (${w.count}). Light pencil, partial shading or poor lighting can cause this. Consider rescanning in better light.</div>`;
+  }
+  if(R.res.pxmm<4)h+=`<div class="banner wn">Picture resolution is on the low side. If several items look wrong, rescan closer or use “Take a photo”.</div>`;
+  const flagged=[];for(let i=0;i<e.n;i++){if(R.st[i]==='unclear'||R.st[i]==='multi')flagged.push(i);}
+  if(flagged.length){h+=`<h3>Please check these</h3>`+flagged.map(itemCard).join('');}
+  const bl=[];for(let i=0;i<e.n;i++){if(R.st[i]==='blank'&&!R.rs[i])bl.push(i+1);}
+  if(bl.length&&R.mode!=='key'){h+=`<div class="banner ${R.blankAck?'ok':'wn'}"><b>${bl.length} blank item${bl.length>1?'s':''}:</b> ${bl.join(', ')}<div style="margin-top:6px">${R.blankAck?'✓ Confirmed blank':`<button class="btn sm pri" data-a="rvBlankOk">Yes, these are really blank</button>`}<span class="small muted" style="margin-left:6px">Tap an item below to change it.</span></div></div>`;}
+  if(bl.length&&R.mode==='key')h+=`<div class="banner er">An answer key can't have blanks. Set items: ${bl.join(', ')}</div>`;
+  h+=`<details ${R.open?'open':''} style="margin-top:8px"><summary class="b" style="cursor:pointer">All ${e.n} answers (tap one to change it)</summary><div class="agrid" style="margin-top:8px">${Array.from({length:e.n},(_,i)=>{const st=R.rs[i]?'rs':R.st[i]==='ok'?'ok':R.st[i]==='blank'?'bl':R.st[i]==='multi'?'er':'wn';const a=R.ans[i];const shown=R.st[i]==='blank'&&!R.rs[i]?'–':a===''?'–':a==='*'?'✕':a;return `<button class="${st}" data-a="rvEdit" data-i="${i}"><small>${i+1}</small>${shown}</button>`;}).join('')}</div></details>
+  <div class="row" style="margin-top:10px"><button class="btn sm" data-a="rvView">🔍 View full sheet</button></div>`;
+  $('#rvdyn').innerHTML=h;$$('#rvdyn canvas[data-row]').forEach(cv=>drawRow(cv,+cv.dataset.row));
+  rvBtn();
+}
+function whoPaint(){
+  const R=RV,box=$('#rvWho');if(!box||!R.sec)return;
+  const sec=R.sec,id=R.res.id,e=R.exam,f=(R.find||'').trim().toLowerCase();
+  const prior=n=>resultsOf(e.id).find(r=>r.sid===sec.id&&r.no===n);
+  let h='';
+  if(R.stu){
+    const p=prior(R.stu.no);
+    h+=`<div class="banner ok" style="margin:8px 0 4px"><div class="b" style="font-size:15px">✓ No. ${pad2(R.stu.no)} · ${esc(R.stu.name)}</div><div class="small">${R.how==='code'?'Matched from the shaded Student No. Compare with the handwriting above.':'You picked this student.'}</div></div>
+    ${p?`<div class="banner wn">⚠️ This student already has a sheet for this exam (${scoreOf(e,p.ans)}/${e.n}). Saving will ask whether to replace it.</div>`:''}
+    <button class="btn sm" data-a="rvChange">Not this student? Change</button>`;
+  }else{
+    let msg;
+    if(!id||!R.hasId)msg='This sheet has no Student No. grid (older sheet). Pick the student below.';
+    else if(id.state==='none')msg='<b>No Student No. was shaded.</b> Look at the handwriting above and pick the student below.';
+    else if(R.unknownNo)msg=`<b>Student No. ${pad2(R.unknownNo)} is not in ${esc(sec.name)}.</b> Check the sheet and pick the right student.`;
+    else msg=`<b>The Student No. is unclear</b> (${id.rows.map(r=>r.status==='ok'?r.val:r.status==='blank'?'blank':r.status==='multi'?'two shaded':'faint').join(' / ')}). Pick the student below.`;
+    h+=`<div class="banner wn" style="margin:8px 0 6px">⚠️ ${msg}</div>`;
+  }
+  if(!R.stu||R.pick){
+    const list=secStu(sec).filter(x=>!f||x.name.toLowerCase().includes(f)||pad2(x.no).includes(f));
+    h+=`<input data-rv="find" placeholder="Search name or number" value="${esc(R.find||'')}" style="margin:6px 0">
+    <div class="chips" style="max-height:150px;overflow:auto">${list.map(x=>{const d=!!prior(x.no);return `<button class="pill ${R.stu&&R.stu.no===x.no?'on':''}" style="font-size:12px;padding:3px 9px;${d?'opacity:.55':''}" data-a="rvStu" data-no="${x.no}">${pad2(x.no)} ${esc(x.name)}${d?' ✓':''}</button>`;}).join('')||'<span class="small muted">No match</span>'}</div>
+    <div class="small muted" style="margin-top:4px">✓ = already scanned for this exam</div>`;
+  }
+  box.innerHTML=h;
+  const inp=box.querySelector('[data-rv=find]');if(inp&&R.focusFind){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+}
+function nameChips(){
+  const R=RV;if(R.mode!=='student'||R.sec)return '';
+  const all=rosterNames(R.grade,R.section);if(!all.length)return '';
+  const doneN=new Set(resultsOf(R.exam.id).filter(r=>norm(r.section)===norm(R.section)&&norm(r.grade)===norm(R.grade)).map(r=>norm(r.name)));
+  const left=all.filter(n=>!doneN.has(norm(n)));
+  return `<div class="small muted" style="margin:4px 0">Not scanned yet (${left.length}) — tap a name:</div><div class="chips" style="max-height:110px;overflow:auto">${left.map(n=>`<button class="pill" style="font-size:12px;padding:3px 9px" data-a="rvName" data-n="${esc(n)}">${esc(n)}</button>`).join('')||'<span class="small muted">Everyone on the list has been scanned 🎉</span>'}</div>`;
+}
+function reviewSheet(exam,res){
+  return new Promise(resolve=>{
+    const R=RV={exam,res,mode:SCAN.mode,ans:res.items.map(x=>x.ans),st:res.items.map(x=>x.status),rs:res.items.map(()=>false),blankAck:false,name:'',sec:SCAN.mode==='student'?secOf(SCAN.secId):null,stu:null,how:'',unknownNo:0,hasId:!!res.hasId,subject:exam.subject,grade:SCAN.secId?'':SCAN.grade,section:SCAN.secId?'':SCAN.section,date:SCAN.date,resolve,hdr:hdrBlobCanvas(res.canon)};
+    if(R.sec&&res.id&&res.id.state==='ok'){const x=stuByNo(R.sec,res.id.num);if(x){R.stu=x;R.how='code';R.name=x.name;}else R.unknownNo=res.id.num;}
+    const m=R.m=openModal('');m.style.zIndex=25;
+    const title=R.mode==='key'?'Scan answer key':R.mode==='practice'?'Practice scan':'Review sheet';
+    const hdrCard=`<div class="small muted b">Handwriting on the sheet</div><canvas id="rvHdr" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fff"></canvas>`;
+    const fields=R.mode!=='student'?'':R.sec?`
+      <div class="card">${hdrCard}<div id="rvWho"></div>
+      <div class="grid2"><div><label class="f">Subject</label><input data-rv="subject" value="${esc(R.subject)}"></div><div><label class="f">Date</label><input type="date" data-rv="date" value="${esc(R.date)}"></div></div></div>`:`
+      <div class="card">${hdrCard}
+      <label class="f">Student name <span style="font-weight:600">(optional: the picture above is saved either way)</span></label><input id="rvName" list="nameList" autocomplete="off" placeholder="Leave empty to keep the name as a picture only"><datalist id="nameList">${rosterNames(R.grade,R.section).map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+      <div id="rvChips">${nameChips()}</div>
+      <div class="grid2"><div><label class="f">Subject</label><input data-rv="subject" value="${esc(R.subject)}"></div><div><label class="f">Date</label><input type="date" data-rv="date" value="${esc(R.date)}"></div></div>
+      <div class="grid2"><div><label class="f">Grade</label><input data-rv="grade" value="${esc(R.grade)}"></div><div><label class="f">Section</label><input data-rv="section" value="${esc(R.section)}"></div></div></div>`;
+    m.querySelector('.in').innerHTML=`<div class="mbar"><button class="btn sm" data-a="rvSkip">${R.mode==='student'?'Skip sheet':'Close'}</button><div class="t">${title}</div></div>${fields}<div id="rvdyn"></div>
+      <div class="foot"><button class="btn" data-a="rvRescan">↺ Rescan</button><button class="btn pri" id="rvSave" data-a="rvSave" disabled>…</button></div>`;
+    if(R.mode==='student'){const c=$('#rvHdr',m);c.width=R.hdr.width;c.height=R.hdr.height;c.getContext('2d').drawImage(R.hdr,0,0);}
+    whoPaint();rvDyn();
+  });
+}
+function rvFinish(v){const R=RV;if(!R)return;R.m.remove();RV=null;R.resolve(v);}
+async function canvasBlob(cv,q){return new Promise(r=>cv.toBlob(b=>r(b),'image/jpeg',q||.6));}
+async function rvSave(){
+  const R=RV,e=R.exam,c=rvCounts();
+  if(R.saving)return;R.saving=true;const sb=$('#rvSave');if(sb)sb.disabled=true;
+  if(R.mode==='practice'){rvFinish('skip');return;}
+  const final=R.ans.map((a,i)=>R.rs[i]?a:(R.st[i]==='blank'?'':a));
+  if(R.mode==='key'){
+    if(final.some(a=>a===''||a==='*')){toast('Every item needs a letter in an answer key');R.saving=false;rvBtn();return;}
+    e.key=final.slice();stamp(e);save();toast('Answer key saved ✓');beep('ok');rvFinish('saved');return;
+  }
+  if(R.sec&&!R.stu){const a=await ask('No student selected','This sheet is not matched to a student. You can still save it: the handwriting picture is kept and you can match it later.',[{t:'Go back',v:0},{t:'Save with picture only',v:1,cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}}
+  const nm=R.sec?(R.stu?R.stu.name:''):R.name.trim();
+  const dup=R.sec?(R.stu?resultsOf(e.id).find(r=>r.sid===R.sec.id&&r.no===R.stu.no):null):!nm?null:resultsOf(e.id).find(r=>norm(r.name)===norm(nm)&&norm(r.section)===norm(R.section)&&norm(r.grade)===norm(R.grade));
+  let replaceId=null;
+  if(dup){const a=await ask('Already scanned',`<b>${esc(nm)}</b> already has a sheet for this exam (${scoreOf(e,dup.ans)}/${e.n}). What would you like to do?`,[{t:'Cancel',v:0},{t:'Keep both',v:'both'},{t:'Replace old',v:'rep',cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}if(a==='rep')replaceId=dup.id;}
+  if(replaceId){const o=S.results.find(x=>x.id===replaceId);if(o){o.del=true;stamp(o);IDB.del('img_'+o.id);}}
+  const r={id:uid(),examId:e.id,name:nm,subject:R.subject.trim(),grade:R.sec?'':R.grade.trim(),section:R.sec?R.sec.name:R.section.trim(),sid:R.sec?R.sec.id:'',no:R.stu?R.stu.no:0,date:R.date,ans:final,fix:final.map((a,i)=>R.rs[i]?i:-1).filter(i=>i>=0),ts:Date.now()};stamp(r);
+  S.results.push(r);S.set.lastExam=e.id;save();
+  storePictures(r.id,R.res.canon,R.hdr,!S.set.keepImg);
+  toast(`Saved ✓  ${nm||'Sheet'}: ${scoreOf(e,final)}/${e.n}`,2400);beep('ok');
+  SCAN.count=(SCAN.count||0)+1;if(typeof syncSoon==='function')syncSoon();
+  rvFinish('saved');
+}
+async function storePictures(id,cn,hdr,hdrOnly){
+  try{if(hdrOnly){await IDB.put('img_'+id,{hdr:await canvasBlob(hdr,.6)});return;}
+  const full=document.createElement('canvas');full.width=cn.w;full.height=cn.h;const x=full.getContext('2d'),im=x.createImageData(cn.w,cn.h);for(let i=0,j=0;i<cn.data.length;i++,j+=4){im.data[j]=im.data[j+1]=im.data[j+2]=cn.data[i];im.data[j+3]=255;}x.putImageData(im,0,0);
+    const sm=document.createElement('canvas');sm.width=cn.w/2;sm.height=cn.h/2;const sx=sm.getContext('2d');sx.imageSmoothingQuality='high';sx.drawImage(full,0,0,sm.width,sm.height);
+    await IDB.put('img_'+id,{sheet:await canvasBlob(sm,.62),hdr:await canvasBlob(hdr,.6)});}catch(err){}
+}
+function rvEdit(i){
+  const R=RV,m=openModal('',true);m.style.zIndex=30;
+  const paint=()=>{m.querySelector('.in').innerHTML=`<div class="row sp"><b>Edit item ${i+1}</b><button class="btn pri sm" data-a="close">Done</button></div>${itemCard(i)}`;drawRow($('canvas[data-row]',m),i);};
+  paint();m._repaint=paint;R.edit=m;
+}
+function rvViewFull(){
+  const R=RV,cn=R.res.canon,L=layoutOf(R.exam),sc=3,w=cn.w/2,h=cn.h/2;
+  const m=openModal(`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">Full sheet</div><button class="btn sm" data-z="1">＋</button><button class="btn sm" data-z="-1">－</button></div><div class="small muted" style="margin-bottom:6px">Green ring = answer read · orange = needs check · grey = blank</div><div class="zoomwrap"><canvas id="fv"></canvas></div>`);m.style.zIndex=35;
+  const cv=$('#fv',m),full=document.createElement('canvas');full.width=cn.w;full.height=cn.h;
+  const x=full.getContext('2d'),id=x.createImageData(cn.w,cn.h);for(let i=0,j=0;i<cn.data.length;i++,j+=4){id.data[j]=id.data[j+1]=id.data[j+2]=cn.data[i];id.data[j+3]=255;}x.putImageData(id,0,0);
+  cv.width=cn.w;cv.height=cn.h;const g=cv.getContext('2d');g.drawImage(full,0,0);g.lineWidth=5;
+  for(const it of L.items){const i=it.i,st=R.rs[i]?'rs':R.st[i],a=R.ans[i];
+    if(st==='blank'){g.strokeStyle='rgba(120,130,140,.9)';g.strokeRect((it.cx[0]-4)*6,(it.y-3.2)*6,(it.cx[it.cx.length-1]-it.cx[0]+8)*6,6.4*6);}
+    else{const k=SC.LET.indexOf(a);g.strokeStyle=(st==='ok'||st==='rs')?'#1f9d55':'#ff9800';if(k>=0){g.beginPath();g.ellipse(it.cx[k]*6,it.y*6,(L.a+.5)*6,(L.b+.5)*6,0,0,7);g.stroke();}else{g.strokeRect((it.cx[0]-4)*6,(it.y-3.2)*6,(it.cx[it.cx.length-1]-it.cx[0]+8)*6,6.4*6);}}}
+  let z=.6;const fit=()=>{cv.style.width=(100*z)+'%';};fit();
+  m.addEventListener('click',ev=>{const b=ev.target.closest('[data-z]');if(b){z=Math.max(.5,Math.min(3,z+(+b.dataset.z)*.4));fit();}});
+}
+
+/* ===== SCANORA APP — part 3: results, class lists, settings, sync, events, init ===== */
+
+/* ---------- RESULTS ---------- */
+const secKey=r=>norm(r.grade)+'|'+norm(r.section);
+const secLabel=r=>(r.grade?'Grade '+r.grade:'')+(r.grade&&r.section?' – ':'')+(r.section||'')||'No section';
+function viewResults(){
+  const ex=live(S.exams);
+  if(!ex.length)return `<h2>Results</h2><div class="card c"><div style="font-size:34px">📊</div><div class="b">No results yet</div><div class="small muted">Create an exam and scan some sheets.</div></div>`;
+  if(!examOf(UI.resExam))UI.resExam=examOf(S.set.lastExam)?S.set.lastExam:ex[0].id;
+  const e=examOf(UI.resExam), all=resultsOf(e.id), secs=new Map();all.forEach(r=>secs.set(secKey(r),secLabel(r)));
+  if(UI.resSec&&!secs.has(UI.resSec))UI.resSec='';
+  let rs=all.filter(r=>!UI.resSec||secKey(r)===UI.resSec);
+  rs.sort((a,b)=>UI.sort==='score'?scoreOf(e,b.ans)-scoreOf(e,a.ans):(a.no&&b.no&&a.sid===b.sid?a.no-b.no:norm(a.name).localeCompare(norm(b.name)))||(a.ts-b.ts));
+  const sc=rs.map(r=>scoreOf(e,r.ans)), keyOk=e.key.filter(Boolean).length===e.n;
+  const mean=sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:0, mps=mean/e.n*100;
+  let missing='';
+  if(UI.resSec&&rs.length){const r0=rs[0],sc0=secOf(r0.sid),names=sc0?secStu(sc0).map(x=>pad2(x.no)+' '+x.name):rosterNames(r0.grade,r0.section),done=sc0?new Set(rs.map(r=>r.no)):new Set(rs.map(r=>norm(r.name))),left=sc0?secStu(sc0).filter(x=>!done.has(x.no)).map(x=>pad2(x.no)+' '+x.name):names.filter(n=>!done.has(norm(n)));
+    if(names.length)missing=`<div class="card"><div class="b">Not yet scanned (${left.length} of ${names.length})</div><div class="small muted">${left.length?left.map(esc).join(' · '):'Everyone has a score 🎉'}</div></div>`;}
+  return `<div class="row sp"><h2>Results</h2><div class="row"><button class="btn sm" data-a="exportScores">⬇️ Scores CSV</button><button class="btn sm" data-a="exportAnswers">⬇️ Answers CSV</button></div></div>
+  <div class="card"><select data-res="exam">${ex.map(x=>`<option value="${x.id}" ${x.id===e.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select>
+  <div class="grid2" style="margin-top:6px"><select data-res="sec"><option value="">All sections</option>${[...secs].map(([k,l])=>`<option value="${esc(k)}" ${k===UI.resSec?'selected':''}>${esc(l)}</option>`).join('')}</select><select data-res="sort"><option value="name" ${UI.sort!=='score'?'selected':''}>Sort by name</option><option value="score" ${UI.sort==='score'?'selected':''}>Sort by score</option></select></div></div>
+  ${!keyOk?`<div class="banner wn">Answer key incomplete (${e.key.filter(Boolean).length}/${e.n}). Scores will be accurate once the key is finished.</div>`:''}
+  ${rs.length?`<div class="row" style="margin-bottom:10px"><div class="stat"><b>${rs.length}</b><span>scanned</span></div><div class="stat"><b>${mean.toFixed(1)}</b><span>mean score</span></div><div class="stat"><b>${mps.toFixed(1)}%</b><span>MPS</span></div><div class="stat"><b>${Math.max(...sc)}</b><span>highest</span></div><div class="stat"><b>${Math.min(...sc)}</b><span>lowest</span></div></div>`:''}
+  ${rs.map(r=>{const s=scoreOf(e,r.ans);return `<div class="card" style="cursor:pointer" data-a="openResult" data-id="${r.id}"><div class="row sp"><div class="grow"><div class="b">${r.no?pad2(r.no)+' · ':''}${esc(r.name)||'Name on sheet'}</div>${r.name?'':`<div class="nmimg"><img data-nm="${r.id}" alt="name"></div>`}<div class="small muted">${esc(secLabel(r))} · ${esc(prettyDate(r.date))}${r.fix&&r.fix.length?` · ✎ ${r.fix.length} checked`:''}</div></div><div style="text-align:right"><div style="font:600 18px var(--fh)">${s}/${e.n}</div><div class="small muted">${Math.round(s/e.n*100)}%</div></div></div></div>`;}).join('')||`<div class="card c muted">No sheets scanned for this exam${UI.resSec?' and section':''} yet.</div>`}
+  ${missing}
+  ${rs.length?`<div class="row sp"><h2>Item analysis</h2><button class="btn sm" data-a="toggleAna">${UI.analysis?'Hide':'Show'}</button></div>${UI.analysis?analysisHtml(e,rs):'<div class="small muted">See which items were hard, easy, or had a popular wrong answer.</div>'}`:''}`;
+}
+function analysisHtml(e,rs){
+  const L=LETS(e.ch);let rows='';
+  for(let i=0;i<e.n;i++){
+    const cnt={},tot=rs.length;let ok=0;L.forEach(l=>cnt[l]=0);let blank=0;
+    rs.forEach(r=>{const a=r.ans[i];if(a&&cnt[a]!=null)cnt[a]++;else blank++;if(a&&a!=='*'&&(e.key[i]||'').includes(a))ok++;});
+    const p=Math.round(ok/tot*100),k=e.key[i]||'?';
+    rows+=`<tr><td><b>${i+1}</b></td><td>${esc(k)}</td><td style="min-width:90px"><div class="bar"><i style="width:${p}%;${p<40?'background:var(--bad)':''}"></i></div></td><td>${p}%</td>${L.map(l=>`<td style="${(e.key[i]||'').includes(l)?'font-weight:800;color:var(--good)':''}">${cnt[l]}</td>`).join('')}<td class="muted">${blank}</td></tr>`;
+  }
+  return `<div class="card" style="overflow:auto"><table class="tbl"><tr><th>#</th><th>Key</th><th>Correct</th><th></th>${L.map(l=>`<th>${l}</th>`).join('')}<th>–</th></tr>${rows}</table></div>`;
+}
+function exportScores(){
+  const e=examOf(UI.resExam);if(!e)return;const rs=resultsOf(e.id).filter(r=>!UI.resSec||secKey(r)===UI.resSec).sort((a,b)=>norm(a.name).localeCompare(norm(b.name)));
+  const lines=[['Student No.','Name','Subject','Grade','Section','Date','Exam','Score','Items','Percent'].join(',')];
+  rs.forEach(r=>{const s=scoreOf(e,r.ans);lines.push([r.no?pad2(r.no):'',r.name,r.subject,r.grade,r.section,r.date,e.title,s,e.n,(s/e.n*100).toFixed(1)].map(csvCell).join(','));});
+  download(`${e.title.replace(/[^\w]+/g,'_')}_scores.csv`,'﻿'+lines.join('\n'),'text/csv');
+}
+function exportAnswers(){
+  const e=examOf(UI.resExam);if(!e)return;const rs=resultsOf(e.id).filter(r=>!UI.resSec||secKey(r)===UI.resSec).sort((a,b)=>norm(a.name).localeCompare(norm(b.name)));
+  const head=['Student No.','Name','Grade','Section','Score'];for(let i=1;i<=e.n;i++)head.push('Q'+i);
+  const lines=[head.join(','),['ANSWER KEY','','','',''].concat(e.key).map(csvCell).join(',')];
+  rs.forEach(r=>lines.push([r.no?pad2(r.no):'',r.name,r.grade,r.section,scoreOf(e,r.ans)].concat(r.ans.map(a=>a==='*'?'X':a)).map(csvCell).join(',')));
+  download(`${e.title.replace(/[^\w]+/g,'_')}_answers.csv`,'﻿'+lines.join('\n'),'text/csv');
+}
+
+/* ---------- single result ---------- */
+function openResult(id){
+  const r=S.results.find(x=>x.id===id&&!x.del),e=r&&examOf(r.examId);if(!r||!e)return;
+  const m=openModal('');
+  const paint=()=>{const s=scoreOf(e,r.ans);
+    m.querySelector('.in').innerHTML=`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">${esc(r.name)||'Name on sheet'}</div><div style="font:600 18px var(--fh)">${s}/${e.n}</div></div>
+    <div class="card"><div class="nmimg"><img data-nm="${r.id}" alt="name on sheet"></div><label class="f">Name</label><input data-rd="name" value="${esc(r.name)}" placeholder="(optional) type the name">
+    <div class="grid2"><div><label class="f">Subject</label><input data-rd="subject" value="${esc(r.subject)}"></div><div><label class="f">Date</label><input type="date" data-rd="date" value="${esc(r.date)}"></div></div>
+    <div class="grid2"><div><label class="f">Grade</label><input data-rd="grade" value="${esc(r.grade)}"></div><div><label class="f">Section</label><input data-rd="section" value="${esc(r.section)}"></div></div></div>
+    <h3>Answers <span class="small muted">(green = correct · tap to change)</span></h3>
+    <div class="agrid">${Array.from({length:e.n},(_,i)=>{const a=r.ans[i],k=e.key[i]||'',ok=a&&a!=='*'&&k.includes(a);return `<button class="${!k?'bl':ok?'ok':a?'er':'bl'}" data-a="rdItem" data-i="${i}"><small>${i+1}${k&&!ok?' · '+esc(k):''}</small>${a==='*'?'✕':a||'–'}</button>`;}).join('')}</div>
+    <div class="row" style="margin-top:14px"><button class="btn" data-a="rdPic">🖼️ View sheet picture</button><button class="btn bad" data-a="rdDel">Delete</button></div>
+    <div id="rdPicBox"></div>`;};
+  m._r=r;m._e=e;m._paint=paint;paint();
+}
+async function rdPic(m){
+  const r=m._r,e=m._e,box=$('#rdPicBox',m),d=await IDB.get('img_'+r.id);
+  if(!d||!d.sheet){box.innerHTML=`<div class="banner in" style="margin-top:8px">No picture was saved for this sheet.</div>`;return;}
+  const url=URL.createObjectURL(d.sheet),im=new Image();
+  im.onload=()=>{const L=layoutOf(e),k=im.width/210,cv=document.createElement('canvas');cv.width=im.width;cv.height=im.height;cv.style.width='100%';cv.style.borderRadius='8px';cv.style.marginTop='10px';const g=cv.getContext('2d');g.drawImage(im,0,0);g.lineWidth=3;
+    for(const it of L.items){const a=r.ans[it.i],kk=e.key[it.i]||'',ok=a&&a!=='*'&&kk.includes(a),ai=SC.LET.indexOf(a);
+      if(ai>=0){g.strokeStyle=ok?'#1f9d55':'#d64545';g.beginPath();g.ellipse(it.cx[ai]*k,it.y*k,(L.a+.4)*k,(L.b+.4)*k,0,0,7);g.stroke();}
+      if(!ok){g.strokeStyle='#2b7de0';g.setLineDash([4,3]);[...kk].forEach(c=>{const ki=SC.LET.indexOf(c);if(ki>=0){g.beginPath();g.ellipse(it.cx[ki]*k,it.y*k,(L.a+.4)*k,(L.b+.4)*k,0,0,7);g.stroke();}});g.setLineDash([]);}}
+    box.innerHTML=`<div class="small muted" style="margin-top:8px">Green = correct · red = student's wrong answer · blue dashed = correct answer</div>`;box.appendChild(cv);URL.revokeObjectURL(url);};
+  im.src=url;
+}
+
+/* ---------- sections: class lists with student numbers ---------- */
+function topPaint(){const o=$$('.modal').slice(-1)[0];if(o&&o._paint)o._paint();}
+function openSections(){
+  const m=openModal('');
+  const paint=()=>{const list=liveSecs();
+    m.querySelector('.in').innerHTML=`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">Sections &amp; student numbers</div></div>
+    <div class="banner in">Every student has a <b>2-digit number (01–99)</b> that they shade on their sheet. Scanora reads it and fills in the name. The handwriting picture is always saved too, in case a number was not shaded.</div>
+    <div class="row" style="margin-bottom:10px"><button class="btn pri" data-a="secHub">📥 Import from Classroom Hub</button><button class="btn" data-a="secFile">📄 From a Hub backup file</button><button class="btn" data-a="secNew">＋ Type names</button></div>
+    ${list.map(s=>`<div class="card"><div class="row sp"><div><div class="b">${esc(s.name)}</div><div class="small muted">${secStu(s).length} students${s.hubId?' · from Classroom Hub':''}</div></div><button class="btn sm" data-a="secOpen" data-id="${esc(s.id)}">Open</button></div></div>`).join('')||'<div class="card c muted">No sections yet. Import your classes from the Classroom Hub.</div>'}`;};
+  m._paint=paint;paint();
+}
+function hubPick(classes,srcLabel){
+  if(!classes||!classes.length){toast('No classes found',3000);return;}
+  const m=openModal('',true);
+  m.querySelector('.in').innerHTML=`<div class="row sp"><b>Import ${esc(srcLabel)}</b><button class="btn sm" data-a="close">✕</button></div>
+  <div class="small muted" style="margin:6px 0">Tick the classes to use as sections. Existing numbers never change; new students get the next free number.</div>
+  ${classes.map((c,i)=>{const have=Object.values(S.secs).find(x=>x.hubId===c.id&&!x.del);return `<label class="chk" style="margin:7px 0"><input type="checkbox" data-hp="${i}" ${c.students.length?'checked':'disabled'}><span><b>${esc(c.name)}</b> <span class="small muted">· ${c.students.length} students${have?' · update':''}</span></span></label>`;}).join('')}
+  <button class="btn pri" style="width:100%;margin-top:10px;justify-content:center" data-a="hubGo">Import</button>`;
+  m._cl=classes;
+}
+function hubGo(el){
+  const m=el.closest('.modal'),sel=$$('[data-hp]:checked',m).map(i=>m._cl[+i.dataset.hp]);if(!sel.length){toast('Tick at least one class');return;}
+  let over=0,added=0;sel.forEach(c=>{const r=applyHub(c);over+=r.over;added+=r.added;});
+  save();m.remove();topPaint();render();
+  toast(over?`Imported. ${over} student(s) did not fit in 1–99 and were skipped.`:`Imported ${sel.length} section${sel.length>1?'s':''} ✓`,3600);
+}
+function secOpen(id){
+  const m=openModal('');
+  const paint=()=>{const s=id?secOf(id):null;
+    if(id&&!s){m.remove();return;}
+    const stu=s?secStu(s):[];
+    m.querySelector('.in').innerHTML=`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">${s?esc(s.name):'New section'}</div>${s?`<button class="btn sm" data-a="secPrint" data-id="${esc(id)}">🖨️ Print list</button>`:''}</div>
+    ${s&&s.hubId?`<div class="row" style="margin-bottom:8px"><button class="btn sm" data-a="secUpd" data-id="${esc(id)}">🔄 Update names from Classroom Hub</button></div>`:''}
+    ${!s||!s.hubId?`<label class="f">Section name</label><input id="snm" value="${esc(s?s.name:'')}" placeholder="e.g. 7 - Rizal">`:''}
+    ${!s||!s.hubId?`<label class="f">${s?'Add more students':'Student names'} — one per line</label><textarea id="sadd" rows="${s?3:9}" placeholder="Dela Cruz, Juan&#10;Santos, Maria"></textarea><div class="row" style="margin:8px 0"><button class="btn pri" data-a="secSave" data-id="${esc(id||'')}">${s?'Save / add':'Create section'}</button></div>`:''}
+    ${s?`<h3>Student numbers <span class="small muted">(tap a number to change it)</span></h3>
+    <div class="card" style="padding:6px 10px">${stu.map(x=>`<div class="row" style="padding:3px 0;border-bottom:1px solid var(--line);flex-wrap:nowrap"><input data-sn="${esc(x.id)}" data-sec="${esc(id)}" value="${pad2(x.no)}" inputmode="numeric" style="width:62px;text-align:center;font-weight:800"><div class="grow">${esc(x.name)}</div>${s.hubId?'':`<button class="btn sm bad" data-a="secRm" data-id="${esc(id)}" data-sid="${esc(x.id)}">✕</button>`}</div>`).join('')||'<div class="small muted c" style="padding:10px">No students</div>'}</div>
+    <div class="small muted">Numbers are given A–Z the first time. Once students have started using them, avoid renumbering. New students get the next free number.</div>
+    <div class="row" style="margin-top:10px"><button class="btn bad" data-a="secDel" data-id="${esc(id)}">Delete section</button></div>`:''}`;};
+  m._paint=paint;paint();
+}
+function secSave(id){
+  const nm=($('#snm')||{}).value.trim(),names=[...new Set(($('#sadd').value||'').split(/\n|;/).map(x=>x.replace(/^\s*(\d+[.)]|[-•*])\s*/,'').trim()).filter(Boolean))];
+  let s=id?secOf(id):null;
+  if(!s){if(!nm){toast('Enter a section name');return;}const k='m_'+uid();s=S.secs[k]={id:k,name:nm,stu:[]};}
+  else if(nm)s.name=nm;
+  const have=new Set(s.stu.filter(x=>!x.gone).map(x=>norm(x.name)));
+  const fresh=names.filter(n=>!have.has(norm(n))).map(n=>({id:'s'+uid(),name:n}));
+  const over=numberNew(s,fresh);stamp(s);save();
+  const top=$$('.modal').slice(-1)[0];
+  if(!id){top.remove();topPaint();}else{top._paint();topPaint();}
+  render();toast(over?`${over} did not fit in 1–99`:'Saved ✓');
+}
+function secPrint(id){
+  const s=secOf(id);if(!s)return;const stu=secStu(s),half=Math.ceil(stu.length/2);
+  const col=a=>`<table style="border-collapse:collapse;width:100%;font:13pt Arial">${a.map(x=>`<tr><td style="border:1px solid #000;padding:3px 8px;width:46px;text-align:center;font-weight:700">${pad2(x.no)}</td><td style="border:1px solid #000;padding:3px 8px">${esc(x.name)}</td></tr>`).join('')}</table>`;
+  $('#printRoot').innerHTML=`<div style="padding:14mm;font-family:Arial"><h2 style="margin:0 0 4px;font-size:20pt">${esc(s.name)}</h2><div style="margin:0 0 10px;font-size:11pt">Student numbers · shade these 2 digits on your answer sheet</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10mm"><div>${col(stu.slice(0,half))}</div><div>${col(stu.slice(half))}</div></div></div>`;
+  setTimeout(()=>window.print(),80);
+}
+function secSnChange(t){
+  const s=secOf(t.dataset.sec),x=s&&s.stu.find(y=>y.id===t.dataset.sn);if(!x)return;
+  const n=parseInt(t.value,10);
+  if(!(n>=1&&n<=99)){toast('Use a number from 01 to 99');t.value=pad2(x.no);return;}
+  const o=s.stu.find(y=>y.no===n&&y!==x);
+  if(o){toast(`${pad2(n)} is already used by ${o.name}`,3200);t.value=pad2(x.no);return;}
+  x.no=n;stamp(s);save();t.value=pad2(n);toast('Number changed. Tell the student.');
+}
+
+/* ---------- SETTINGS ---------- */
+function viewSettings(){
+  const T=THEMES,st=S.set;
+  return `<h2>Settings</h2>
+  <div class="card"><div class="b" style="margin-bottom:8px">🎨 Theme</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px">${T.map(t=>`<div class="theme ${t.id===st.theme?'on':''}" data-a="setTheme" data-id="${t.id}"><div class="sw" style="background:linear-gradient(135deg,${t.pri},${t.pri2})"></div>${t.emo} ${t.name}</div>`).join('')}</div></div>
+  <div class="card"><div class="b">🎯 Mark sensitivity</div><div class="small muted" style="margin:2px 0 8px">How dark a bubble must be to count as marked. Use “Lenient” for light pencil; “Strict” if you want more items flagged for checking.</div>
+  <div class="chips">${[['lenient','Lenient'],['normal','Normal'],['strict','Strict']].map(x=>`<button class="pill ${st.sens===x[0]?'on':''}" data-a="setSens" data-v="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+  <div class="card"><div class="b" style="margin-bottom:6px">📷 Scanning</div>
+  <label class="chk" style="margin:6px 0"><input type="checkbox" style="width:auto" data-set="auto" ${st.auto?'checked':''}> Auto-capture when a sheet is held steady (live scan)</label>
+  <label class="chk" style="margin:6px 0"><input type="checkbox" style="width:auto" data-set="sound" ${st.sound?'checked':''}> Beep / vibrate after each scan</label>
+  <label class="chk" style="margin:6px 0"><input type="checkbox" style="width:auto" data-set="keepImg" ${st.keepImg?'checked':''}> Keep a small picture of every scanned sheet <span class="small muted">(uses about 60 KB each)</span></label></div>
+  <div class="card"><div class="b">☁️ Google Drive sync</div>
+  <div class="small muted" style="margin:2px 0 8px">Your exams, class lists and results are saved on this device and work offline. Sign in to back them up to <b>your own</b> Google Drive and share them between your devices (pictures stay on the device).</div>
+  <div class="row">${st.syncOn?`<button class="btn pri" data-a="syncNow">🔄 Sync now</button><button class="btn" data-a="syncOff">Turn off</button>`:`<button class="btn pri" data-a="syncOn">Sign in with Google</button>`}</div>
+  <div class="small muted" id="syncStat" style="margin-top:6px">${st.lastSync?'Last synced '+new Date(st.lastSync).toLocaleString():st.syncOn?'Not synced yet':''}</div>
+  <details style="margin-top:8px"><summary class="small b" style="cursor:pointer">Google Client ID</summary><div class="small muted" style="margin:6px 0">Use the same Client ID as your Classroom Hub. ${detectClientId()&&!st.clientId?'<b>Set up already.</b>':''}</div><input id="cid" value="${esc(st.clientId||detectClientId())}" placeholder="xxxx.apps.googleusercontent.com" data-set="clientId"></details></div>
+  <div class="card"><div class="b" style="margin-bottom:6px">💾 Backup</div><div class="row"><button class="btn" data-a="backup">⬇️ Download backup</button><button class="btn" data-a="restore">⬆️ Restore backup</button></div><div class="small muted" style="margin-top:6px">Backup includes exams, keys, class lists and results (not pictures).</div></div>
+  <div class="card"><div class="b" style="margin-bottom:4px">📱 Install on your phone or tablet</div><ul class="help" style="margin:0;padding-left:18px"><li><b>iPhone / iPad (Safari):</b> Share → Add to Home Screen.</li><li><b>Android (Chrome):</b> ⋮ menu → Add to Home screen / Install app.</li><li>Open Scanora once while online so it can save itself for offline use.</li></ul></div>
+  <div class="card"><div class="small muted">Scanora v2.0 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
+}
+
+/* ---------- Google Drive sync ---------- */
+function detectClientId(){try{for(let i=0;i<localStorage.length;i++){const v=localStorage.getItem(localStorage.key(i))||'';const m=v.match(/\d{6,}-[a-z0-9]{20,}\.apps\.googleusercontent\.com/i);if(m)return m[0];}}catch(e){}return '1054809448673-4iq7a4bm911b3kcsfcb0o7281odig2rm.apps.googleusercontent.com';}
+let gTok=null,gExp=0;
+function loadGIS(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>res();s.onerror=()=>rej(new Error('offline'));document.head.appendChild(s);});}
+async function gAuth(){
+  if(gTok&&Date.now()<gExp-60000)return gTok;
+  const cid=S.set.clientId||detectClientId();if(!cid)throw new Error('noclient');
+  await loadGIS();
+  return new Promise((res,rej)=>{const tc=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.appdata',callback:r=>{if(r.error)return rej(new Error(r.error));gTok=r.access_token;gExp=Date.now()+(r.expires_in||3600)*1000;res(gTok);},error_callback:e=>rej(new Error((e&&e.type)||'auth'))});tc.requestAccessToken({prompt:S.set.syncOn?'':'consent'});});
+}
+const dfetch=async(url,opt)=>{const r=await fetch(url,Object.assign({headers:{Authorization:'Bearer '+gTok}},opt||{}));if(!r.ok)throw new Error('drive '+r.status);return r;};
+function mergeLists(a,b){const m=new Map();for(const x of a.concat(b||[])){const o=m.get(x.id);if(!o||(x.u||0)>(o.u||0))m.set(x.id,x);}const cut=Date.now()-60*864e5;return [...m.values()].filter(x=>!(x.del&&(x.u||0)<cut));}
+function mergeRemote(rm){
+  S.exams=mergeLists(S.exams,rm.exams);S.results=mergeLists(S.results,rm.results);
+  for(const k in (rm.secs||{})){const o=S.secs[k],n=rm.secs[k];if(!o||(n.u||0)>(o.u||0))S.secs[k]=n;}
+  for(const k in (rm.rosters||{})){const o=S.rosters[k],n=rm.rosters[k];if(!o||(n.u||0)>(o.u||0))S.rosters[k]=n;}
+}
+let syncing=false;
+async function syncNow(interactive){
+  if(syncing)return;syncing=true;const stat=$('#syncStat');if(stat)stat.textContent='Syncing…';
+  try{
+    await gAuth();
+    const q=encodeURIComponent("name='scanora-data.json'"),list=await (await dfetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id)`)).json();
+    let fid=list.files&&list.files[0]&&list.files[0].id;
+    if(fid){const rm=await (await dfetch(`https://www.googleapis.com/drive/v3/files/${fid}?alt=media`)).json();mergeRemote(rm);}
+    const body=JSON.stringify({v:1,exams:S.exams,results:S.results,rosters:S.rosters,secs:S.secs,u:Date.now()});
+    if(fid)await dfetch(`https://www.googleapis.com/upload/drive/v3/files/${fid}?uploadType=media`,{method:'PATCH',headers:{Authorization:'Bearer '+gTok,'Content-Type':'application/json'},body});
+    else{const bd='scanora_b',meta=JSON.stringify({name:'scanora-data.json',parents:['appDataFolder']});await dfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+gTok,'Content-Type':'multipart/related; boundary='+bd},body:`--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${meta}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`});}
+    S.set.syncOn=true;S.set.lastSync=Date.now();save(false);if(interactive)toast('Synced ✓');
+  }catch(err){const msg=String(err&&err.message||err);if(interactive)toast(msg==='noclient'?'Paste your Google Client ID first (Settings → Google Client ID)':msg==='offline'?'You are offline. Scanora will sync later.':'Sync did not work ('+msg+')',3600);}
+  finally{syncing=false;if(UI.tab==='settings')render();else if(UI.tab!=='scan')render();}
+}
+function syncSoon(){if(!S.set.syncOn||!navigator.onLine)return;clearTimeout(syncSoon.t);syncSoon.t=setTimeout(()=>syncNow(false),4000);}
+
+/* ---------- actions ---------- */
+const ACT={
+  newExam:()=>openEditor(null), editExam:el=>openEditor(examOf(el.dataset.id)), printExam:el=>openPrint(el.dataset.id),
+  scanExam:el=>{SCAN.examId=el.dataset.id;SCAN.mode='student';scanDefaults(examOf(SCAN.examId));S.set.lastExam=SCAN.examId;save(false);go('scan');},
+  openRes:el=>{UI.resExam=el.dataset.id;UI.resSec='';go('results');},
+  prTwo:el=>{S.set.twoUp=el.dataset.v==='1';save(false);const m=el.closest('.modal');m._paint();},
+  close:el=>{const m=el.closest('.modal');if(m){m.remove();const t=$$('.modal').slice(-1)[0];if(t&&t._repaint)t._repaint();}},
+  doPrint:el=>{const m=el.closest('.modal');m._print&&m._print();},
+  edClose:()=>{EDM.remove();EDM=null;ED=null;}, edSave:()=>edSave(),
+  edN:el=>{ED.customN=false;edResize(+el.dataset.v);edRedraw();}, edCustom:()=>{ED.customN=true;edRedraw();},
+  edCh:el=>{ED.ch=+el.dataset.v;const L=LETS(ED.ch);ED.key=ED.key.map(k=>(k||'').split('').filter(c=>L.includes(c)).join(''));edRedraw();},
+  edKey:el=>{const i=+el.dataset.i,l=el.dataset.l,cur=ED.key[i]||'';if(ED.multi){ED.key[i]=cur.includes(l)?cur.replace(l,''):(cur+l).split('').sort().join('');}else ED.key[i]=cur===l?'':l;edRedraw();},
+  edPaste:()=>{const v=($('[data-ed=paste]',EDM).value||'').toUpperCase().replace(/[^A-E]/g,''),L=LETS(ED.ch);let j=0;for(const c of v){if(j>=ED.n)break;if(L.includes(c))ED.key[j++]=c;}toast(`Key applied to ${j} items`);edRedraw();},
+  edClearKey:()=>{ED.key=Array(ED.n).fill('');edRedraw();},
+  edScanKey:async()=>{await edSave();const id=S.set.lastExam;SCAN.examId=id;SCAN.mode='key';scanDefaults(examOf(id));go('scan');toast('Now scan one filled-in sheet with the correct answers',3200);},
+  edDup:async()=>{const c={...JSON.parse(JSON.stringify(ED)),id:'',title:ED.title+' (copy)'};EDM.remove();ED=null;openEditor(null);ED=Object.assign(ED,c,{id:'',customN:false});edRedraw();toast('Edit and save to create the copy');},
+  edDel:async()=>{const n=resultsOf(ED.id).length;const a=await ask('Delete exam?',`This will delete <b>${esc(ED.title)}</b>${n?` and its ${n} scanned results`:''}. This cannot be undone.`,[{t:'Cancel',v:0},{t:'Delete',v:1,cls:'bad'}]);if(!a)return;const e=examOf(ED.id);e.del=true;stamp(e);resultsOf(e.id).forEach(r=>{r.del=true;stamp(r);IDB.del('img_'+r.id);});save();EDM.remove();EDM=null;ED=null;render();toast('Deleted');},
+  scMode:el=>{SCAN.mode=el.dataset.v;render();},
+  liveScan:()=>openCamera(), takePhoto:()=>$('#fileCam').click(), choosePhotos:()=>$('#fileGal').click(),
+  camClose:()=>closeCamera(), camShot:()=>camCapture(),
+  camAuto:()=>{CAM.auto=!CAM.auto;S.set.auto=CAM.auto;save(false);$('#camAutoB').classList.toggle('on',CAM.auto);},
+  camTorch:async()=>{try{CAM.torch=!CAM.torch;await CAM.stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:CAM.torch}]});$('#camTorch').classList.toggle('on',CAM.torch);}catch(e){toast('Flashlight not available');}},
+  rvSet:el=>{const i=+el.dataset.i;RV.ans[i]=el.dataset.l;RV.rs[i]=true;rvDyn();if(RV.edit&&document.body.contains(RV.edit))RV.edit._repaint();},
+  rvEdit:el=>rvEdit(+el.dataset.i), rvBlankOk:()=>{RV.blankAck=true;rvDyn();},
+  rvName:el=>{RV.name=el.dataset.n;$('#rvName').value=RV.name;rvBtn();},
+  rvSave:()=>rvSave(), rvSkip:()=>rvFinish('skip'), rvRescan:()=>{rvFinish('skip');toast('Scan that sheet again');}, rvView:()=>rvViewFull(),
+  openResult:el=>openResult(el.dataset.id),
+  rdItem:el=>{const m=el.closest('.modal'),r=m._r,e=m._e,i=+el.dataset.i,s=openModal('',true);s.style.zIndex=40;
+    s.querySelector('.in').innerHTML=`<div class="row sp"><b>Item ${i+1}</b><button class="btn sm" data-a="close">✕</button></div><div class="small muted" style="margin:4px 0 8px">Answer key: ${esc(e.key[i]||'not set')}</div><div class="chips">${LETS(e.ch).map(L=>`<button class="pill ${r.ans[i]===L?'on':''}" data-a="rdSet" data-l="${L}">${L}</button>`).join('')}<button class="pill ${!r.ans[i]?'on':''}" data-a="rdSet" data-l="">Blank</button><button class="pill ${r.ans[i]==='*'?'on':''}" data-a="rdSet" data-l="*">✕ Wrong</button></div>`;s._m=m;s._i=i;},
+  rdSet:el=>{const s=el.closest('.modal'),m=s._m,r=m._r;r.ans[s._i]=el.dataset.l;stamp(r);r.fix=[...new Set((r.fix||[]).concat(s._i))];save();s.remove();m._paint();render();},
+  rdPic:el=>rdPic(el.closest('.modal')),
+  rdDel:async el=>{const m=el.closest('.modal'),r=m._r;const a=await ask('Delete this result?',`Remove <b>${esc(r.name)}</b>'s sheet from this exam?`,[{t:'Cancel',v:0},{t:'Delete',v:1,cls:'bad'}]);if(!a)return;r.del=true;stamp(r);IDB.del('img_'+r.id);save();m.remove();render();toast('Deleted');},
+  toggleAna:()=>{UI.analysis=!UI.analysis;render();}, exportScores:()=>exportScores(), exportAnswers:()=>exportAnswers(),
+  sections:()=>openSections(), secOpen:el=>secOpen(el.dataset.id), secNew:()=>secOpen(''), secSave:el=>secSave(el.dataset.id), secPrint:el=>secPrint(el.dataset.id), hubGo:el=>hubGo(el),
+  secHub:()=>{const hc=hubRead();if(!hc||!hc.length){ask('Classroom Hub not found here','Scanora could not see the Classroom Hub on this device. This works when Scanora and the Hub are opened from the same website address. You can also use <b>From a Hub backup file</b>.',[{t:'OK',v:1,cls:'pri'}]);return;}hubPick(hc,'from Classroom Hub');},
+  secFile:()=>$('#fileHub').click(),
+  secUpd:el=>{const s=secOf(el.dataset.id),hc=hubRead(),c=hc&&hc.find(x=>x.id===s.hubId);if(!c){toast('That class was not found in the Hub on this device',3200);return;}const r=applyHub(c);save();topPaint();render();toast(r.added?`${r.added} new student${r.added>1?'s':''} added`:'Already up to date ✓');},
+  secRm:async el=>{const s=secOf(el.dataset.id),x=s&&s.stu.find(y=>y.id===el.dataset.sid);if(!x)return;const a=await ask('Remove student?',`<b>${esc(x.name)}</b> (No. ${pad2(x.no)}) leaves this list. Old results stay. The number is not reused.`,[{t:'Cancel',v:0},{t:'Remove',v:1,cls:'bad'}]);if(!a)return;x.gone=true;stamp(s);save();topPaint();},
+  secDel:async el=>{const s=secOf(el.dataset.id);const a=await ask('Delete section?','The list and numbers are removed. Scanned results are kept.',[{t:'Cancel',v:0},{t:'Delete',v:1,cls:'bad'}]);if(!a)return;s.del=true;stamp(s);save();$$('.modal').slice(-1)[0].remove();topPaint();render();},
+  rvStu:el=>{const R=RV,x=stuByNo(R.sec,+el.dataset.no);if(!x)return;R.stu=x;R.how='pick';R.pick=false;R.name=x.name;R.focusFind=false;whoPaint();rvBtn();},
+  rvChange:()=>{RV.pick=true;whoPaint();},
+  rosterDel_old:async el=>{const k=el.dataset.k;const a=await ask('Delete class list?','The names will be removed. Scanned results are not affected.',[{t:'Cancel',v:0},{t:'Delete',v:1,cls:'bad'}]);if(!a)return;S.rosters[k].del=true;stamp(S.rosters[k]);save();$$('.modal').slice(-1)[0].remove();const o=$$('.modal').slice(-1)[0];if(o&&o._paint)o._paint();render();},
+  setTheme:el=>{S.set.theme=el.dataset.id;save(false);applyTheme(S.set.theme);render();}, setSens:el=>{S.set.sens=el.dataset.v;save(false);render();},
+  syncOn:async()=>{S.set.syncOn=false;await syncNow(true);}, syncNow:()=>syncNow(true), syncOff:()=>{S.set.syncOn=false;save(false);gTok=null;render();toast('Sync turned off. Your data stays on this device.');},
+  backup:()=>download(`scanora-backup-${today()}.json`,JSON.stringify({v:1,exams:S.exams,results:S.results,rosters:S.rosters,secs:S.secs}),'application/json'),
+  restore:()=>$('#fileBak').click()
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&ACT[el.dataset.a]){e.preventDefault();ACT[el.dataset.a](el,e);}});
+document.addEventListener('click',e=>{const t=e.target.closest('#nav button');if(t)go(t.dataset.tab);});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.ed){if(t.type==='checkbox')ED[t.dataset.ed]=t.checked;else if(t.dataset.ed==='n'){ED.n=Math.max(1,Math.min(100,+t.value||1));}else if(t.dataset.ed!=='paste')ED[t.dataset.ed]=t.value;}
+  else if(t.dataset.sc&&t.dataset.sc!=='examId'){SCAN[t.dataset.sc]=t.value;}
+  else if(t.dataset.rv==='find'){RV.find=t.value;RV.focusFind=true;whoPaint();}
+  else if(t.dataset.rv){RV[t.dataset.rv]=t.value;}
+  else if(t.id==='rvName'){RV.name=t.value;rvBtn();}
+  else if(t.dataset.rd){const m=t.closest('.modal'),r=m._r;r[t.dataset.rd]=t.value;stamp(r);save();}
+  else if(t.dataset.set==='clientId'){S.set.clientId=t.value.trim();save(false);}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.ed==='multi'){ED.multi=t.checked;if(!ED.multi)ED.key=ED.key.map(k=>(k||'').slice(0,1));edRedraw();}
+  else if(t.dataset.ed==='n'){edResize(+t.value);edRedraw();}
+  else if(t.dataset.sc==='examId'){SCAN.examId=t.value;S.set.lastExam=t.value;save(false);scanDefaults(examOf(t.value));render();}
+  else if(t.dataset.sc==='secId'){SCAN.secId=t.value;S.set.lastSec=t.value;save(false);render();}
+  else if(t.dataset.sn){secSnChange(t);}
+  else if(t.dataset.sc){render();}
+  else if(t.dataset.rv==='grade'||t.dataset.rv==='section'){const c=$('#rvChips');if(c)c.innerHTML=nameChips();const dl=$('#nameList');if(dl)dl.innerHTML=rosterNames(RV.grade,RV.section).map(n=>`<option value="${esc(n)}">`).join('');}
+  else if(t.dataset.res){if(t.dataset.res==='exam'){UI.resExam=t.value;UI.resSec='';}else if(t.dataset.res==='sec')UI.resSec=t.value;else UI.sort=t.value;render();}
+  else if(t.dataset.set&&t.type==='checkbox'){S.set[t.dataset.set]=t.checked;save(false);}
+  else if(t.id==='fileCam'||t.id==='fileGal'){const f=[...t.files];t.value='';handleFiles(f);}
+  else if(t.id==='fileHub'){const f=t.files[0];t.value='';if(!f)return;f.text().then(txt=>{try{const j=JSON.parse(txt);const cl=hubClean(j.classes||[]);if(!cl.length)throw 0;hubPick(cl,'from backup file');}catch(x){toast('That does not look like a Classroom Hub backup',3400);}});}
+  else if(t.id==='fileBak'){const f=t.files[0];t.value='';if(!f)return;f.text().then(async txt=>{try{const j=JSON.parse(txt);if(!j.exams)throw 0;const a=await ask('Restore backup?','This <b>merges</b> the backup into what is on this device (newer edits win).',[{t:'Cancel',v:0},{t:'Restore',v:1,cls:'pri'}]);if(!a)return;mergeRemote(j);save();render();toast('Backup restored ✓');}catch(x){toast('That file is not a Scanora backup');}});}
+});
+function rvBtn(){const R=RV;if(!R)return;const c=rvCounts(),b=$('#rvSave');if(!b)return;
+  const can=R.mode==='practice'?true:(c.need===0&&(c.blanks===0||R.blankAck)&&true);b.disabled=!can;
+  b.textContent=R.mode==='practice'?'Done':R.mode==='key'?'Use as answer key':(c.need?`Check ${c.need} item${c.need>1?'s':''} first`:c.blanks&&!R.blankAck?'Confirm blanks first':'Save & next ✓');}
+window.addEventListener('online',()=>{render();syncSoon();});window.addEventListener('offline',()=>render());
+
+/* name pictures */
+function fillNameImgs(){$$('img[data-nm]').forEach(im=>{if(im.src)return;IDB.get('img_'+im.dataset.nm).then(d=>{if(d&&d.hdr)im.src=URL.createObjectURL(d.hdr);else im.closest('.nmimg').style.display='none';});});}
+new MutationObserver(()=>fillNameImgs()).observe(document.body,{childList:true,subtree:true});
+/* ---------- init ---------- */
+applyTheme(S.set.theme);render();IDB.open();
+if('serviceWorker' in navigator&&location.protocol!=='file:'){navigator.serviceWorker.register('scanora-sw.js',{scope:'./scanora.html'}).then(()=>{const s=$('#swState');if(s)s.textContent='works offline';}).catch(()=>{});}
+if(S.set.syncOn&&navigator.onLine)setTimeout(()=>syncNow(false),1500);
+/* test hook */
+window.__scanora={S,SC,runScan,imgToCanvas,reviewSheet,examOf,SCAN,UI,get RV(){return RV;}};
+
+
+</script>
+</body></html>
