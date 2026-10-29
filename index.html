@@ -365,6 +365,7 @@ html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
 .wb.rl{border-left:4px solid #e65100;background:#ffcc80;box-shadow:0 0 0 2px #fb8c00 inset,0 2px 6px -3px rgba(0,0,0,.35)}
 .si.rel{border-color:#fb8c00;border-left:6px solid #e65100;background:#fff3e0;color:#26303a}.si.rel .muted{color:#7a4a1a}.si.rel.now{box-shadow:0 0 0 2px #fb8c00}
 .rtag{display:inline-block;border-radius:999px;padding:0 8px;font-size:.7rem;font-weight:800;background:#e65100;color:#fff}
+.crow{margin:10px 0}.sw{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}.sw.on{box-shadow:0 0 0 3px var(--ink)}
 .wb.sh{border-left-style:dashed;background:repeating-linear-gradient(135deg,hsl(var(--h) 85% 91%) 0 6px,hsl(var(--h) 85% 95%) 6px 12px)}
 .wnow{position:absolute;left:0;right:0;height:2px;background:#e11d48;z-index:2}
 .wnow::before{content:"";position:absolute;left:-1px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e11d48}
@@ -517,6 +518,7 @@ function normSched(i){
 function fmtT(t){const h=+t.slice(0,2),m=t.slice(3);return (h%12||12)+':'+m+' '+(h<12?'AM':'PM')}
 const nowT=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 const jsDay=()=>new Date().getDay()||7;
+function normCol(c){const r={};if(c&&typeof c==='object')Object.keys(c).slice(0,80).forEach(k=>{const h=+c[k];if(h>=0&&h<360)r[String(k).slice(0,80)]=Math.round(h)});return r}
 function normSchObj(o,mod){
   o=o&&typeof o==='object'?o:{};
   const subs=(Array.isArray(o.subs)?o.subs:[]).filter(x=>x&&x.id).slice(0,8).map(x=>({id:String(x.id).slice(0,20),name:String(x.name||'Week').slice(0,30)}));
@@ -524,7 +526,7 @@ function normSchObj(o,mod){
   const items=(Array.isArray(o.items)?o.items:[]).map(normSched).filter(Boolean);
   items.forEach(i=>{if(i.sid&&!ok.has(i.sid))i.sid=''});
   const r=o.rot&&typeof o.rot==='object'?o.rot:{};
-  return{mod:mod!==undefined?mod:(+o.mod||0),items:items,subs:subs,act:ok.has(o.act)?o.act:'',rot:{on:!!r.on&&subs.length>1&&isD(r.start),start:isD(r.start)?r.start:''}};
+  return{mod:mod!==undefined?mod:(+o.mod||0),items:items,subs:subs,act:ok.has(o.act)?o.act:'',rot:{on:!!r.on&&subs.length>1&&isD(r.start),start:isD(r.start)?r.start:''},col:normCol(o.col)};
 }
 const SUBS=()=>S.schedule.subs||[];
 const subName=id=>{const x=SUBS().find(y=>y.id===id);return x?x.name:''};
@@ -1404,7 +1406,8 @@ V.notes=c=>{
 
 /* ---------- weekly calendar grid ---------- */
 const toM=t=>+t.slice(0,2)*60+ +t.slice(3);
-const hueOf=i=>{const k=S.classes.findIndex(x=>x.id===i.cid);if(k>=0)return (k*57+200)%360;let x=0;const s=sName(i);for(let n=0;n<s.length;n++)x=(x*31+s.charCodeAt(n))>>>0;return x%360};
+const colKey=i=>sName(i).trim().toLowerCase(),HUES=[350,320,275,230,200,170,135,95,55];
+const hueOf=i=>{const c=(S.schedule.col||{})[colKey(i)];if(c!==undefined)return c;let x=0;const s=colKey(i);for(let n=0;n<s.length;n++)x=(x*31+s.charCodeAt(n))>>>0;return x%360};
 function weekGrid(){
   const vs=viewSub(),w1=wkDate(1),w7=wkDate(7),items=S.schedule.items.filter(i=>i.date?(i.date>=w1&&i.date<=w7):(!i.sid||i.sid===vs)),td=jsDay(),PPM=1;
   const hasWk=items.some(i=>i.days.some(d=>d>=6)),showWk=hasWk||ui.swk,nd=showWk?7:5;
@@ -1466,7 +1469,7 @@ function schedTodayInner(){
 V.sched=c=>{
   const sf=ui.sf||(ui.sf=blankSf()),td=jsDay();
   let h='<section class="card" id="schToday">'+schedTodayInner()+'</section>';
-  h+=weeksCard()+weekGrid();
+  h+=weeksCard()+weekGrid()+colorCard();
   h+='<section class="card noprint" id="schForm"><h2>'+(sf.id?'Edit entry':'Add to schedule')+'</h2>'
    +'<label class="lb" for="sfTitle">Subject / section</label><input id="sfTitle" type="text" maxlength="80" placeholder="e.g. Science 7 – Rizal" data-sf="title" value="'+esc(sf.title)+'" autocomplete="off">'
    +(SUBS().length?'<label class="lb" for="sfSid">Which week?</label><select id="sfSid" data-chg="sf" data-k="sid"><option value="">Every week</option>'+SUBS().map(x=>'<option value="'+x.id+'"'+(sf.sid===x.id?' selected':'')+'>'+esc(x.name)+' only</option>').join('')+'</select>':'')
@@ -1480,6 +1483,15 @@ V.sched=c=>{
   h+=relCard();
   return h;
 };
+function colorCard(){
+  const vs=viewSub(),seen={},L=[];
+  S.schedule.items.forEach(i=>{if(i.date||(i.sid&&i.sid!==vs))return;const k=colKey(i);if(!seen[k]){seen[k]=1;L.push(i)}});
+  if(!L.length)return '';
+  L.sort((a,b)=>colKey(a)<colKey(b)?-1:1);
+  const col=S.schedule.col||{};
+  return '<section class="card noprint" id="schColors"><h2>🎨 Calendar colors</h2><p class="muted">Pick a color for each subject / section. Same name = same color everywhere. (Orange is kept for relievers.)</p>'
+   +L.map(i=>{const k=colKey(i),cur=col[k];return '<div class="crow"><b>'+esc(sName(i))+'</b><div class="chips">'+HUES.map(h=>'<button class="sw'+(cur===h?' on':'')+'" style="background:hsl('+h+' 70% 62%)" data-act="schColor" data-k="'+esc(k)+'" data-h="'+h+'" aria-label="Color '+h+'"></button>').join('')+'<button class="chip s'+(cur===undefined?' on':'')+'" data-act="schColor" data-k="'+esc(k)+'" data-h="">Auto</button></div></div>'}).join('')+'</section>';
+}
 const blankRf=()=>({id:'',date:today(),start:'',end:'',title:'',who:'',room:'',note:''});
 function relCard(){
   const rf=ui.rf||(ui.rf=blankRf()),t=today();
@@ -2116,6 +2128,7 @@ const act={
     S.schedule.mod=Date.now();ui.rf=blankRf();save();render();toast(was?'Reliever updated':'Reliever added')
   },
   relEdit(c,t){const it=S.schedule.items.find(x=>x.id===t.dataset.id);if(!it)return;ui.rf=Object.assign(blankRf(),it);render();const f=document.getElementById('relForm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'})},
+  schColor(c,t){const k=t.dataset.k,h=t.dataset.h;if(!S.schedule.col)S.schedule.col={};if(h==='')delete S.schedule.col[k];else S.schedule.col[k]=+h;S.schedule.mod=Date.now();save();render()},
   relCancel(){ui.rf=blankRf();render()},
   relPast(){const t=today();S.schedule.items=S.schedule.items.filter(i=>!(i.date&&i.date<t));schTouch();toast('Past relievers removed')},
   swk(){ui.swk=!ui.swk;render()},
