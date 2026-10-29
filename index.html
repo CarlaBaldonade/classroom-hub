@@ -1854,7 +1854,7 @@ function renderModal(){
   }else if(ui.modal==='more'){
     const ids=navIds(),sec=(t,l)=>{l=l.filter(id=>!ids.includes(id));return l.length?'<div class="sec">'+t+'</div><div class="mgrid">'+l.map(id=>{const i=tabInfo(id);return '<button class="mtile'+(ui.tab===id?' on':'')+'" data-act="moreGo" data-v="'+id+'"><span class="mi">'+(id==='points'?PE():i[1])+'</span><b>'+i[2]+'</b><small>'+MDESC[id]+'</small></button>'}).join('')+'</div>':''};
     b='<h2>More</h2>'+sec('Class tools',['students','picker','groups'])+sec('Records',['overview','sf2','notes','summary','subs'])+sec('Planning',['plan'])+sec('Data',['data'])
-      +'<div class="sec">Other tools</div><div class="mgrid"><button class="mtile" data-act="openLetters"><span class="mi">✉️</span><b>Letters</b><small>Parent grade letters</small></button><button class="mtile" data-act="openParentAdmin"><span class="mi">👪</span><b>Parent App Admin</b><small>Codes, advisers, notices</small></button></div>'
+      +'<div class="sec">Other tools</div><div class="mgrid"><button class="mtile" data-act="openLetters"><span class="mi">✉️</span><b>Letters</b><small>Parent grade letters</small></button><button class="mtile" data-act="openParentAdmin"><span class="mi">👪</span><b>Parent App Admin</b><small>Codes, advisers, notices</small></button></div<button class="mtile" data-act="openScanora"><span class="mi">📷</span><b>Scanora</b><small>Scan &amp; check answer sheets</small></button></div>'
       +'<div class="row"><button class="btn" data-act="closeModal">Close</button></div>';
   }else if(ui.modal==='sync'){
     b=syncModalHtml();
@@ -1948,6 +1948,7 @@ const act={
   moreGo(c,t){ui.modal=null;renderModal();act.tab(c,t)},
   openParentAdmin(){/* the address of your Parent App admin page; see SETUP.md */const u=PARENT_ADMIN_URL;if(!u||/YOUR-PROJECT-ID/.test(u)){toast('Set PARENT_ADMIN_URL first (see SETUP.md)');return}window.open(u,'_blank','noopener')},
   openLetters(){toast('Opening Letters…');setTimeout(()=>{location.href='letters.html'},60)},
+  openScanora(){toast('Opening Scanora…');setTimeout(()=>{location.href='scanora.html'},60)},
   fsEnter(){enterFS('swap')},
   fsSwap(c,t){const i=+t.dataset.i;if(ui.sel==null){if(c.seats[i])ui.sel=i}else if(ui.sel===i)ui.sel=null;else{swapSeats(c,ui.sel,i);(ui.swapHist=ui.swapHist||[]).push([ui.sel,i]);ui.sel=null}renderFS()},
   fsUndoSwap(c){const hh=ui.swapHist||[],l=hh.pop();if(!l)return;swapSeats(c,l[0],l[1]);ui.sel=null;renderFS()},
