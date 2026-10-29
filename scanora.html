@@ -48,7 +48,7 @@ label.f{display:block;font-size:11.5px;font-weight:800;color:var(--muted);margin
 .mbar .t{font:600 16px var(--fh);flex:1}
 .foot{position:fixed;left:0;right:0;bottom:0;z-index:4;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1.5px solid var(--line);display:flex;gap:8px;justify-content:center}
 .foot .btn{flex:1;max-width:340px;justify-content:center}
-#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:40;background:#23403a;color:#fff;padding:9px 16px;border-radius:99px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:80;background:#23403a;color:#fff;padding:9px 16px;border-radius:99px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
 #toast.on{opacity:1}
 .banner{border-radius:13px;padding:9px 12px;margin:0 0 8px;font-weight:700;font-size:13px}
 .banner.wn{background:var(--wnbg);color:var(--wnfg);border:1.5px solid var(--wnbd)}.banner.er{background:var(--erbg);color:var(--erfg);border:1.5px solid var(--erbd)}.banner.ok{background:var(--okbg);color:var(--okfg);border:1.5px solid var(--okbd)}.banner.in{background:var(--soft);color:var(--ink)}
@@ -669,7 +669,7 @@ function errText(out,e){
   if(out.error==='format')return `This is a ${out.found.n}-item sheet (${LETS(out.found.ch).join('')}), but the selected exam uses ${e.n} items (${LETS(e.ch).join('')}). Pick the matching exam, or print the correct sheet.`;
   return t[out.error]||'Could not read this sheet.';
 }
-async function handleFiles(files){
+async function handleFiles(files,fromCam){
   const e=examOf(SCAN.examId);if(!e||!files.length)return;files=[...files];
   for(let i=0;i<files.length;i++){
     const done=spinner(`Reading sheet ${i+1} of ${files.length}…`);await tick();
@@ -677,6 +677,10 @@ async function handleFiles(files){
     done();
     if(out.error){beep('err');const more=i<files.length-1;const a=await ask('Could not read sheet',esc(errText(out,e)),more?[{t:'Stop',v:'stop'},{t:'Skip this one',v:'skip',cls:'pri'}]:[{t:'OK',v:'skip',cls:'pri'}]);if(a==='stop')break;continue;}
     const r=await reviewSheet(e,out);if(r==='stop')break;
+    if(r==='saved'&&LAST&&!LAST.key&&files.length===1&&fromCam){
+      const a=await ask('✅ Scanned and saved',esc((LAST.name||'Sheet')+(LAST.no?' (No. '+pad2(LAST.no)+')':'')+(LAST.unm?' (not matched yet, fix later in Results)':''))+(LAST.keyOk?'<br>Score <b>'+LAST.s+'/'+LAST.n+'</b>':'')+'<br>'+LAST.total+' sheet'+(LAST.total>1?'s':'')+' saved for this exam',[{t:'Done',v:0},{t:'📷 Take next photo',v:1,cls:'pri'}]);
+      if(a){render();$('#fileCam').click();return;}
+    }
   }
   render();
 }
@@ -723,15 +727,25 @@ async function camCapture(){
   const cv=imgToCanvas(v,v.videoWidth,v.videoHeight);camMsg('Reading…');await tick();
   const out=runScan(cv,e);
   if(!CAM)return;
-  if(out.error){beep('err');CAM.busy=false;CAM.stable=0;CAM.msgUntil=Date.now()+6000;camMsg('⚠️ '+errText(out,e));return;}
+  if(out.error){beep('err');CAM.stable=0;camPanel({icon:'⚠️',title:"Couldn't read this sheet",sub:errText(out,e),next:'↺ Try again',rearm:0});return;}
   const flagged=out.items.some(i=>i.status==='unclear'||i.status==='multi');beep(flagged||out.warn.length?'warn':'ok');
   const r=await reviewSheet(e,out);
-  if(!CAM)return;CAM.busy=false;CAM.rearm=true;CAM.gone=0;CAM.stable=0;camInfo();
-  if(r==='stop'){closeCamera();}
+  if(!CAM)return;camInfo();
+  if(r==='saved'&&LAST){
+    if(LAST.key)camPanel({icon:'✅',title:'Answer key saved',sub:'This exam now has its answer key.',next:'',rearm:0});
+    else camPanel({icon:'✅',title:'Scanned and saved',sub:(LAST.name||'Sheet')+(LAST.no?' (No. '+pad2(LAST.no)+')':'')+(LAST.unm?' (not matched yet, fix later in Results)':'')+(LAST.keyOk?'  ·  Score '+LAST.s+'/'+LAST.n:'  ·  score shows once the answer key is complete')+'\n'+LAST.total+' sheet'+(LAST.total>1?'s':'')+' saved for this exam',next:'📷 Scan next sheet',rearm:1});
+  }else{CAM.busy=false;CAM.rearm=true;CAM.gone=0;CAM.stable=0;}
+}
+function camPanel(o){
+  if(!CAM)return;const old=$('#camPanel');if(old)old.remove();
+  const p=document.createElement('div');p.id='camPanel';
+  p.style.cssText='position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;padding:24px;text-align:center';
+  p.innerHTML=`<div style="font-size:64px;line-height:1">${o.icon}</div><div style="font:600 24px var(--fh)">${esc(o.title)}</div><div style="max-width:440px;font-weight:700;white-space:pre-line">${esc(o.sub||'')}</div><div class="row" style="justify-content:center;margin-top:10px">${o.next?`<button class="btn pri big" data-a="camNext" data-rearm="${o.rearm}">${o.next}</button>`:''}<button class="btn big" data-a="camClose">${o.next?'Finish':'Close camera'}</button></div>`;
+  CAM.el.appendChild(p);
 }
 
 /* ---------- review of a scanned sheet ---------- */
-let RV=null;
+let RV=null, LAST=null;
 const hdrBlobCanvas=(canon)=>{const S6=canon.scale,H=SC.HEAD,x0=Math.round(H.x*S6),y0=Math.round(H.y*S6),w=Math.round(H.w*S6),h=Math.round(H.h*S6),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),id=x.createImageData(w,h);for(let j=0;j<h;j++)for(let i=0;i<w;i++){const v=canon.data[(y0+j)*canon.w+x0+i],o=(j*w+i)*4;id.data[o]=id.data[o+1]=id.data[o+2]=v;id.data[o+3]=255;}x.putImageData(id,0,0);return c;};
 function drawRow(cv,i){
   const R=RV,e=R.exam,L=layoutOf(e),it=L.items[i],canon=R.res.canon,S6=canon.scale;
@@ -779,6 +793,7 @@ function rvDyn(){
 }
 function whoPaint(){
   const R=RV,box=$('#rvWho');if(!box||!R.sec)return;
+  if(!R.pick){box.innerHTML='<div class="small muted">Student names are matched later in Results.</div>';return;}
   const sec=R.sec,id=R.res.id,e=R.exam,f=(R.find||'').trim().toLowerCase();
   const prior=n=>resultsOf(e.id).find(r=>r.sid===sec.id&&r.no===n);
   let h='';
@@ -815,7 +830,7 @@ function reviewSheet(exam,res){
   return new Promise(resolve=>{
     const R=RV={exam,res,mode:SCAN.mode,ans:res.items.map(x=>x.ans),st:res.items.map(x=>x.status),rs:res.items.map(()=>false),blankAck:false,name:'',sec:SCAN.mode==='student'?secOf(SCAN.secId):null,stu:null,how:'',unknownNo:0,hasId:!!res.hasId,subject:exam.subject,grade:SCAN.secId?'':SCAN.grade,section:SCAN.secId?'':SCAN.section,date:SCAN.date,resolve,hdr:hdrBlobCanvas(res.canon)};
     if(R.sec&&res.id&&res.id.state==='ok'){const x=stuByNo(R.sec,res.id.num);if(x){R.stu=x;R.how='code';R.name=x.name;}else R.unknownNo=res.id.num;}
-    const m=R.m=openModal('');m.style.zIndex=25;
+    const m=R.m=openModal('');m.style.zIndex=35;
     const title=R.mode==='key'?'Scan answer key':R.mode==='practice'?'Practice scan':'Review sheet';
     const hdrCard=`<div class="small muted b">Handwriting on the sheet</div><canvas id="rvHdr" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fff"></canvas>`;
     const fields=R.mode!=='student'?'':R.sec?`
@@ -841,19 +856,20 @@ async function rvSave(){
   const final=R.ans.map((a,i)=>R.rs[i]?a:(R.st[i]==='blank'?'':a));
   if(R.mode==='key'){
     if(final.some(a=>a===''||a==='*')){toast('Every item needs a letter in an answer key');R.saving=false;rvBtn();return;}
-    e.key=final.slice();stamp(e);save();toast('Answer key saved ✓');beep('ok');rvFinish('saved');return;
+    e.key=final.slice();stamp(e);save();toast('Answer key saved ✓');beep('ok');LAST={key:1};rvFinish('saved');return;
   }
-  if(R.sec&&!R.stu){const a=await ask('No student selected','This sheet is not matched to a student. You can still save it: the handwriting picture is kept and you can match it later.',[{t:'Go back',v:0},{t:'Save with picture only',v:1,cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}}
+  if(false){const a=await ask('No student selected','This sheet is not matched to a student. You can still save it: the handwriting picture is kept and you can match it later.',[{t:'Go back',v:0},{t:'Save with picture only',v:1,cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}}
   const nm=R.sec?(R.stu?R.stu.name:''):R.name.trim();
   const dup=R.sec?(R.stu?resultsOf(e.id).find(r=>r.sid===R.sec.id&&r.no===R.stu.no):null):!nm?null:resultsOf(e.id).find(r=>norm(r.name)===norm(nm)&&norm(r.section)===norm(R.section)&&norm(r.grade)===norm(R.grade));
   let replaceId=null;
-  if(dup){const a=await ask('Already scanned',`<b>${esc(nm)}</b> already has a sheet for this exam (${scoreOf(e,dup.ans)}/${e.n}). What would you like to do?`,[{t:'Cancel',v:0},{t:'Keep both',v:'both'},{t:'Replace old',v:'rep',cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}if(a==='rep')replaceId=dup.id;}
+  if(false){const a=await ask('Already scanned',`<b>${esc(nm)}</b> already has a sheet for this exam (${scoreOf(e,dup.ans)}/${e.n}). What would you like to do?`,[{t:'Cancel',v:0},{t:'Keep both',v:'both'},{t:'Replace old',v:'rep',cls:'pri'}]);if(!a){R.saving=false;rvBtn();return;}if(a==='rep')replaceId=dup.id;}
   if(replaceId){const o=S.results.find(x=>x.id===replaceId);if(o){o.del=true;stamp(o);IDB.del('img_'+o.id);}}
   const r={id:uid(),examId:e.id,name:nm,subject:R.subject.trim(),grade:R.sec?'':R.grade.trim(),section:R.sec?R.sec.name:R.section.trim(),sid:R.sec?R.sec.id:'',no:R.stu?R.stu.no:0,date:R.date,ans:final,fix:final.map((a,i)=>R.rs[i]?i:-1).filter(i=>i>=0),ts:Date.now()};stamp(r);
   S.results.push(r);S.set.lastExam=e.id;save();
   storePictures(r.id,R.res.canon,R.hdr,!S.set.keepImg);
   toast(`Saved ✓  ${nm||'Sheet'}: ${scoreOf(e,final)}/${e.n}`,2400);beep('ok');
   SCAN.count=(SCAN.count||0)+1;if(typeof syncSoon==='function')syncSoon();
+  LAST={unm:!!(R.sec&&!R.stu),name:nm,no:R.stu?R.stu.no:0,s:scoreOf(e,final),n:e.n,keyOk:e.key.filter(Boolean).length===e.n,total:resultsOf(e.id).length};
   rvFinish('saved');
 }
 async function storePictures(id,cn,hdr,hdrOnly){
@@ -863,13 +879,13 @@ async function storePictures(id,cn,hdr,hdrOnly){
     await IDB.put('img_'+id,{sheet:await canvasBlob(sm,.62),hdr:await canvasBlob(hdr,.6)});}catch(err){}
 }
 function rvEdit(i){
-  const R=RV,m=openModal('',true);m.style.zIndex=30;
+  const R=RV,m=openModal('',true);m.style.zIndex=40;
   const paint=()=>{m.querySelector('.in').innerHTML=`<div class="row sp"><b>Edit item ${i+1}</b><button class="btn pri sm" data-a="close">Done</button></div>${itemCard(i)}`;drawRow($('canvas[data-row]',m),i);};
   paint();m._repaint=paint;R.edit=m;
 }
 function rvViewFull(){
   const R=RV,cn=R.res.canon,L=layoutOf(R.exam),sc=3,w=cn.w/2,h=cn.h/2;
-  const m=openModal(`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">Full sheet</div><button class="btn sm" data-z="1">＋</button><button class="btn sm" data-z="-1">－</button></div><div class="small muted" style="margin-bottom:6px">Green ring = answer read · orange = needs check · grey = blank</div><div class="zoomwrap"><canvas id="fv"></canvas></div>`);m.style.zIndex=35;
+  const m=openModal(`<div class="mbar"><button class="btn sm" data-a="close">✕</button><div class="t">Full sheet</div><button class="btn sm" data-z="1">＋</button><button class="btn sm" data-z="-1">－</button></div><div class="small muted" style="margin-bottom:6px">Green ring = answer read · orange = needs check · grey = blank</div><div class="zoomwrap"><canvas id="fv"></canvas></div>`);m.style.zIndex=45;
   const cv=$('#fv',m),full=document.createElement('canvas');full.width=cn.w;full.height=cn.h;
   const x=full.getContext('2d'),id=x.createImageData(cn.w,cn.h);for(let i=0,j=0;i<cn.data.length;i++,j+=4){id.data[j]=id.data[j+1]=id.data[j+2]=cn.data[i];id.data[j+3]=255;}x.putImageData(id,0,0);
   cv.width=cn.w;cv.height=cn.h;const g=cv.getContext('2d');g.drawImage(full,0,0);g.lineWidth=5;
@@ -891,7 +907,11 @@ function viewResults(){
   if(!examOf(UI.resExam))UI.resExam=examOf(S.set.lastExam)?S.set.lastExam:ex[0].id;
   const e=examOf(UI.resExam), all=resultsOf(e.id), secs=new Map();all.forEach(r=>secs.set(secKey(r),secLabel(r)));
   if(UI.resSec&&!secs.has(UI.resSec))UI.resSec='';
+  const cntNo={};all.forEach(r=>{if(r.sid&&r.no){const k=r.sid+'|'+r.no;cntNo[k]=(cntNo[k]||0)+1;}});
+  const flagOf=r=>r.sid&&!r.no?'unm':(r.sid&&r.no&&cntNo[r.sid+'|'+r.no]>1?'dup':'');
+  const nFlag=all.filter(flagOf).length;
   let rs=all.filter(r=>!UI.resSec||secKey(r)===UI.resSec);
+  if(UI.onlyFlag&&nFlag)rs=rs.filter(flagOf);else UI.onlyFlag=false;
   rs.sort((a,b)=>UI.sort==='score'?scoreOf(e,b.ans)-scoreOf(e,a.ans):(a.no&&b.no&&a.sid===b.sid?a.no-b.no:norm(a.name).localeCompare(norm(b.name)))||(a.ts-b.ts));
   const sc=rs.map(r=>scoreOf(e,r.ans)), keyOk=e.key.filter(Boolean).length===e.n;
   const mean=sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:0, mps=mean/e.n*100;
@@ -901,9 +921,10 @@ function viewResults(){
   return `<div class="row sp"><h2>Results</h2><div class="row"><button class="btn sm" data-a="exportScores">⬇️ Scores CSV</button><button class="btn sm" data-a="exportAnswers">⬇️ Answers CSV</button></div></div>
   <div class="card"><select data-res="exam">${ex.map(x=>`<option value="${x.id}" ${x.id===e.id?'selected':''}>${esc(x.title)}</option>`).join('')}</select>
   <div class="grid2" style="margin-top:6px"><select data-res="sec"><option value="">All sections</option>${[...secs].map(([k,l])=>`<option value="${esc(k)}" ${k===UI.resSec?'selected':''}>${esc(l)}</option>`).join('')}</select><select data-res="sort"><option value="name" ${UI.sort!=='score'?'selected':''}>Sort by name</option><option value="score" ${UI.sort==='score'?'selected':''}>Sort by score</option></select></div></div>
+  ${nFlag?`<div class="banner wn"><b>${nFlag} sheet${nFlag>1?'s':''} to check:</b> not matched to a student, or two sheets with the same number. Open one and tap <b>Change student</b>. <button class="btn sm" data-a="toggleFlag" style="margin-top:6px">${UI.onlyFlag?'Show all sheets':'Show only these'}</button></div>`:''}
   ${!keyOk?`<div class="banner wn">Answer key incomplete (${e.key.filter(Boolean).length}/${e.n}). Scores will be accurate once the key is finished.</div>`:''}
   ${rs.length?`<div class="row" style="margin-bottom:10px"><div class="stat"><b>${rs.length}</b><span>scanned</span></div><div class="stat"><b>${mean.toFixed(1)}</b><span>mean score</span></div><div class="stat"><b>${mps.toFixed(1)}%</b><span>MPS</span></div><div class="stat"><b>${Math.max(...sc)}</b><span>highest</span></div><div class="stat"><b>${Math.min(...sc)}</b><span>lowest</span></div></div>`:''}
-  ${rs.map(r=>{const s=scoreOf(e,r.ans);return `<div class="card" style="cursor:pointer" data-a="openResult" data-id="${r.id}"><div class="row sp"><div class="grow"><div class="b">${r.no?pad2(r.no)+' · ':''}${esc(r.name)||'Name on sheet'}</div>${r.name?'':`<div class="nmimg"><img data-nm="${r.id}" alt="name"></div>`}<div class="small muted">${esc(secLabel(r))} · ${esc(prettyDate(r.date))}${r.fix&&r.fix.length?` · ✎ ${r.fix.length} checked`:''}</div></div><div style="text-align:right"><div style="font:600 18px var(--fh)">${s}/${e.n}</div><div class="small muted">${Math.round(s/e.n*100)}%</div></div></div></div>`;}).join('')||`<div class="card c muted">No sheets scanned for this exam${UI.resSec?' and section':''} yet.</div>`}
+  ${rs.map(r=>{const s=scoreOf(e,r.ans);return `<div class="card" style="cursor:pointer" data-a="openResult" data-id="${r.id}"><div class="row sp"><div class="grow"><div class="b">${r.no?pad2(r.no)+' · ':''}${esc(r.name)||'Name on sheet'}</div>${r.name?'':`<div class="nmimg"><img data-nm="${r.id}" alt="name"></div>`}<div class="small muted">${esc(secLabel(r))} · ${esc(prettyDate(r.date))}${r.fix&&r.fix.length?` · ✎ ${r.fix.length} checked`:''}</div>${flagOf(r)==='unm'?'<div class="small" style="color:var(--bad);font-weight:700">⚠️ Not matched to a student yet</div>':flagOf(r)==='dup'?'<div class="small" style="color:var(--bad);font-weight:700">⚠️ Same number as another sheet</div>':''}</div><div style="text-align:right"><div style="font:600 18px var(--fh)">${s}/${e.n}</div><div class="small muted">${Math.round(s/e.n*100)}%</div></div></div></div>`;}).join('')||`<div class="card c muted">No sheets scanned for this exam${UI.resSec?' and section':''} yet.</div>`}
   ${missing}
   ${rs.length?`<div class="row sp"><h2>Item analysis</h2><button class="btn sm" data-a="toggleAna">${UI.analysis?'Hide':'Show'}</button></div>${UI.analysis?analysisHtml(e,rs):'<div class="small muted">See which items were hard, easy, or had a popular wrong answer.</div>'}`:''}`;
 }
@@ -942,6 +963,7 @@ function openResult(id){
     <div class="grid2"><div><label class="f">Grade</label><input data-rd="grade" value="${esc(r.grade)}"></div><div><label class="f">Section</label><input data-rd="section" value="${esc(r.section)}"></div></div></div>
     <h3>Answers <span class="small muted">(green = correct · tap to change)</span></h3>
     <div class="agrid">${Array.from({length:e.n},(_,i)=>{const a=r.ans[i],k=e.key[i]||'',ok=a&&a!=='*'&&k.includes(a);return `<button class="${!k?'bl':ok?'ok':a?'er':'bl'}" data-a="rdItem" data-i="${i}"><small>${i+1}${k&&!ok?' · '+esc(k):''}</small>${a==='*'?'✕':a||'–'}</button>`;}).join('')}</div>
+    ${secOf(r.sid)?`<div class="card" style="margin-top:10px"><div class="b">${r.no?'No. '+pad2(r.no)+' · '+esc(r.name):'Not matched to a student yet'}</div><div class="small muted">Wrong student, or a classmate's number was shaded? Look at the name picture above and pick the right student.</div><div class="row" style="margin-top:6px"><button class="btn pri sm" data-a="rdWho">👩‍🎓 Change student</button>${r.no?'<button class="btn sm" data-a="rdUnmatch">Unmatch</button>':''}</div></div>`:''}
     <div class="row" style="margin-top:14px"><button class="btn" data-a="rdPic">🖼️ View sheet picture</button><button class="btn bad" data-a="rdDel">Delete</button></div>
     <div id="rdPicBox"></div>`;};
   m._r=r;m._e=e;m._paint=paint;paint();
@@ -1044,7 +1066,7 @@ function viewSettings(){
   <details style="margin-top:8px"><summary class="small b" style="cursor:pointer">Google Client ID</summary><div class="small muted" style="margin:6px 0">Use the same Client ID as your Classroom Hub. ${detectClientId()&&!st.clientId?'<b>Set up already.</b>':''}</div><input id="cid" value="${esc(st.clientId||detectClientId())}" placeholder="xxxx.apps.googleusercontent.com" data-set="clientId"></details></div>
   <div class="card"><div class="b" style="margin-bottom:6px">💾 Backup</div><div class="row"><button class="btn" data-a="backup">⬇️ Download backup</button><button class="btn" data-a="restore">⬆️ Restore backup</button></div><div class="small muted" style="margin-top:6px">Backup includes exams, keys, class lists and results (not pictures).</div></div>
   <div class="card"><div class="b" style="margin-bottom:4px">📱 Install on your phone or tablet</div><ul class="help" style="margin:0;padding-left:18px"><li><b>iPhone / iPad (Safari):</b> Share → Add to Home Screen.</li><li><b>Android (Chrome):</b> ⋮ menu → Add to Home screen / Install app.</li><li>Open Scanora once while online so it can save itself for offline use.</li></ul></div>
-  <div class="card"><div class="small muted">Scanora v2.4 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
+  <div class="card"><div class="small muted">Scanora v2.6 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
 }
 
 /* ---------- Google Drive sync ---------- */
@@ -1101,6 +1123,7 @@ const ACT={
   scMode:el=>{SCAN.mode=el.dataset.v;render();},
   liveScan:()=>openCamera(), takePhoto:()=>$('#fileCam').click(), choosePhotos:()=>$('#fileGal').click(),
   camClose:()=>closeCamera(), camShot:()=>camCapture(),
+  camNext:el=>{const p=$('#camPanel');if(p)p.remove();if(!CAM)return;CAM.busy=false;CAM.stable=0;CAM.gone=0;CAM.rearm=el.dataset.rearm==='1';CAM.msgUntil=0;},
   camAuto:()=>{CAM.auto=!CAM.auto;S.set.auto=CAM.auto;save(false);$('#camAutoB').classList.toggle('on',CAM.auto);},
   camTorch:async()=>{try{CAM.torch=!CAM.torch;await CAM.stream.getVideoTracks()[0].applyConstraints({advanced:[{torch:CAM.torch}]});$('#camTorch').classList.toggle('on',CAM.torch);}catch(e){toast('Flashlight not available');}},
   rvSet:el=>{const i=+el.dataset.i;RV.ans[i]=el.dataset.l;RV.rs[i]=true;rvDyn();if(RV.edit&&document.body.contains(RV.edit))RV.edit._repaint();},
@@ -1113,6 +1136,18 @@ const ACT={
   rdSet:el=>{const s=el.closest('.modal'),m=s._m,r=m._r;r.ans[s._i]=el.dataset.l;stamp(r);r.fix=[...new Set((r.fix||[]).concat(s._i))];save();s.remove();m._paint();render();},
   rdPic:el=>rdPic(el.closest('.modal')),
   rdDel:async el=>{const m=el.closest('.modal'),r=m._r;const a=await ask('Delete this result?',`Remove <b>${esc(r.name)}</b>'s sheet from this exam?`,[{t:'Cancel',v:0},{t:'Delete',v:1,cls:'bad'}]);if(!a)return;r.del=true;stamp(r);IDB.del('img_'+r.id);save();m.remove();render();toast('Deleted');},
+  toggleFlag:()=>{UI.onlyFlag=!UI.onlyFlag;render();},
+  rdWho:el=>{const m=el.closest('.modal'),r=m._r,e=m._e,sec=secOf(r.sid);if(!sec)return;
+    const p=openModal('',true);p.style.zIndex=50;
+    const paint=(f)=>{f=(f||'').toLowerCase();const used=n=>resultsOf(e.id).some(x=>x.sid===sec.id&&x.no===n&&x.id!==r.id);
+      p.querySelector('.in').innerHTML=`<div class="row sp"><b>Pick the right student</b><button class="btn sm" data-a="close">✕</button></div><input data-rdf="1" placeholder="Search name or number" value="${esc(f)}" style="margin:8px 0"><div class="chips" style="max-height:60vh;overflow:auto">${secStu(sec).filter(x=>!f||x.name.toLowerCase().includes(f)||pad2(x.no).includes(f)).map(x=>`<button class="pill ${r.no===x.no?'on':''}" style="font-size:13px;${used(x.no)?'opacity:.55':''}" data-a="rdPick" data-no="${x.no}">${pad2(x.no)} ${esc(x.name)}${used(x.no)?' ✓':''}</button>`).join('')||'<span class="small muted">No match</span>'}</div><div class="small muted" style="margin-top:6px">✓ = this student already has another sheet for this exam</div>`;
+      const i=p.querySelector('[data-rdf]');if(f){i.focus();i.setSelectionRange(f.length,f.length);}};
+    p._r=r;p._m=m;p._sec=sec;p._paint=paint;paint('');
+    p.addEventListener('input',ev=>{if(ev.target.dataset.rdf){ev.stopPropagation();paint(ev.target.value);}},true);},
+  rdPick:el=>{const p=el.closest('.modal'),r=p._r,sec=p._sec,x=stuByNo(sec,+el.dataset.no);if(!x)return;
+    r.no=x.no;r.name=x.name;r.sid=sec.id;r.section=sec.name;stamp(r);save();if(typeof syncSoon==='function')syncSoon();
+    const m=p._m;p.remove();if(m&&m._paint)m._paint();render();toast('Moved to '+x.name+' ✓');},
+  rdUnmatch:el=>{const m=el.closest('.modal'),r=m._r;r.no=0;r.name='';stamp(r);save();if(typeof syncSoon==='function')syncSoon();m._paint();render();toast('Unmatched');},
   toggleAna:()=>{UI.analysis=!UI.analysis;render();}, exportScores:()=>exportScores(), exportAnswers:()=>exportAnswers(),
   sections:()=>openSections(), secOpen:el=>secOpen(el.dataset.id), secNew:()=>secOpen(''), secSave:el=>secSave(el.dataset.id), secPrint:el=>secPrint(el.dataset.id), hubGo:el=>hubGo(el),
   secHub:()=>{const hc=hubRead();if(!hc||!hc.length){ask('Classroom Hub not found here','Scanora could not see the Classroom Hub on this device. This works when Scanora and the Hub are opened from the same website address. You can also use <b>From a Hub backup file</b>.',[{t:'OK',v:1,cls:'pri'}]);return;}hubPick(hc,'from Classroom Hub');},
@@ -1151,7 +1186,7 @@ document.addEventListener('change',e=>{
   else if(t.dataset.rv==='grade'||t.dataset.rv==='section'){const c=$('#rvChips');if(c)c.innerHTML=nameChips();const dl=$('#nameList');if(dl)dl.innerHTML=rosterNames(RV.grade,RV.section).map(n=>`<option value="${esc(n)}">`).join('');}
   else if(t.dataset.res){if(t.dataset.res==='exam'){UI.resExam=t.value;UI.resSec='';}else if(t.dataset.res==='sec')UI.resSec=t.value;else UI.sort=t.value;render();}
   else if(t.dataset.set&&t.type==='checkbox'){S.set[t.dataset.set]=t.checked;save(false);}
-  else if(t.id==='fileCam'||t.id==='fileGal'){const f=[...t.files];t.value='';handleFiles(f);}
+  else if(t.id==='fileCam'||t.id==='fileGal'){const f=[...t.files];t.value='';handleFiles(f,t.id==='fileCam');}
   else if(t.id==='fileHub'){const f=t.files[0];t.value='';if(!f)return;f.text().then(txt=>{try{const j=JSON.parse(txt);const cl=hubClean(j.classes||[]);if(!cl.length)throw 0;hubPick(cl,'from backup file');}catch(x){toast('That does not look like a Classroom Hub backup',3400);}});}
   else if(t.id==='fileBak'){const f=t.files[0];t.value='';if(!f)return;f.text().then(async txt=>{try{const j=JSON.parse(txt);if(!j.exams)throw 0;const a=await ask('Restore backup?','This <b>merges</b> the backup into what is on this device (newer edits win).',[{t:'Cancel',v:0},{t:'Restore',v:1,cls:'pri'}]);if(!a)return;mergeRemote(j);save();render();toast('Backup restored ✓');}catch(x){toast('That file is not a Scanora backup');}});}
 });
