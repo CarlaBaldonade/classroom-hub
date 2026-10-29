@@ -553,7 +553,7 @@ let ED=null, EDM=null;
 function newExamState(){const last=live(S.exams).sort((a,b)=>(b.u||0)-(a.u||0))[0];return {id:'',title:'',subject:last?last.subject:'',grade:last?last.grade:'',section:'',date:today(),n:50,ch:4,key:Array(50).fill(''),multi:false,customN:false};}
 function editorHtml(){
   const E=ED, presets=[25,50,60], isCustom=E.customN||!presets.includes(E.n);
-  const keyHtml=Array.from({length:E.n},(_,i)=>`<div style="border:1.5px solid var(--line);border-radius:11px;padding:4px 6px;background:var(--card);display:flex;align-items:center;gap:4px"><b style="width:24px;font-size:12px">${i+1}</b><div class="chips" style="gap:3px">${LETS(E.ch).map(L=>`<button class="pill ${(E.key[i]||'').includes(L)?'on':''}" style="padding:2px 8px;font-size:12px" data-a="edKey" data-i="${i}" data-l="${L}">${L}</button>`).join('')}</div></div>`).join('');
+  const keyHtml=Array.from({length:E.n},(_,i)=>`<div style="break-inside:avoid;-webkit-column-break-inside:avoid;page-break-inside:avoid;margin-bottom:${(i+1)%5===0?14:6}px;border:1.5px solid var(--line);border-radius:11px;padding:4px 6px;background:var(--card);display:flex;align-items:center;gap:4px"><b style="width:24px;font-size:12px">${i+1}</b><div class="chips" style="gap:3px">${LETS(E.ch).map(L=>`<button class="pill ${(E.key[i]||'').includes(L)?'on':''}" style="padding:2px 8px;font-size:12px" data-a="edKey" data-i="${i}" data-l="${L}">${L}</button>`).join('')}</div></div>`).join('');
   const filled=E.key.slice(0,E.n).filter(Boolean).length;
   return `<div class="mbar"><button class="btn sm" data-a="edClose">✕</button><div class="t">${E.id?'Edit exam':'New exam'}</div><button class="btn pri sm" data-a="edSave">Save</button></div>
   <label class="f">Exam title</label><input data-ed="title" value="${esc(E.title)}" placeholder="e.g. Quiz 1 – Matter">
@@ -569,7 +569,7 @@ function editorHtml(){
   <div class="row"><input data-ed="paste" placeholder="ABCD…" style="flex:1"><button class="btn sm" data-a="edPaste">Apply</button></div>
   <label class="chk small" style="margin:8px 0"><input type="checkbox" style="width:auto" data-ed="multi" ${E.multi?'checked':''}> Allow more than one correct answer on an item</label>
   <div class="row" style="margin-bottom:8px">${E.id?`<button class="btn sm" data-a="edScanKey">📷 Set key by scanning a filled sheet</button>`:`<span class="small muted">Tip: after saving, you can also set the key by scanning one filled-in sheet.</span>`}<button class="btn sm ghost" data-a="edClearKey">Clear key</button></div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:6px">${keyHtml}</div>
+  <div style="column-width:172px;column-gap:8px">${keyHtml}</div>
   ${E.id?`<div class="row" style="margin-top:14px"><button class="btn sm" data-a="edDup">Duplicate exam</button><button class="btn bad sm" data-a="edDel">Delete exam</button></div>`:''}`;
 }
 function openEditor(ex){
@@ -1039,7 +1039,7 @@ function viewSettings(){
   <details style="margin-top:8px"><summary class="small b" style="cursor:pointer">Google Client ID</summary><div class="small muted" style="margin:6px 0">Use the same Client ID as your Classroom Hub. ${detectClientId()&&!st.clientId?'<b>Set up already.</b>':''}</div><input id="cid" value="${esc(st.clientId||detectClientId())}" placeholder="xxxx.apps.googleusercontent.com" data-set="clientId"></details></div>
   <div class="card"><div class="b" style="margin-bottom:6px">💾 Backup</div><div class="row"><button class="btn" data-a="backup">⬇️ Download backup</button><button class="btn" data-a="restore">⬆️ Restore backup</button></div><div class="small muted" style="margin-top:6px">Backup includes exams, keys, class lists and results (not pictures).</div></div>
   <div class="card"><div class="b" style="margin-bottom:4px">📱 Install on your phone or tablet</div><ul class="help" style="margin:0;padding-left:18px"><li><b>iPhone / iPad (Safari):</b> Share → Add to Home Screen.</li><li><b>Android (Chrome):</b> ⋮ menu → Add to Home screen / Install app.</li><li>Open Scanora once while online so it can save itself for offline use.</li></ul></div>
-  <div class="card"><div class="small muted">Scanora v2.1 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
+  <div class="card"><div class="small muted">Scanora v2.2 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
 }
 
 /* ---------- Google Drive sync ---------- */
