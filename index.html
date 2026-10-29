@@ -2465,7 +2465,7 @@ Object.assign(act,{
       if(S.schedule.items.length&&confirm('You already have classes in your schedule. Put them into “'+nm+'” only?\n\nOK = yes, they belong to “'+nm+'” only (other weeks start empty)\nCancel = show them in EVERY week'))S.schedule.items.forEach(i=>{if(!i.date)i.sid=id});
     }else if(confirm('Copy the classes of “'+subName(src)+'” into “'+nm+'”?\n\nOK = copy them\nCancel = start empty')){
       S.schedule.items.filter(i=>i.sid===src).forEach(i=>S.schedule.items.push(Object.assign({},i,{id:uid(),days:i.days.slice(),sid:id})));
-    }
+    }else S.schedule.items.forEach(i=>{if(!i.sid&&!i.date)i.sid=src});
     ui.svw=id;schTouch();toast('Added “'+nm+'”');
   },
   subSchMove(){const id=viewSub();S.schedule.items.forEach(i=>{if(!i.sid&&!i.date)i.sid=id});schTouch();toast('Moved into “'+subName(id)+'”')},
