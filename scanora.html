@@ -88,7 +88,7 @@ label.f{display:block;font-size:11.5px;font-weight:800;color:var(--muted);margin
 
 </style></head>
 <body>
-<div id="app"><header id="top"><div class="brand"><span>📑</span> Scanora</div><div class="sub"><span class="chip" id="syncchip">●</span></div></header><main id="view"></main></div>
+<div id="app"><header id="top"><a id="hubBack" href="index.html" class="chip" hidden style="text-decoration:none;color:#fff;padding:6px 12px;font-size:12.5px">← Hub</a><div class="brand"><span>📑</span> Scanora</div><div class="sub"><span class="chip" id="syncchip">●</span></div></header><main id="view"></main></div>
 <nav id="nav"><div class="in"><button data-tab="exams"><span>📝</span>Exams</button><button data-tab="scan"><span>📷</span>Scan</button><button data-tab="results"><span>📊</span>Results</button><button data-tab="settings"><span>⚙️</span>Settings</button></div></nav>
 <div id="mroot"></div><div id="toast"></div><div id="printRoot"></div>
 <input type="file" id="fileCam" accept="image/*" capture="environment" hidden><input type="file" id="fileGal" accept="image/*" multiple hidden><input type="file" id="fileHub" accept=".json,application/json" hidden><input type="file" id="fileBak" accept=".json,application/json" hidden>
@@ -530,6 +530,7 @@ function render(){
   const v={exams:viewExams,scan:viewScan,results:viewResults,settings:viewSettings}[UI.tab]();
   $('#view').innerHTML=v;
   $('#syncchip').textContent=(navigator.onLine?'● online':'○ offline');
+  try{$('#hubBack').hidden=localStorage.getItem('classroomhub.v1')===null;}catch(e){}
   if(UI.tab==='scan')bindScanView();
 }
 
