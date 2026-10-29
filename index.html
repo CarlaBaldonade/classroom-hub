@@ -1413,7 +1413,7 @@ function weekGrid(){
     const flush=()=>{const le=[];cl.forEach(x=>{let l=le.findIndex(e=>e<=x.s);if(l<0){l=le.length;le.push(0)}le[l]=x.e;x.l=l});cl.forEach(x=>{x.n=le.length;out.push(x)});cl=[]};
     its.forEach(x=>{if(cl.length&&x.s>=cEnd){flush();cEnd=0}cl.push(x);cEnd=Math.max(cEnd,x.e)});if(cl.length)flush();
     g+='<div class="wd'+(d===td?' today':'')+'" style="height:'+H+'px">'
-     +out.map(x=>{const hgt=(x.e-x.s)*PPM;return '<button class="wb'+(SUBS().length&&!x.i.sid?' sh':'')+'" data-act="schEdit" data-id="'+x.i.id+'" style=""top:'+((x.s-minM)*PPM)+'px;height:'+hgt+'px;left:calc('+(x.l/x.n*100)+'% + 2px);width:calc('+(100/x.n)+'% - 4px);--h:'+hueOf(x.i)+'"><b>'+(SUBS().length&&!x.i.sid?'🔁 ':'')+esc(sName(x.i))+'</b><span>'+fmtT(x.i.start).replace(' ','')+'–'+fmtT(x.i.end).replace(' ','')+'</span>'+(hgt>=62&&x.i.room?'<span>'+esc(x.i.room)+'</span>':'')+'</button>'}).join('')
+     +out.map(x=>{const hgt=(x.e-x.s)*PPM;return '<button class="wb'+(SUBS().length&&!x.i.sid?' sh':'')+'" data-act="schEdit" data-id="'+x.i.id+'" style="top:'+((x.s-minM)*PPM)+'px;height:'+hgt+'px;left:calc('+(x.l/x.n*100)+'% + 2px);width:calc('+(100/x.n)+'% - 4px);--h:'+hueOf(x.i)+'"><b>'+(SUBS().length&&!x.i.sid?'🔁 ':'')+esc(sName(x.i))+'</b><span>'+fmtT(x.i.start).replace(' ','')+'–'+fmtT(x.i.end).replace(' ','')+'</span>'+(hgt>=62&&x.i.room?'<span>'+esc(x.i.room)+'</span>':'')+'</button>'}).join('')
      +(d===td&&nowM>=minM&&nowM<=maxM?'<div class="wnow" style="top:'+((nowM-minM)*PPM)+'px"></div>':'')+'</div>';
   }
   g+='</div></div>';
