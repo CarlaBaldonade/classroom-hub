@@ -3108,7 +3108,8 @@ function paPlan(roster, mode){
     const typed = (sec.name || '').trim();
     if (paSecIsUnnamed(typed)){ plan.blocked.push('"' + typed + '" has no real name yet. Rename it in Setup (for example "Rizal" or "7 - Rizal"), then publish.'); return; }
     const hits = existing.filter(n => paSecMatch(n, typed));
-    const sp = { idx, sec, typed, hits, target: hits.length === 1 ? hits[0] : (hits.length ? '' : '__new__'), students: students.map(stu => ({ stu })) };
+    const sp = { idx, sec, typed, hits, target: hits.length === 1 ? hits[0] : (hits.length ? '' : '__new__'), students: students.map(stu => ({ stu })),
+      release: false, mDate: settings.meetingDate || '', mTime: settings.meetingTime || '', mPlace: settings.meetingPlace || '' };
     paReplanSection(sp, roster);
     plan.sections.push(sp);
   });
@@ -3152,7 +3153,8 @@ function paDupes(plan){
 }
 
 // ---- what parents will see for one student ----
-function paEntry(stu, sec, subject, shownName, secLabel, fs){
+function paEntry(stu, sec, subject, shownName, secLabel, fs, rel){
+  rel = rel || { release: false, date: '', time: '', place: '' };
   const c = calcStudent(stu, sec, subject);
   const items = { ww: [], pt: [], sum: [], exam: [] };
   const add = (arr, title, max, score) => {
@@ -3170,13 +3172,14 @@ function paEntry(stu, sec, subject, shownName, secLabel, fs){
   const entry = {
     name: subject.label, teacher: (settings.teacher || '').trim(), term: String(currentTermId),
     updatedAt: new Date().toISOString(), ww: items.ww, pt: items.pt, sum: items.sum, exam: items.exam,
-    needsImprovement: ni
+    needsImprovement: ni,
+    letterReleased: !!(ni && rel.release)
   };
-  entry.letter = ni ? {
+  entry.letter = (ni && rel.release) ? {
     date: settings.date || '', subject: subject.label, term: String(currentTermId), teacher: (settings.teacher || '').trim(),
     studentName: shownName, section: secLabel,
     rows: [row('Written Works (WW)', w.ww, c.ww, c.wwMissing), row('Performance Tasks (PETA)', w.peta, c.peta, c.petaMissing), row('Summative Test and Term Exam', w.summ, c.summ, c.summMissing)],
-    visit: { date: settings.meetingDate || '', time: settings.meetingTime || '', place: settings.meetingPlace || '' }
+    visit: { date: (rel.date || '').trim(), time: (rel.time || '').trim(), place: (rel.place || '').trim() }
   } : fs.deleteField();
   return { entry, calc: c, ni };
 }
@@ -3219,14 +3222,27 @@ function paResolve(plan){
 async function paPublishScores(){
   const plan = PA.plan, k = PA.kit, subject = getSubject(currentSubjectId), key = paSubjKey();
   const { ops, out } = paResolve(plan);
-  let ni = 0;
+  let ni = 0, sent = 0, held = 0;
   out.forEach(({ sp, x, rec, secLabel }) => {
-    const { entry, ni: isNi } = paEntry(x.stu, sp.sec, subject, paDisplay(rec.name), secLabel, k.fs);
-    if (isNi) ni++;
-    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { name: rec.name, section: secLabel, schoolYear: PA_SCHOOL_YEAR, subjects: { [key]: entry } }, { merge: true }));
+    const rel = { release: !!sp.release, date: sp.mDate, time: sp.mTime, place: sp.mPlace };
+    const { entry, ni: isNi } = paEntry(x.stu, sp.sec, subject, paDisplay(rec.name), secLabel, k.fs, rel);
+    if (isNi){ ni++; if (rel.release) sent++; else held++; }
+    // The letter and the come-to-school banner are one switch: both appear, or neither.
+    let banner = k.fs.deleteField();
+    if (isNi && rel.release){
+      const when = [rel.date, rel.time].map(v => (v || '').trim()).filter(Boolean).join(', ');
+      const where = (rel.place || '').trim();
+      let hsh = 0; const sig = when + '|' + where; for (let i = 0; i < sig.length; i++) hsh = (hsh * 31 + sig.charCodeAt(i)) | 0;
+      banner = {
+        id: key + '-' + (hsh >>> 0).toString(36), title: 'Please visit the school',
+        message: 'Please come to school for a short talk about ' + paDisplay(rec.name) + "'s progress in " + subject.label + ' (Term ' + currentTermId + ').',
+        when, where, who: ((settings.teacher || '').trim() + ' \u2022 ' + subject.label).replace(/^ \u2022 /, ''), createdAt: new Date().toISOString()
+      };
+    }
+    ops.push(b => b.set(k.fs.doc(k.db, 'portal', rec.code), { name: rec.name, section: secLabel, schoolYear: PA_SCHOOL_YEAR, subjects: { [key]: entry }, banners: { [key]: banner } }, { merge: true }));
   });
   await paCommit(ops);
-  return { count: out.length, created: out.filter(o => o.rec.isNew).length, ni };
+  return { count: out.length, created: out.filter(o => o.rec.isNew).length, ni, sent, held };
 }
 async function paPublishFinals(){
   const plan = PA.plan, k = PA.kit, subject = getSubject(currentSubjectId), key = paSubjKey();
@@ -3415,6 +3431,12 @@ function paPlanHtml(plan){
     if (gated) return;
     if (sp.official) h += '<div class="pa-sec" style="margin-top:6px"><b>Official list.</b> This section has an official learner list from your school, so names can only be matched to it.</div>';
     else if (sp.target === '__new__' && plan.roster.some(r => r.official)) h += '<div class="pa-sec" style="margin-top:6px;color:#a33">Your section name does not match any section on the school list. If it should, pick it in the list above (or rename the section in Setup) instead of creating a new one.</div>';
+    if (plan.mode === 'scores'){
+      const inp = 'style="font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;box-sizing:border-box;max-width:100%"';
+      h += '<div class="pa-box" style="margin:8px 0"><label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" data-pa-rel="' + si + '"' + (sp.release ? ' checked' : '') + ' style="margin-top:3px"><span><b>Release letters and come-to-school notice to parents</b><br><span class="pa-sec">' + (sp.release ? 'On: parents of learners who need improvement will see their letter and the notice, with the meeting details below.' : 'Off: parents see the scores only. No letter and no notice (any earlier one for this subject is hidden).') + '</span></span></label>';
+      if (sp.release) h += '<div class="pa-row" style="margin-top:8px"><label class="pa-sec">Date<br><input type="text" data-pa-md="' + si + ':mDate" placeholder="e.g. August 15, 2026" value="' + escapeAttr(sp.mDate) + '" ' + inp + '></label><label class="pa-sec">Time<br><input type="text" data-pa-md="' + si + ':mTime" placeholder="e.g. 3:00 PM" value="' + escapeAttr(sp.mTime) + '" ' + inp + '></label><label class="pa-sec">Place<br><input type="text" data-pa-md="' + si + ':mPlace" placeholder="e.g. Science Room" value="' + escapeAttr(sp.mPlace) + '" ' + inp + '></label></div>' + ((sp.mDate || '').trim() && (sp.mTime || '').trim() && (sp.mPlace || '').trim() ? '' : '<div class="pa-sec" style="color:#a33;margin-top:6px">Fill in the date, time and place so parents know when to come.</div>');
+      h += '</div>';
+    }
     sp.students.forEach((x, xi) => {
       if (x.status === 'match') return;
       const hint = x.status === 'ambiguous' ? 'Matches more than one learner' : (x.cands && x.cands.length ? 'Looks similar to ★ learners' : (sp.official ? 'Not on the official list. Pick the right learner, or skip' : plan.mode === 'scores' ? 'Not on the list yet' : 'Not found, publish scores first'));
@@ -3550,6 +3572,8 @@ function paBind(card){
   };
   on('#pa-nsend', nsend(false)); on('#pa-nclear', nsend(true));
   on('#pa-nrefresh', async () => { PA.working = true; paRefresh(); await paNoticeLoad(); PA.working = false; paRefresh(); });
+  card.querySelectorAll('[data-pa-rel]').forEach(el => el.onchange = () => { PA.plan.sections[Number(el.dataset.paRel)].release = el.checked; paRefresh(); });
+  card.querySelectorAll('[data-pa-md]').forEach(el => el.oninput = () => { const [si, f] = el.dataset.paMd.split(':'); PA.plan.sections[Number(si)][f] = el.value; });
   card.querySelectorAll('[data-pa-incl]').forEach(el => el.onchange = () => { PA.plan.sections[Number(el.dataset.paIncl)].skip = !el.checked; paRefresh(); });
   card.querySelectorAll('[data-pa-sec]').forEach(el => el.onchange = () => {
     const sp = PA.plan.sections[Number(el.dataset.paSec)]; sp.target = el.value; paReplanSection(sp, PA.plan.roster);
@@ -3565,7 +3589,7 @@ function paBind(card){
     try {
       if (plan.mode === 'scores'){
         const r = await paPublishScores(); paSetLast('scores', { count: r.count });
-        PA.msg = { t: 'good', s: 'Published ' + paLabel() + ' to ' + r.count + ' learners' + (r.created ? ' (' + r.created + ' new learner' + (r.created > 1 ? 's' : '') + ' added)' : '') + (r.ni ? '. ' + r.ni + ' need improvement and now have a letter in the app.' : '.') };
+        PA.msg = { t: 'good', s: 'Published ' + paLabel() + ' to ' + r.count + ' learners' + (r.created ? ' (' + r.created + ' new learner' + (r.created > 1 ? 's' : '') + ' added)' : '') + (r.ni ? (r.sent ? '. ' + r.sent + ' need improvement and now have a letter and come-to-school notice in the app' : '') + (r.held ? (r.sent ? '; ' : '. ') + r.held + ' need improvement but their letter is not released yet' : '') + '.' : '.') };
         showToast('Scores published');
       } else if (plan.mode === 'finals'){
         const r = await paPublishFinals(); paSetLast('finals', { count: r.n });
