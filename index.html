@@ -362,6 +362,7 @@ html[data-cute] input[type=time]{border-radius:14px;border-width:2px}
 .wb{position:absolute;overflow:hidden;border:0;border-left:4px solid hsl(var(--h) 55% 42%);background:hsl(var(--h) 85% 91%);color:#26303a;border-radius:8px;padding:3px 5px;text-align:left;font-size:.68rem;line-height:1.2;cursor:pointer;display:flex;flex-direction:column;gap:1px;box-shadow:0 2px 6px -3px rgba(0,0,0,.35)}
 .wb b{font-weight:800;word-break:break-word}
 .wb span{opacity:.8}
+.wb.sh{border-left-style:dashed;background:repeating-linear-gradient(135deg,hsl(var(--h) 85% 91%) 0 6px,hsl(var(--h) 85% 95%) 6px 12px)}
 .wnow{position:absolute;left:0;right:0;height:2px;background:#e11d48;z-index:2}
 .wnow::before{content:"";position:absolute;left:-1px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e11d48}
 
@@ -1412,7 +1413,7 @@ function weekGrid(){
     const flush=()=>{const le=[];cl.forEach(x=>{let l=le.findIndex(e=>e<=x.s);if(l<0){l=le.length;le.push(0)}le[l]=x.e;x.l=l});cl.forEach(x=>{x.n=le.length;out.push(x)});cl=[]};
     its.forEach(x=>{if(cl.length&&x.s>=cEnd){flush();cEnd=0}cl.push(x);cEnd=Math.max(cEnd,x.e)});if(cl.length)flush();
     g+='<div class="wd'+(d===td?' today':'')+'" style="height:'+H+'px">'
-     +out.map(x=>{const hgt=(x.e-x.s)*PPM;return '<button class="wb" data-act="schEdit" data-id="'+x.i.id+'" style="top:'+((x.s-minM)*PPM)+'px;height:'+hgt+'px;left:calc('+(x.l/x.n*100)+'% + 2px);width:calc('+(100/x.n)+'% - 4px);--h:'+hueOf(x.i)+'"><b>'+esc(sName(x.i))+'</b><span>'+fmtT(x.i.start).replace(' ','')+'–'+fmtT(x.i.end).replace(' ','')+'</span>'+(hgt>=62&&x.i.room?'<span>'+esc(x.i.room)+'</span>':'')+'</button>'}).join('')
+     +out.map(x=>{const hgt=(x.e-x.s)*PPM;return '<button class="wb'+(SUBS().length&&!x.i.sid?' sh':'')+'" data-act="schEdit" data-id="'+x.i.id+'" style=""top:'+((x.s-minM)*PPM)+'px;height:'+hgt+'px;left:calc('+(x.l/x.n*100)+'% + 2px);width:calc('+(100/x.n)+'% - 4px);--h:'+hueOf(x.i)+'"><b>'+(SUBS().length&&!x.i.sid?'🔁 ':'')+esc(sName(x.i))+'</b><span>'+fmtT(x.i.start).replace(' ','')+'–'+fmtT(x.i.end).replace(' ','')+'</span>'+(hgt>=62&&x.i.room?'<span>'+esc(x.i.room)+'</span>':'')+'</button>'}).join('')
      +(d===td&&nowM>=minM&&nowM<=maxM?'<div class="wnow" style="top:'+((nowM-minM)*PPM)+'px"></div>':'')+'</div>';
   }
   g+='</div></div>';
@@ -1426,6 +1427,8 @@ function weeksCard(){
   if(!s.length)return h+'<p class="muted">Does your timetable change from week to week? Add one schedule per week type (for example Week A, B and C). Classes you add under “Every week” show in all of them.</p><div class="row"><button class="btn pri" data-act="subSchAdd">＋ Add week schedule</button></div></section>';
   h+='<p class="muted">Tap a week to view or edit it. The ✓ one is what “Today” is using.</p><div class="chips">'+s.map(x=>'<button class="chip'+(x.id===vs?' on':'')+'" data-act="subSchView" data-id="'+x.id+'">'+(x.id===cs?'✓ ':'')+esc(x.name)+'</button>').join('')+'</div>'
    +'<div class="row wrap">'+(auto?'':'<button class="btn sm pri" data-act="subSchUse"'+(vs===cs?' disabled':'')+'>✓ Use “'+esc(subName(vs))+'” this week</button>')+'<button class="btn sm" data-act="subSchAdd">＋ Add</button><button class="btn sm" data-act="subSchRename">✎ Rename</button><button class="btn sm danger" data-act="subSchDel">🗑 Delete</button></div>';
+  const sh=S.schedule.items.filter(i=>!i.sid).length;
+  if(sh)h+='<div class="ssts">🔁 <b>'+sh+' class'+(sh>1?'es are':' is')+' set to “Every week”</b>, so '+(sh>1?'they show':'it shows')+' in all your weeks (marked 🔁 in the calendar). Not what you want? <button class="btn sm" data-act="subSchMove">Move '+(sh>1?'them':'it')+' into “'+esc(subName(vs))+'” only</button></div>';
   if(s.length>1){
     h+='<label class="chk"><input type="checkbox" data-chg="rotOn"'+(auto?' checked':'')+'> Rotate automatically every week, in the order above</label>';
     if(auto){
@@ -2421,12 +2424,13 @@ Object.assign(act,{
     S.schedule.subs=SUBS().concat([{id:id,name:nm}]);
     if(first){
       S.schedule.act=id;
-      if(S.schedule.items.length&&confirm('Put your current classes into “'+nm+'”?\n\nOK = only in “'+nm+'”\nCancel = keep them in every week'))S.schedule.items.forEach(i=>{i.sid=id});
+      if(S.schedule.items.length&&confirm('You already have classes in your schedule. Put them into “'+nm+'” only?\n\nOK = yes, they belong to “'+nm+'” only (other weeks start empty)\nCancel = show them in EVERY week'))S.schedule.items.forEach(i=>{i.sid=id});
     }else if(confirm('Copy the classes of “'+subName(src)+'” into “'+nm+'”?\n\nOK = copy them\nCancel = start empty')){
       S.schedule.items.filter(i=>i.sid===src).forEach(i=>S.schedule.items.push(Object.assign({},i,{id:uid(),days:i.days.slice(),sid:id})));
     }
     ui.svw=id;schTouch();toast('Added “'+nm+'”');
   },
+  subSchMove(){const id=viewSub();S.schedule.items.forEach(i=>{if(!i.sid)i.sid=id});schTouch();toast('Moved into “'+subName(id)+'”')},
   subSchView(c,t){ui.svw=t.dataset.id;if(ui.sf&&!ui.sf.id)ui.sf.sid=ui.svw;render()},
   subSchUse(){S.schedule.act=viewSub();schTouch();toast('Using “'+subName(S.schedule.act)+'” this week')},
   subSchRename(){
