@@ -530,7 +530,7 @@ function render(){
   const v={exams:viewExams,scan:viewScan,results:viewResults,settings:viewSettings}[UI.tab]();
   $('#view').innerHTML=v;
   $('#syncchip').textContent=(navigator.onLine?'● online':'○ offline');
-  try{$('#hubBack').hidden=localStorage.getItem('classroomhub.v1')===null;}catch(e){}
+  try{const hc=hubRead();$('#hubBack').hidden=!(hc&&hc.length);}catch(e){}
   if(UI.tab==='scan')bindScanView();
 }
 
