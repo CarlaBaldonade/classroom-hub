@@ -508,12 +508,27 @@ function normSched(i){
   if(!i||!i.id||!isT(i.start)||!isT(i.end))return null;
   const days=(Array.isArray(i.days)?i.days:[]).map(Number).filter(d=>d>=1&&d<=7).filter((d,n,a)=>a.indexOf(d)===n);
   if(!days.length)return null;
-  return{id:String(i.id),days:days,start:i.start,end:i.end,title:String(i.title||'').slice(0,80),room:String(i.room||'').slice(0,60),note:String(i.note||'').slice(0,300),cid:String(i.cid||'')};
+  return{id:String(i.id),days:days,start:i.start,end:i.end,title:String(i.title||'').slice(0,80),room:String(i.room||'').slice(0,60),note:String(i.note||'').slice(0,300),cid:String(i.cid||''),sid:String(i.sid||'').slice(0,20)};
 }
 function fmtT(t){const h=+t.slice(0,2),m=t.slice(3);return (h%12||12)+':'+m+' '+(h<12?'AM':'PM')}
 const nowT=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 const jsDay=()=>new Date().getDay()||7;
-const itemsOn=d=>S.schedule.items.filter(i=>i.days.includes(d)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:(a.end<b.end?-1:1));
+function normSchObj(o,mod){
+  o=o&&typeof o==='object'?o:{};
+  const subs=(Array.isArray(o.subs)?o.subs:[]).filter(x=>x&&x.id).slice(0,8).map(x=>({id:String(x.id).slice(0,20),name:String(x.name||'Week').slice(0,30)}));
+  const ok=new Set(subs.map(x=>x.id));
+  const items=(Array.isArray(o.items)?o.items:[]).map(normSched).filter(Boolean);
+  items.forEach(i=>{if(i.sid&&!ok.has(i.sid))i.sid=''});
+  const r=o.rot&&typeof o.rot==='object'?o.rot:{};
+  return{mod:mod!==undefined?mod:(+o.mod||0),items:items,subs:subs,act:ok.has(o.act)?o.act:'',rot:{on:!!r.on&&subs.length>1&&isD(r.start),start:isD(r.start)?r.start:''}};
+}
+const SUBS=()=>S.schedule.subs||[];
+const subName=id=>{const x=SUBS().find(y=>y.id===id);return x?x.name:''};
+function monOf(k){const d=pd(k);d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
+function rotIdx(off){const r=S.schedule.rot,n=SUBS().length;if(!r||!r.on||n<2)return -1;const w=Math.round((monOf(today())-monOf(r.start))/6048e5)+(off||0);return ((w%n)+n)%n}
+function curSubId(){const i=rotIdx(0);if(i>=0)return SUBS()[i].id;const a=S.schedule.act;return SUBS().some(x=>x.id===a)?a:(SUBS()[0]?SUBS()[0].id:'')}
+const viewSub=()=>SUBS().some(x=>x.id===ui.svw)?ui.svw:curSubId();
+const itemsOn=(d,sb)=>{sb=sb===undefined?curSubId():sb;return S.schedule.items.filter(i=>i.days.includes(d)&&(!i.sid||i.sid===sb)).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:(a.end<b.end?-1:1))};
 function sName(i){if(i.title)return i.title;const k=S.classes.find(x=>x.id===i.cid);return k?k.name:'Class'}
 function nextSched(){
   const n=nowT(),it=itemsOn(jsDay());
@@ -694,7 +709,7 @@ if(!['s','m','l'].includes(S.settings.fs))S.settings.fs='m';
 if(!['t','b'].includes(S.settings.front))S.settings.front='b';
 if(!SEATS.some(x=>x[0]===S.settings.seat))S.settings.seat='theme';
 if(!S.schedule||typeof S.schedule!=='object'||!Array.isArray(S.schedule.items))S.schedule={mod:0,items:[]};
-S.schedule.mod=+S.schedule.mod||0;S.schedule.items=S.schedule.items.map(normSched).filter(Boolean);
+S.schedule=normSchObj(S.schedule);
 if(!S.planner||typeof S.planner!=='object'||!Array.isArray(S.planner.items))S.planner={mod:0,items:[]};
 S.planner.mod=+S.planner.mod||0;S.planner.items=S.planner.items.map(normPlan).filter(Boolean);
 S.sync=Object.assign({on:false,last:0,dirty:false,err:'',uid:''},S.sync&&typeof S.sync==='object'?S.sync:{});
@@ -864,7 +879,7 @@ function mergeRemote(rem,first,interactive){
   for(const id in del)if(del[id]<cut)delete del[id];
   S.classes=out;S.deleted=del;
   if(rem.planner&&Array.isArray(rem.planner.items)&&(+rem.planner.mod||0)>S.planner.mod)S.planner={mod:+rem.planner.mod,items:rem.planner.items.map(normPlan).filter(Boolean)};
-  if(rem.schedule&&Array.isArray(rem.schedule.items)&&(+rem.schedule.mod||0)>S.schedule.mod)S.schedule={mod:+rem.schedule.mod,items:rem.schedule.items.map(normSched).filter(Boolean)};
+  if(rem.schedule&&Array.isArray(rem.schedule.items)&&(+rem.schedule.mod||0)>S.schedule.mod)S.schedule=normSchObj(rem.schedule,+rem.schedule.mod);
   if(!S.classes.length)S.classes.push(newClass('My Class'));
   if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
 }
@@ -1383,7 +1398,7 @@ V.notes=c=>{
 const toM=t=>+t.slice(0,2)*60+ +t.slice(3);
 const hueOf=i=>{const k=S.classes.findIndex(x=>x.id===i.cid);if(k>=0)return (k*57+200)%360;let x=0;const s=sName(i);for(let n=0;n<s.length;n++)x=(x*31+s.charCodeAt(n))>>>0;return x%360};
 function weekGrid(){
-  const items=S.schedule.items,td=jsDay(),PPM=1;
+  const vs=viewSub(),items=S.schedule.items.filter(i=>!i.sid||i.sid===vs),td=jsDay(),PPM=1;
   const hasWk=items.some(i=>i.days.some(d=>d>=6)),showWk=hasWk||ui.swk,nd=showWk?7:5;
   let minM=7*60,maxM=17*60;items.forEach(i=>{minM=Math.min(minM,toM(i.start));maxM=Math.max(maxM,toM(i.end))});
   minM=Math.floor(minM/60)*60;maxM=Math.ceil(maxM/60)*60;
@@ -1392,7 +1407,7 @@ function weekGrid(){
    +DAYS.slice(0,nd).map(d=>'<div class="wh'+(d[0]===td?' today':'')+'">'+d[1]+'</div>').join('');
   g+='<div class="wt" style="height:'+H+'px">'+Array.from({length:(maxM-minM)/60},(_,n)=>'<span style="top:'+(n*60*PPM)+'px">'+fmtT(String(minM/60+n).padStart(2,'0')+':00').replace(':00','')+'</span>').join('')+'</div>';
   for(let d=1;d<=nd;d++){
-    const its=itemsOn(d).map(i=>({i:i,s:toM(i.start),e:toM(i.end)}));
+    const its=itemsOn(d,vs).map(i=>({i:i,s:toM(i.start),e:toM(i.end)}));
     let cl=[],cEnd=0;const out=[];
     const flush=()=>{const le=[];cl.forEach(x=>{let l=le.findIndex(e=>e<=x.s);if(l<0){l=le.length;le.push(0)}le[l]=x.e;x.l=l});cl.forEach(x=>{x.n=le.length;out.push(x)});cl=[]};
     its.forEach(x=>{if(cl.length&&x.s>=cEnd){flush();cEnd=0}cl.push(x);cEnd=Math.max(cEnd,x.e)});if(cl.length)flush();
@@ -1401,11 +1416,26 @@ function weekGrid(){
      +(d===td&&nowM>=minM&&nowM<=maxM?'<div class="wnow" style="top:'+((nowM-minM)*PPM)+'px"></div>':'')+'</div>';
   }
   g+='</div></div>';
-  return '<section class="card"><h2>Weekly schedule</h2><p class="muted">Tap a class block to edit it. Gray areas are free time.</p>'+(items.length?g:'<p class="muted">No classes yet. Add your first one below.</p>')
+  return '<section class="card"><h2>Weekly schedule'+(SUBS().length?' — '+esc(subName(vs)):'')+'</h2><p class="muted">Tap a class block to edit it. Gray areas are free time.'+(SUBS().length?' Includes your “Every week” classes.':'')+'</p>'+(items.length?g:'<p class="muted">No classes yet. Add your first one below.</p>')
    +(hasWk?'':'<div class="row noprint"><button class="chip s'+(ui.swk?' on':'')+'" data-act="swk">'+(ui.swk?'Hide':'Show')+' Sat &amp; Sun</button></div>')
    +(items.length?'<div class="row noprint"><button class="link" data-act="schClear">Clear entire schedule</button></div>':'')+'</section>';
 }
-const blankSf=()=>({id:'',title:'',cid:'',days:[],start:'',end:'',room:'',note:''});
+function weeksCard(){
+  const s=SUBS(),vs=viewSub(),cs=curSubId(),rt=S.schedule.rot||{},auto=rotIdx(0)>=0;
+  let h='<section class="card noprint" id="schWeeks"><h2>🔁 Week schedules</h2>';
+  if(!s.length)return h+'<p class="muted">Does your timetable change from week to week? Add one schedule per week type (for example Week A, B and C). Classes you add under “Every week” show in all of them.</p><div class="row"><button class="btn pri" data-act="subSchAdd">＋ Add week schedule</button></div></section>';
+  h+='<p class="muted">Tap a week to view or edit it. The ✓ one is what “Today” is using.</p><div class="chips">'+s.map(x=>'<button class="chip'+(x.id===vs?' on':'')+'" data-act="subSchView" data-id="'+x.id+'">'+(x.id===cs?'✓ ':'')+esc(x.name)+'</button>').join('')+'</div>'
+   +'<div class="row wrap">'+(auto?'':'<button class="btn sm pri" data-act="subSchUse"'+(vs===cs?' disabled':'')+'>✓ Use “'+esc(subName(vs))+'” this week</button>')+'<button class="btn sm" data-act="subSchAdd">＋ Add</button><button class="btn sm" data-act="subSchRename">✎ Rename</button><button class="btn sm danger" data-act="subSchDel">🗑 Delete</button></div>';
+  if(s.length>1){
+    h+='<label class="chk"><input type="checkbox" data-chg="rotOn"'+(auto?' checked':'')+'> Rotate automatically every week, in the order above</label>';
+    if(auto){
+      h+='<div class="row wrap"><label class="lb" for="rotStart" style="margin:0">“'+esc(s[0].name)+'” week was the week of</label><input id="rotStart" type="date" value="'+esc(rt.start)+'" data-chg="rotStart" style="width:auto"></div>'
+       +'<p class="muted">This week: <b>'+esc(subName(cs))+'</b> · Next week: <b>'+esc(s[rotIdx(1)].name)+'</b>. If the rotation is ever off (for example after a no-class week), change the date or turn rotation off and tap “Use”.</p>';
+    }
+  }
+  return h+'</section>';
+}
+const blankSf=()=>({id:'',title:'',cid:'',days:[],start:'',end:'',room:'',note:'',sid:SUBS().length?viewSub():''});
 function schedRow(i,todayMode){
   const n=nowT(),isNow=todayMode&&i.start<=n&&n<i.end,isDone=todayMode&&n>=i.end;
   const nxt=todayMode?itemsOn(jsDay()).find(x=>x.start>n):null;
@@ -1419,15 +1449,17 @@ function schedRow(i,todayMode){
 function schedTodayInner(){
   const d=jsDay(),it=itemsOn(d);
   return '<div class="rowsp"><h2>📅 Today</h2><span class="muted">'+new Date().toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})+'</span></div>'
+   +(SUBS().length?'<p class="muted">This week: <b>'+esc(subName(curSubId()))+'</b>'+(rotIdx(0)>=0?' (automatic)':'')+'</p>':'')
    +planBanner()
    +(it.length?it.map(i=>schedRow(i,true)).join(''):'<p class="muted">'+(S.schedule.items.length?'Nothing scheduled today. Enjoy your free day! 🎉':'No schedule yet. Add your weekly classes below.')+'</p>');
 }
 V.sched=c=>{
   const sf=ui.sf||(ui.sf=blankSf()),td=jsDay();
   let h='<section class="card" id="schToday">'+schedTodayInner()+'</section>';
-  h+=weekGrid();
+  h+=weeksCard()+weekGrid();
   h+='<section class="card noprint" id="schForm"><h2>'+(sf.id?'Edit entry':'Add to schedule')+'</h2>'
    +'<label class="lb" for="sfTitle">Subject / section</label><input id="sfTitle" type="text" maxlength="80" placeholder="e.g. Science 7 – Rizal" data-sf="title" value="'+esc(sf.title)+'" autocomplete="off">'
+   +(SUBS().length?'<label class="lb" for="sfSid">Which week?</label><select id="sfSid" data-chg="sf" data-k="sid"><option value="">Every week</option>'+SUBS().map(x=>'<option value="'+x.id+'"'+(sf.sid===x.id?' selected':'')+'>'+esc(x.name)+' only</option>').join('')+'</select>':'')
    +'<label class="lb" for="sfCls">Link to a class (optional, adds an Open button)</label><select id="sfCls" data-chg="sf" data-k="cid" data-sf="cid"><option value="">— none —</option>'+S.classes.map(k=>'<option value="'+k.id+'"'+(sf.cid===k.id?' selected':'')+'>'+esc(k.name)+'</option>').join('')+'</select>'
    +'<label class="lb">Days</label><div class="chips">'+DAYS.map(d=>'<button class="chip s'+(sf.days.includes(d[0])?' on':'')+'" data-act="schDay" data-d="'+d[0]+'">'+d[1]+'</button>').join('')+'</div>'
    +'<div class="row wrap"><div><label class="lb" for="sfStart">Start</label><input id="sfStart" type="time" data-sf="start" value="'+esc(sf.start)+'"></div><div><label class="lb" for="sfEnd">End</label><input id="sfEnd" type="time" data-sf="end" value="'+esc(sf.end)+'"></div></div>'
@@ -2038,7 +2070,7 @@ const act={
     if(!sf.days.length){toast('Pick at least one day');return}
     if(!isT(sf.start)||!isT(sf.end)){toast('Set the start and end time');return}
     if(sf.end<=sf.start){toast('End time must be after the start time');return}
-    const it=normSched({id:sf.id||uid(),days:sf.days.slice().sort(),start:sf.start,end:sf.end,title:sf.title.trim(),room:sf.room.trim(),note:sf.note.trim(),cid:sf.cid});
+    const it=normSched({id:sf.id||uid(),days:sf.days.slice().sort(),start:sf.start,end:sf.end,title:sf.title.trim(),room:sf.room.trim(),note:sf.note.trim(),cid:sf.cid,sid:sf.sid});
     const was=!!sf.id,i=S.schedule.items.findIndex(x=>x.id===it.id);
     if(i>=0)S.schedule.items[i]=it;else S.schedule.items.push(it);
     S.schedule.mod=Date.now();ui.sf=blankSf();save();render();toast(was?'Schedule updated':'Added to your schedule')
@@ -2340,7 +2372,7 @@ const chg={
         }
         if(!S.classes.length)S.classes.push(newClass('My Class'));
         if(!S.classes.find(k=>k.id===S.activeId))S.activeId=S.classes[0].id;
-        if(o.schedule&&Array.isArray(o.schedule.items)&&(ui.importMode==='replace'||!S.schedule.items.length))S.schedule={mod:Date.now(),items:o.schedule.items.map(normSched).filter(Boolean)};
+        if(o.schedule&&Array.isArray(o.schedule.items)&&(ui.importMode==='replace'||!S.schedule.items.length))S.schedule=normSchObj(o.schedule,Date.now());
         if(o.planner&&Array.isArray(o.planner.items)&&(ui.importMode==='replace'||!S.planner.items.length))S.planner={mod:Date.now(),items:o.planner.items.map(normPlan).filter(Boolean)};
         ui.sel=null;ui.gsel=null;ui.lastPick=null;ui.tab='students';save();render();toast('Imported '+cls.length+' class'+(cls.length===1?'':'es'));
       }catch(e){alert('That file is not a valid Classroom Hub backup.')}
@@ -2376,6 +2408,51 @@ Object.assign(act,{
   ovNext(){const a=ui.ovm.split('-').map(Number);ui.ovm=dkey(new Date(a[0],a[1],1)).slice(0,7);render()},
   ovToday(){ui.ovm=today().slice(0,7);ui.ovd=today();render()},
   ovf(c,t){ui.ovf=t.dataset.v;render()}
+});
+
+function schTouch(){S.schedule.mod=Date.now();ui.sf=blankSf();save();render()}
+Object.assign(act,{
+  subSchAdd(c){
+    if(SUBS().length>=8){toast('Up to 8 week schedules');return}
+    const first=!SUBS().length,src=viewSub();
+    const n=prompt('Name this week schedule (for example Week A):',first?'Week A':'Week '+String.fromCharCode(65+SUBS().length));
+    if(n===null||!n.trim())return;
+    const nm=n.trim().slice(0,30),id=uid();
+    S.schedule.subs=SUBS().concat([{id:id,name:nm}]);
+    if(first){
+      S.schedule.act=id;
+      if(S.schedule.items.length&&confirm('Put your current classes into “'+nm+'”?\n\nOK = only in “'+nm+'”\nCancel = keep them in every week'))S.schedule.items.forEach(i=>{i.sid=id});
+    }else if(confirm('Copy the classes of “'+subName(src)+'” into “'+nm+'”?\n\nOK = copy them\nCancel = start empty')){
+      S.schedule.items.filter(i=>i.sid===src).forEach(i=>S.schedule.items.push(Object.assign({},i,{id:uid(),days:i.days.slice(),sid:id})));
+    }
+    ui.svw=id;schTouch();toast('Added “'+nm+'”');
+  },
+  subSchView(c,t){ui.svw=t.dataset.id;if(ui.sf&&!ui.sf.id)ui.sf.sid=ui.svw;render()},
+  subSchUse(){S.schedule.act=viewSub();schTouch();toast('Using “'+subName(S.schedule.act)+'” this week')},
+  subSchRename(){
+    const id=viewSub(),x=SUBS().find(y=>y.id===id);if(!x)return;
+    const n=prompt('New name for this week schedule:',x.name);if(n===null||!n.trim())return;
+    x.name=n.trim().slice(0,30);schTouch();
+  },
+  subSchDel(){
+    const id=viewSub(),x=SUBS().find(y=>y.id===id);if(!x)return;
+    const k=S.schedule.items.filter(i=>i.sid===id).length;
+    if(!confirm('Delete “'+x.name+'”'+(k?' and its '+k+' class'+(k>1?'es':''):'')+'? Classes under “Every week” stay.'))return;
+    S.schedule.items=S.schedule.items.filter(i=>i.sid!==id);
+    S.schedule.subs=SUBS().filter(y=>y.id!==id);
+    if(S.schedule.act===id)S.schedule.act='';
+    if(S.schedule.subs.length<2&&S.schedule.rot)S.schedule.rot.on=false;
+    ui.svw='';schTouch();toast('Deleted');
+  }
+});
+Object.assign(chg,{
+  rotOn(c,t){
+    const r=S.schedule.rot=S.schedule.rot||{on:false,start:''};
+    if(t.checked){const i=Math.max(0,SUBS().findIndex(x=>x.id===curSubId())),d=monOf(today());d.setDate(d.getDate()-7*i);r.start=dkey(d);r.on=SUBS().length>1}
+    else r.on=false;
+    schTouch();
+  },
+  rotStart(c,t){if(!isD(t.value)){render();return}const r=S.schedule.rot;r.start=dkey(monOf(t.value));schTouch()}
 });
 document.addEventListener('input',e=>{const el=e.target;if(el&&el.id==='subName')ui.subDraft=el.value});
 document.addEventListener('click',e=>{
