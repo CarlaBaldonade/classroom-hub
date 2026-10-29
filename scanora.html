@@ -174,7 +174,7 @@ function sheetSVG(o){
 /* ---------- image helpers ---------- */
 function gray(rgba,w,h){const g=new Uint8Array(w*h);for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(rgba[j]*77+rgba[j+1]*150+rgba[j+2]*29)>>8;return g;}
 
-function binarize(g,w,h){
+function binarize(g,w,h,ra,cp){
   const W1=w+1, I=new Float64Array(W1*(h+1));
   for(let y=0;y<h;y++){let row=0;for(let x=0;x<w;x++){row+=g[y*w+x];I[(y+1)*W1+x+1]=I[y*W1+x+1]+row;}}
   const s=Math.max(15,Math.round(Math.max(w,h)/10))|1, r=s>>1, bin=new Uint8Array(w*h);
@@ -183,7 +183,7 @@ function binarize(g,w,h){
     for(let x=0;x<w;x++){
       const x0=Math.max(0,x-r), x1=Math.min(w,x+r+1);
       const mean=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0));
-      const v=g[y*w+x]; bin[y*w+x]=(v<mean*0.78&&v<165)?1:0;
+      const v=g[y*w+x]; bin[y*w+x]=(v<mean*(ra||0.78)&&v<(cp||165))?1:0;
     }
   }
   return bin;
@@ -215,7 +215,12 @@ function components(bin,w,h,minA,maxA){
 
 /* ---------- find the 4 corner squares (any rotation / orientation) ---------- */
 function detect(g,w,h){
-  const L=Math.max(w,h), bin=binarize(g,w,h);
+  const d=detectWith(g,w,h); if(d)return d;
+  const s=[];for(let k=0;k<g.length;k+=11)s.push(g[k]); s.sort((a,b)=>a-b);
+  return detectWith(g,w,h,0.9,s[Math.floor(s.length*.9)]*0.93);   /* second try for pale prints (draft / toner-save) */
+}
+function detectWith(g,w,h,ra,cp){
+  const L=Math.max(w,h), bin=binarize(g,w,h,ra,cp);
   const blobs=components(bin,w,h,Math.max(20,Math.floor(0.9e-4*L*L)),Math.floor(0.0064*L*L));
   const cand=blobs.filter(b=>{
     if(b.bw<5||b.bh<5)return false;
@@ -299,15 +304,15 @@ function analyze(canon,o){
   const inkFill=(cx,cy,ra,rb,ex,Wb)=>{let s=0,n=0;
     for(let y=Math.floor((cy-rb)*S);y<=Math.ceil((cy+rb)*S);y++)for(let x=Math.floor((cx-ra)*S);x<=Math.ceil((cx+ra)*S);x++){
       const ux=(x+.5)/S-cx, uy=(y+.5)/S-cy; if((ux*ux)/(ra*ra)+(uy*uy)/(rb*rb)>1||Math.abs(ux)<ex||x<0||y<0||x>=CW||y>=CH)continue;
-      const d=(Wb-G[y*CW+x])/(Wb-B); s+=d<0?0:d>1?1:d; n++;}
+      const d=(Wb-G[y*CW+x])/(Wb-BI); s+=d<0?0:d>1?1:d; n++;}
     return n?s/n:0;};
   // global paper / ink calibration
   const sample=[];for(let k=0;k<G.length;k+=7)sample.push(G[k]);
   const Wg=pctl(sample,.92);
   const mks=Object.values(MK).map(m=>boxMean(m.x,m.y,m.s/2-2));
-  const B=mks.reduce((a,b)=>a+b,0)/4;
+  const B=mks.reduce((a,b)=>a+b,0)/4, BI=Math.min(B,Wg*0.6);   /* BI: how dark a real pen/pencil mark is, even when the print itself is pale */
   const contrast=Wg-B;
-  if(Math.max(...mks)>Wg*0.55||contrast<55) return {error:'contrast',contrast};
+  if(Math.max(...mks)>Wg*0.95||contrast<14) return {error:'contrast',contrast};
   // sheet-type code (calibrated locally so shadows across the page do not matter)
   const wl=[];for(let y=Math.floor(6*S);y<Math.ceil(24*S);y+=2)for(let x=Math.floor(136*S);x<Math.ceil(188*S);x+=2)wl.push(G[y*CW+x]);
   const Wl=pctl(wl,.8);
@@ -315,7 +320,7 @@ function analyze(canon,o){
   const votes={};
   for(const [ox,oy] of offs0){
     const cv=[];for(let i=0;i<CODE.n;i++)cv.push(boxMean(CODE.x0+i*CODE.pitch+CODE.size/2+ox,CODE.y+CODE.size/2+oy,.8));
-    const Bl=cv[0]; if(Wl-Bl<40)continue; const thr=(Wl+Bl)/2;
+    const Bl=cv[0]; if(Wl-Bl<20)continue; const thr=(Wl+Bl)/2;
     const d=decodeBits(cv.map(v=>v<thr?1:0)); if(d){const k=d.n+'_'+d.ch+'_'+d.id;(votes[k]=votes[k]||{d,c:0}).c++;}
   }
   for(const k in votes)if(votes[k].c>=3&&(!dec||votes[k].c>dec.c))dec=Object.assign({c:votes[k].c},votes[k].d);
@@ -334,7 +339,7 @@ function analyze(canon,o){
       for(const cx0 of cxs){
         const cx=cx0+bx, cy=y0+by;
         const wv=[];for(const k of [.7,1.0,1.3])for(let a=0;a<8;a++)wv.push(at(cx+(ia+k)*Math.cos(a*Math.PI/4+.4),cy+(ib+k)*Math.sin(a*Math.PI/4+.4)));
-        wv.sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-B<40)Wb=Wg;
+        wv.sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-BI<40)Wb=Wg;
         f.push(inkFill(cx,cy,.74*ia,.74*ib,iex,Wb));
         let q=0;for(const a of ANG)q+=at(cx+(ia+.9)*a[0],cy+(ib+.9)*a[1])-at(cx+ia*a[0],cy+ib*a[1]);
         rq.push(q/16/(Wb-B));
@@ -373,12 +378,12 @@ function analyze(canon,o){
   const items=[], ringQ=[], offs=[], rowQs=[];
   const WA=[];for(const k of [.8,1.15,1.5])for(let a=0;a<8;a++)WA.push([(L.a+k)*Math.cos(a*Math.PI/4+.4),(L.b+k)*Math.sin(a*Math.PI/4+.4)]);
   let base=0;
-  if(L.dense){const all=[];for(const r of rows)for(const cx0 of r.it.cx){const cx=cx0+r.dx,cy=r.it.y+r.dy;const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y);let Wb=wv[(wv.length*.6)|0];if(Wb-B<40)Wb=Wg;all.push(inkFill(cx,cy,.74*L.a,.74*L.b,0,Wb));}base=Math.min(.12,med(all));}
+  if(L.dense){const all=[];for(const r of rows)for(const cx0 of r.it.cx){const cx=cx0+r.dx,cy=r.it.y+r.dy;const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y);let Wb=wv[(wv.length*.6)|0];if(Wb-BI<40)Wb=Wg;all.push(inkFill(cx,cy,.74*L.a,.74*L.b,0,Wb));}base=Math.min(.12,med(all));}
   for(const r of rows){
     const it=r.it, f=[], rq=[];
     for(const cx0 of it.cx){
       const cx=cx0+r.dx, cy=it.y+r.dy;
-      const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-B<40)Wb=Wg;
+      const wv=WA.map(a=>at(cx+a[0],cy+a[1])).sort((x,y)=>x-y); let Wb=wv[(wv.length*.6)|0]; if(Wb-BI<40)Wb=Wg;
       const fv=Math.max(0,(inkFill(cx,cy,.74*L.a,.74*L.b,L.ex,Wb)-base)/(1-base)); f.push(fv);
       let q=0;for(const a of ANG)q+=at(cx+(L.a+.9)*a[0],cy+(L.b+.9)*a[1])-at(cx+L.a*a[0],cy+L.b*a[1]);
       q=q/16/(Wb-B); rq.push(q); if(fv<0.2)ringQ.push(q);
@@ -703,7 +708,7 @@ function camLoop(){
   const ov=CAM.ov,cw=CAM.el.clientWidth,ch=CAM.el.clientHeight,dpr=window.devicePixelRatio||1;ov.width=cw*dpr;ov.height=ch*dpr;
   const g=ov.getContext('2d');g.scale(dpr,dpr);const sc=Math.min(cw/vw,ch/vh),ox=(cw-vw*sc)/2,oy=(ch-vh*sc)/2,P=p=>[ox+p.x/k*sc,oy+p.y/k*sc];
   if(CAM.rearm){ if(det){CAM.gone=0;camMsg('Scanned ✓  Swap in the next sheet');return;} if(++CAM.gone<2){return;} CAM.rearm=false; }
-  if(Date.now()<CAM.msgUntil&&!det){return;}
+  if(Date.now()<CAM.msgUntil){return;}
   if(!det){CAM.stable=0;CAM.last=null;camMsg('Point at the answer sheet. All 4 black squares must be visible.');return;}
   const pxmm=det.pxmm/k, good=pxmm>=3.4;
   g.lineWidth=4;g.strokeStyle=good?'#3ddc84':'#ffb020';g.fillStyle=good?'rgba(61,220,132,.12)':'rgba(255,176,32,.12)';g.beginPath();
@@ -718,7 +723,7 @@ async function camCapture(){
   const cv=imgToCanvas(v,v.videoWidth,v.videoHeight);camMsg('Reading…');await tick();
   const out=runScan(cv,e);
   if(!CAM)return;
-  if(out.error){beep('err');CAM.busy=false;CAM.stable=0;CAM.msgUntil=Date.now()+3500;camMsg('⚠️ '+errText(out,e));return;}
+  if(out.error){beep('err');CAM.busy=false;CAM.stable=0;CAM.msgUntil=Date.now()+6000;camMsg('⚠️ '+errText(out,e));return;}
   const flagged=out.items.some(i=>i.status==='unclear'||i.status==='multi');beep(flagged||out.warn.length?'warn':'ok');
   const r=await reviewSheet(e,out);
   if(!CAM)return;CAM.busy=false;CAM.rearm=true;CAM.gone=0;CAM.stable=0;camInfo();
@@ -1039,7 +1044,7 @@ function viewSettings(){
   <details style="margin-top:8px"><summary class="small b" style="cursor:pointer">Google Client ID</summary><div class="small muted" style="margin:6px 0">Use the same Client ID as your Classroom Hub. ${detectClientId()&&!st.clientId?'<b>Set up already.</b>':''}</div><input id="cid" value="${esc(st.clientId||detectClientId())}" placeholder="xxxx.apps.googleusercontent.com" data-set="clientId"></details></div>
   <div class="card"><div class="b" style="margin-bottom:6px">💾 Backup</div><div class="row"><button class="btn" data-a="backup">⬇️ Download backup</button><button class="btn" data-a="restore">⬆️ Restore backup</button></div><div class="small muted" style="margin-top:6px">Backup includes exams, keys, class lists and results (not pictures).</div></div>
   <div class="card"><div class="b" style="margin-bottom:4px">📱 Install on your phone or tablet</div><ul class="help" style="margin:0;padding-left:18px"><li><b>iPhone / iPad (Safari):</b> Share → Add to Home Screen.</li><li><b>Android (Chrome):</b> ⋮ menu → Add to Home screen / Install app.</li><li>Open Scanora once while online so it can save itself for offline use.</li></ul></div>
-  <div class="card"><div class="small muted">Scanora v2.2 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
+  <div class="card"><div class="small muted">Scanora v2.4 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
 }
 
 /* ---------- Google Drive sync ---------- */
