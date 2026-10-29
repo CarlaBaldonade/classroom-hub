@@ -1039,7 +1039,7 @@ function viewSettings(){
   <details style="margin-top:8px"><summary class="small b" style="cursor:pointer">Google Client ID</summary><div class="small muted" style="margin:6px 0">Use the same Client ID as your Classroom Hub. ${detectClientId()&&!st.clientId?'<b>Set up already.</b>':''}</div><input id="cid" value="${esc(st.clientId||detectClientId())}" placeholder="xxxx.apps.googleusercontent.com" data-set="clientId"></details></div>
   <div class="card"><div class="b" style="margin-bottom:6px">💾 Backup</div><div class="row"><button class="btn" data-a="backup">⬇️ Download backup</button><button class="btn" data-a="restore">⬆️ Restore backup</button></div><div class="small muted" style="margin-top:6px">Backup includes exams, keys, class lists and results (not pictures).</div></div>
   <div class="card"><div class="b" style="margin-bottom:4px">📱 Install on your phone or tablet</div><ul class="help" style="margin:0;padding-left:18px"><li><b>iPhone / iPad (Safari):</b> Share → Add to Home Screen.</li><li><b>Android (Chrome):</b> ⋮ menu → Add to Home screen / Install app.</li><li>Open Scanora once while online so it can save itself for offline use.</li></ul></div>
-  <div class="card"><div class="small muted">Scanora v2.0 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
+  <div class="card"><div class="small muted">Scanora v2.1 · <span id="swState">${('serviceWorker' in navigator&&navigator.serviceWorker.controller)?'works offline ✓':'open once online to enable offline use'}</span></div></div>`;
 }
 
 /* ---------- Google Drive sync ---------- */
